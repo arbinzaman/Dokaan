@@ -15,9 +15,9 @@ const home = () => {
           <Hero />
           <Benefits />
           <Collaboration />
-          <Services />
+          {/* <Services /> */}
           <Pricing />
-          <Roadmap />
+          {/* <Roadmap /> */}
         </div>
   
         <ButtonGradient />
