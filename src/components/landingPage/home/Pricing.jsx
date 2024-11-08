@@ -28,8 +28,8 @@ const Pricing = () => {
         </div>
 
         <Heading
-          tag="Get started with Brainwave"
-          title="Pay once, use forever"
+          tag="দোকানে যোগ দিন, মাসে একবার পেমেন্ট করুন, সব সময় ব্যবহার করুন"
+          title="পেমেন্ট একবার , নিশ্চিন্ত সারা মাস"
         />
 
         <div className="relative">
