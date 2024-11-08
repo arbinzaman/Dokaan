@@ -5,7 +5,6 @@ import Collaboration from "../../../components/landingPage/home/Collaboration";
 import Services from "../../../components/landingPage/home/Services";
 import Pricing from "../../../components/landingPage/home/Pricing";
 import Roadmap from "../../../components/landingPage/home/Roadmap";
-import Footer from "../../../components/shared/landingPage/Footer";
 import ButtonGradient from "../../../assets/svg/ButtonGradient";
 
 const home = () => {
@@ -19,7 +18,6 @@ const home = () => {
           <Services />
           <Pricing />
           <Roadmap />
-          <Footer />
         </div>
   
         <ButtonGradient />
