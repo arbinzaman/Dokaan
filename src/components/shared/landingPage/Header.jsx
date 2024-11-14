@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom";
 import { disablePageScroll, enablePageScroll } from "scroll-lock";
 
 // import { brainwave } from "../assets";
-import { navigation } from "../../../constants";
+import { navigation } from "../../../constants/home/navigation";
 import Button from "../../landingPage/home/Button";
 import MenuSvg from "../../../assets/svg/MenuSvg";
 import { HamburgerMenu } from "../../landingPage/home/design/Header";

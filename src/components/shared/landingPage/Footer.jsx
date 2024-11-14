@@ -1,6 +1,6 @@
 
 import Section from "../../../components/landingPage/home/Section";
-import { socials } from "../../../constants";
+import { socials } from "../../../constants/home/social";
 
 const Footer = () => {
   return (
