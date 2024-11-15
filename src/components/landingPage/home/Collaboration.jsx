@@ -12,7 +12,7 @@ const Collaboration = () => {
       <div className="container lg:flex">
         <div className="max-w-[25rem]">
           <h2 className="h2 mb-4 md:mb-8">
-          ফোনে সহজ দোকান ব্যবস্থাপনার জন্য সহজ =সমাধান
+          ফোনে সহজ দোকান ব্যবস্থাপনার জন্য সহজ সমাধান
           </h2>
 
           <ul className="max-w-[22rem] mb-10 md:mb-14">

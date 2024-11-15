@@ -1,11 +1,18 @@
-import group from "../../assets/benefits/group.png";
+// import group from "../../assets/benefits/group.png";
+import people from "../../assets/benefits/people.png";
+import sales from "../../assets/benefits/sales.png";
+import inventory from "../../assets/benefits/inventory.png";
+import receipt from "../../assets/benefits/receipt.png";
+import employee from "../../assets/benefits/employee.png";
+import analytics from "../../assets/benefits/analytics.png";
+import qrIcon from "../../assets/benefits/qr.png";
 export const benefits = [
     {
       id: "0",
       title: "কাস্টমার ম্যানেজমেন্ট",
       text: "গ্রাহকের তথ্য এবং যোগাযোগ কার্যকরভাবে পরিচালনা করুন।",
       backgroundUrl: "./src/assets/benefits/customer-management.svg",
-      icon:  group, 
+      icon:  people, 
       // imageUrl: benefitImageCustomer,
     },
     {
@@ -13,7 +20,7 @@ export const benefits = [
       title: "বিক্রয় ব্যবস্থাপনা",
       text: "বিক্রয় প্রক্রিয়া সুনিপুণভাবে ট্র্যাক ও পরিচালনা করুন।",
       backgroundUrl: "./src/assets/benefits/sales-management.svg",
-      // icon: salesIcon,
+      icon: sales,
       // imageUrl: benefitImageSales,
       light: true,
     },
@@ -22,7 +29,7 @@ export const benefits = [
       title: "ইনভেন্টরি ম্যানেজমেন্ট",
       text: "স্টক লেভেল বজায় রাখতে ইনভেন্টরি পর্যবেক্ষণ এবং পরিচালনা করুন।",
       backgroundUrl: "./src/assets/benefits/inventory-management.svg",
-      // icon: inventoryIcon,
+      icon: inventory,
       // imageUrl: benefitImageInventory,
     },
     {
@@ -30,7 +37,7 @@ export const benefits = [
       title: "রিসিপ্ট প্রিন্টিং",
       text: "অ্যাপ থেকে সরাসরি রিসিপ্ট তৈরি এবং প্রিন্ট করুন।",
       backgroundUrl: "./src/assets/benefits/receipt-printing.svg",
-      // icon: receiptIcon,
+      icon: receipt,
       // imageUrl: benefitImageReceipt,
       light: true,
     },
@@ -39,7 +46,7 @@ export const benefits = [
       title: "কর্মচারী ব্যবস্থাপনা",
       text: "কর্মচারীদের ভূমিকা, অ্যাক্সেস এবং কার্যক্ষমতা পরিচালনা করুন।",
       backgroundUrl: "./src/assets/benefits/employee-management.svg",
-      // icon: employeeIcon,
+      icon: employee,
       // imageUrl: benefitImageEmployee,
     },
     {
@@ -47,7 +54,7 @@ export const benefits = [
       title: "বিশ্লেষণ ও প্রতিবেদন",
       text: "তথ্য বিশ্লেষণ করুন এবং সিদ্ধান্ত নেওয়ার জন্য প্রতিবেদন তৈরি করুন।",
       backgroundUrl: "./src/assets/benefits/analytics-reporting.svg",
-      // icon: analyticsIcon,
+      icon: analytics,
       // imageUrl: benefitImageAnalytics,
     },
     {
@@ -55,7 +62,7 @@ export const benefits = [
       title: "কিউআর/বারকোড স্ক্যানিং",
       text: "অপারেশনকে সহজতর করতে কিউআর এবং বারকোড স্ক্যানিং ব্যবহার করুন।",
       backgroundUrl: "./src/assets/benefits/qr-barcode-scanning.svg",
-      // icon: qrIcon,
+      icon: qrIcon,
       // imageUrl: benefitImageQR,
     },
   ];

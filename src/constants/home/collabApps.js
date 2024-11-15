@@ -1,58 +1,65 @@
-
+import inventoryIcon from "../../assets/benefits/inventory.png";
+import people from "../../assets/benefits/people.png";
+import analyticsIcon from "../../assets/benefits/analytics.png";
+import barcodeIcon from "../../assets/benefits/qr.png";
+import employeeIcon from "../../assets/benefits/employee.png";
+import supplierIcon from "../../assets/benefits/supplier.png";
+import expenseIcon from "../../assets/benefits/budget.png";
+import posIcon from "../../assets/benefits/pos.png";
 export const collabApps = [
     {
       id: "0",
       title: "ইনভেন্টরি ম্যানেজার",
-      // icon: inventoryIcon,
+      icon: inventoryIcon,
       width: 36,
       height: 36,
     },
     {
       id: "1",
       title: "POS সিস্টেম",
-      // // icon: posIcon,
+      icon: posIcon,
       width: 34,
       height: 36,
     },
     {
       id: "2",
       title: "কাস্টমার সিআরএম",
-      // // icon: crmIcon,
+      icon: people,
       width: 36,
       height: 28,
     },
     {
       id: "3",
       title: "বিশ্লেষণ ড্যাশবোর্ড",
-      // // icon: analyticsIcon,
+      icon: analyticsIcon,
       width: 34,
       height: 35,
     },
     {
       id: "4",
       title: "বারকোড স্ক্যানার",
-      // // icon: barcodeIcon,
+      icon: barcodeIcon,
       width: 34,
       height: 34,
     },
     {
       id: "5",
       title: "কর্মচারী ম্যানেজার",
-      // // icon: employeeIcon,
+      icon: employeeIcon,
       width: 34,
       height: 34,
     },
     {
       id: "6",
       title: "ব্যয় ট্র্যাকার",
-      // // icon: expenseIcon,
+      icon: expenseIcon,
       width: 26,
       height: 34,
     },
     {
       id: "7",
       title: "সরবরাহকারী যোগাযোগ",
-      // // icon: supplierIcon,
+      icon: supplierIcon,
       width: 38,
       height: 32,
     },
