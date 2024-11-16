@@ -47,7 +47,7 @@ const Login = () => {
               name="email"
               id="email"
               placeholder="email"
-              className="w-full px-4 py-3 rounded-md border border-gray-300 text-white focus:border-primary focus:outline-none bg-white"
+              className="w-full px-4 py-3 rounded-md border border-gray-300 text-black focus:border-primary focus:outline-none bg-white"
             />
           </div>
           <div className="relative space-y-1 text-sm">
@@ -59,7 +59,7 @@ const Login = () => {
               name="password"
               id="password"
               placeholder="Password"
-              className="w-full px-4 py-3 rounded-md border border-gray-300 text-white focus:border-primary focus:outline-none bg-white"
+              className="w-full px-4 py-3 rounded-md border border-gray-300 text-black focus:border-primary focus:outline-none bg-white"
             />
             <p
               onClick={() => setShowPassword(!showPassword)}
