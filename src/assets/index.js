@@ -52,10 +52,7 @@ import roadmap3 from "./roadmap/image-3.png";
 import roadmap4 from "./roadmap/image-4.png";
 import undone from "./roadmap/undone.svg";
 
-import notification1 from "./notification/image-1.png";
-import notification2 from "./notification/image-2.png";
-import notification3 from "./notification/image-3.png";
-import notification4 from "./notification/image-4.png";
+
 
 import benefitCard1 from "./benefits/card-1.svg";
 import benefitCard2 from "./benefits/card-2.svg";
@@ -124,10 +121,7 @@ export {
   roadmap3,
   roadmap4,
   undone,
-  notification1,
-  notification2,
-  notification3,
-  notification4,
+
   benefitCard1,
   benefitCard2,
   benefitCard3,
