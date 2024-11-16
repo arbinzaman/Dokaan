@@ -1,4 +1,4 @@
-import Header from '../components/shared/landingPage/Header'    
+import Header from '../components/shared/landingPage/header/Header'    
 import { Outlet } from 'react-router-dom'
 import Footer from '../components/shared/landingPage/Footer'
 
