@@ -2,9 +2,7 @@ import Header from "../../../components/shared/landingPage/Header";
 import Hero from "../../../components/landingPage/home/Hero";
 import Benefits from "../../../components/landingPage/home/Benefits";
 import Collaboration from "../../../components/landingPage/home/Collaboration";
-import Services from "../../../components/landingPage/home/Services";
 import Pricing from "../../../components/landingPage/home/Pricing";
-import Roadmap from "../../../components/landingPage/home/Roadmap";
 import ButtonGradient from "../../../assets/svg/ButtonGradient";
 
 const home = () => {
