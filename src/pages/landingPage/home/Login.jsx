@@ -1,34 +1,34 @@
 import { useNavigate } from "react-router-dom";
-// import { useUser } from "../../contexts/AuthContext";
+import { useUser } from "../../../contexts/AuthContext";
 import { useState } from "react";
 import { ThreeDots } from "react-loader-spinner";
-// import toast from "react-hot-toast";
+import toast from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-//   const { login } = useUser();
+  const { login } = useUser();
 
   const handleLogin = async (event) => {
-    // try {
+    try {
       setIsLoading(true);
       event.preventDefault();
       const form = event.target;
       const email = form.email.value;
       const password = form.password.value;
       console.log(email, password);
-    //   const res = await login(email, password);
+      const res = await login(email, password);
 
-//       if (res === 200) {
-//         navigate("/dashboard");
-//       }
-//       setIsLoading(false);
-//     } catch (error) {
-//       setIsLoading(false);
-//       toast.error("Please enter valid email or password!");
-//     }
+      if (res === 200) {
+        navigate("/");
+      }
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      toast.error("Please enter valid email or password!");
+    }
   };
 
   return (
