@@ -21,6 +21,7 @@ const Login = () => {
       console.log(email, password);
       const res = await login(email, password);
       if (res === 200) {
+        toast.success("Login successful!");
         navigate("/");
       }
       setIsLoading(false);
