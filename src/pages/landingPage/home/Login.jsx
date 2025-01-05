@@ -20,7 +20,6 @@ const Login = () => {
       const password = form.password.value;
       console.log(email, password);
       const res = await login(email, password);
-
       if (res === 200) {
         navigate("/");
       }

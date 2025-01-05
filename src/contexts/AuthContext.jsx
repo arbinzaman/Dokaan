@@ -13,16 +13,19 @@ export const AuthProvider = ({ children }) => {
   console.log(user);
 
   const login = async (email, password) => {
+    console.log(email, password);
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/auth/login`,
-        { email, password }
+        { email, password },
+        { headers: { "Content-Type": "application/json" } }
       );
-
+      console.log("Response:", res.data);
+      console.log(res);
 
       if (res.status === 200) {
         localStorage.setItem(
-          "access_token",
+          "user",
           JSON.stringify({
             username: res?.data?.username,
             email: res?.data?.email,
@@ -30,7 +33,7 @@ export const AuthProvider = ({ children }) => {
           })
         );
         Cookies.set("access_token", res.data.token, { expires: 1 });
-        setUser(JSON.parse(localStorage.getItem("access_token")));
+        setUser(JSON.parse(localStorage.getItem("user")));
         return 200;
       }
     } catch (error) {
@@ -42,7 +45,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      localStorage.removeItem("access_token");
+      localStorage.removeItem("user");
       Cookies.remove("access_token");
       setUser(null);
     } catch (error) {
@@ -53,7 +56,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        setUser(JSON.parse(localStorage.getItem("access_token")));
+        setUser(JSON.parse(localStorage.getItem("user")));
       } catch (error) {
         console.error("Failed to fetch user:", error.message);
       }
