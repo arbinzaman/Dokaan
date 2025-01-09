@@ -22,7 +22,7 @@ const Login = () => {
       const res = await login(email, password);
       if (res === 200) {
         toast.success("Login successful!");
-        navigate("/");
+        navigate("/dashboard");
       }
       setIsLoading(false);
     } catch (error) {

@@ -44,7 +44,7 @@ const SignUp = () => {
         const loginStatus = await login(email, password);
         if (loginStatus === 200) {
           toast.success("Registration successful!");
-          navigate("/"); // Redirect to the homepage
+          navigate("/dashboard"); // Redirect to the homepage
         }
       } else {
         const errorData = await response.json();
