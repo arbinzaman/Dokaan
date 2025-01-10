@@ -5,7 +5,7 @@ import { useUser } from "../../../contexts/AuthContext";
 
 const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
   const { user ,setUser } = useUser(); // Use setUser from AuthContext
-  console.log(user.user); // Debugging: Check the user context
+  // console.log(user.user); // Debugging: Check the user context
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -37,9 +37,9 @@ const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
     e.preventDefault();
 
     const formDataToSend = new FormData();
-    if (formData.name) formDataToSend.append("name", formData.name);
-    if (formData.email) formDataToSend.append("email", formData.email);
-    if (formData.profileImage) formDataToSend.append("profileImageUrl", formData.profileImage);
+    if (formData?.name) formDataToSend.append("name", formData.name);
+    if (formData?.email) formDataToSend.append("email", formData.email);
+    if (formData?.profileImage) formDataToSend.append("profileImageUrl", formData.profileImage);
 
     try {
       const token = Cookies.get("XTOKEN");
@@ -53,7 +53,7 @@ const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
 
       const data = await response.json();
 
-      if (response.status === 200) {
+      if (response?.status === 200) {
         toast.success("Profile updated successfully!");
 		// console.log('Data from server:', data.data);
         // Update context and localStorage
@@ -62,7 +62,7 @@ const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
         localStorage.setItem("user", JSON.stringify(data.data)); // Update localStorage
 		// console.log("Updated localStorage:", localStorage.getItem("user"));  // Confirming updated localStorage
 
-      // Debugging: Verify the updated context and localStorage after setting user
+    // Debugging: Verify the updated context and localStorage after setting user
     //   console.log('Updated user context:', data.data);
     //   console.log('Updated localStorage:', localStorage.getItem('user'));
         onClose(); // Close the modal after successful update

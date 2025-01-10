@@ -6,7 +6,7 @@ import ProfileUpdateModal from "../../Profile/ProfileUpdateModal";
 
 const Profile = () => {
 	const { user } = useUser();
-	console.log(user);
+	// console.log(user);
 	const [isModalOpen, setModalOpen] = useState(false);
 
 	// Function to open the modal

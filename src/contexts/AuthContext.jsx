@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
     const storedUser = localStorage.getItem("user");
     return storedUser ? JSON.parse(storedUser) : null; // or an empty object {}
   });
-console.log(user);
+// console.log(user);
   useEffect(() => {
     // When the user changes, update localStorage
     if (user) {
