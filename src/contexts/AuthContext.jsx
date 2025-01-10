@@ -1,8 +1,7 @@
-/* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, useContext, useEffect } from "react";
-import axios from "axios";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 export const AuthContext = createContext();
 
@@ -10,12 +9,18 @@ export const useUser = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-
-    // Initialize user state from localStorage
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
+    // // Get user data from localStorage on page load
+    // const storedUser = localStorage.getItem("user");
+    // return storedUser ? JSON.parse(storedUser) : null;
   });
-  // console.log(user);
+
+  useEffect(() => {
+    // When the user changes, update localStorage
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    }
+  }, [user]);
+
   const login = async (email, password) => {
     try {
       const res = await axios.post(
@@ -24,16 +29,14 @@ export const AuthProvider = ({ children }) => {
       );
 
       if (res.status === 200) {
-        const userData = {
-          ...res.data, // Include all data returned from the login response
-        };
+        const userData = res.data;
 
         // Save user data to context and localStorage
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
 
         // Save token in cookies for authenticated API requests
-        Cookies.set("XTOKEN", res.data.token, { expires: 1 });
+        Cookies.set("XTOKEN", userData.access_token, { expires: 1, path: "/" });
 
         return 200;
       }
@@ -43,26 +46,23 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    try {
-      // Clear user data from context, localStorage, and cookies
-      setUser(null);
-      localStorage.removeItem("user");
-      Cookies.remove("XTOKEN");
-    } catch (error) {
-      console.error("Logout failed:", error.message);
-    }
+    // Clear user data from context, localStorage, and cookies
+    setUser(null);
+    localStorage.removeItem("user");
+    Cookies.remove("XTOKEN");
   };
 
   useEffect(() => {
-    // Restore user data from localStorage when the app initializes
     const storedUser = localStorage.getItem("user");
+    // console.log("Restoring user from localStorage:", storedUser);
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
   }, []);
+  
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, setUser, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

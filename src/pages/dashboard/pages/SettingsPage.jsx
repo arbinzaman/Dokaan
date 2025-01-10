@@ -1,6 +1,7 @@
 import Header from "../../../components/dashBoard/home/common/Header";
 import ConnectedAccounts from "../../../components/dashBoard/home/settings/ConnectedAccounts";
 import DangerZone from "../../../components/dashBoard/home/settings/DangerZone";
+import LogoutZone from "../../../components/dashBoard/home/settings/LogoutZone";
 import Notifications from "../../../components/dashBoard/home/settings/Notifications";
 import Profile from "../../../components/dashBoard/home/settings/Profile";
 import Security from "../../../components/dashBoard/home/settings/Security";
@@ -14,6 +15,7 @@ const SettingsPage = () => {
 				<Notifications />
 				<Security />
 				<ConnectedAccounts />
+				<LogoutZone />
 				<DangerZone />
 			</main>
 		</div>
