@@ -5,10 +5,10 @@ import { useUser } from "../../../contexts/AuthContext";
 
 const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
   const { user ,setUser } = useUser(); // Use setUser from AuthContext
-  console.log(user); // Debugging: Check the user context
+  console.log(user.user); // Debugging: Check the user context
   const [formData, setFormData] = useState({
-    name: user?.user?.name || "",
-    email: user?.user?.email || "",
+    name: user?.name || "",
+    email: user?.email || "",
     profileImage: null,
   });
   const [previewImage, setPreviewImage] = useState(user?.profileImageUrl);
@@ -43,7 +43,7 @@ const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
 
     try {
       const token = Cookies.get("XTOKEN");
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/profile/${user?.user?.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/profile/${user?.id}`, {
         method: "PUT",
         headers: {
           Authorization: `${token}`,
@@ -58,7 +58,7 @@ const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
 		// console.log('Data from server:', data.data);
         // Update context and localStorage
         setUser(data.data); // Update AuthContext
-		// console.log("Updated user context:", data.data);  // This will show the updated context
+		console.log("Updated user context:", data.data);  // This will show the updated context
         localStorage.setItem("user", JSON.stringify(data.data)); // Update localStorage
 		// console.log("Updated localStorage:", localStorage.getItem("user"));  // Confirming updated localStorage
 

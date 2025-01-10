@@ -9,11 +9,11 @@ export const useUser = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    // // Get user data from localStorage on page load
-    // const storedUser = localStorage.getItem("user");
-    // return storedUser ? JSON.parse(storedUser) : null;
+    // Get user data from localStorage on page load
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null; // or an empty object {}
   });
-
+console.log(user);
   useEffect(() => {
     // When the user changes, update localStorage
     if (user) {
@@ -29,14 +29,14 @@ export const AuthProvider = ({ children }) => {
       );
 
       if (res.status === 200) {
-        const userData = res.data;
+        const userData = res.data.user;
 
         // Save user data to context and localStorage
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
 
         // Save token in cookies for authenticated API requests
-        Cookies.set("XTOKEN", userData.access_token, { expires: 1, path: "/" });
+        Cookies.set("XTOKEN", res.data.access_token, { expires: 1, path: "/" });
 
         return 200;
       }
@@ -44,7 +44,6 @@ export const AuthProvider = ({ children }) => {
       toast.error(error.response?.data?.message || "Login failed!");
     }
   };
-
   const logout = () => {
     // Clear user data from context, localStorage, and cookies
     setUser(null);
