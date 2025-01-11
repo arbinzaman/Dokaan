@@ -12,6 +12,7 @@ const Security = () => {
   const [twoFactor, setTwoFactor] = useState(false);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] =
     useState(false);
+    
   const { user, logout } = useUser();
   //   console.log(user);
   const navigate = useNavigate();
