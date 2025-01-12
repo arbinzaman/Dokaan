@@ -1,9 +1,9 @@
+import { useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../../contexts/AuthContext";
-import { useState } from "react";
-import { ThreeDots } from "react-loader-spinner";
-import toast from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { ThreeDots } from "react-loader-spinner";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,87 +18,78 @@ const Login = () => {
       const form = event.target;
       const email = form.email.value;
       const password = form.password.value;
-      console.log(email, password);
+  
       const res = await login(email, password);
-      if (res === 200) {
-        toast.success("Login successful!");
-        navigate("/dashboard");
+      if (res.data.status === 200) {
+        if (res.data.user.twoFactorEnabled) {
+          toast.promise(
+            fetch(`${import.meta.env.VITE_BASE_URL}/auth/send-otp`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `${res.data.access_token}`, // Pass token for authentication
+              },
+            }),
+            {
+              loading: "Sending OTP...",
+              success: <b>OTP sent successfully!</b>,
+              error: <b>Failed to send OTP.</b>,
+            }
+          )
+            .then(() => navigate("/verify-otp")) // Redirect on success
+            .catch(() => {}); // Handle error within toast.promise
+        } else {
+          toast.success("Login successful!");
+          navigate("/dashboard"); // Direct to dashboard if 2FA is disabled
+        }
       }
-      setIsLoading(false);
     } catch (error) {
+      toast.error("Invalid email or password!");
+    } finally {
       setIsLoading(false);
-      toast.error("Please enter valid email or password!");
     }
   };
+  
+  
 
   return (
-    <div className="flex items-center justify-center min-h-screen  px-4">
-      <div className="w-full max-w-md p-8 space-y-3 rounded-xl  shadow-md">
-        <h1 className="text-2xl font-bold text-center text-white">
-          Login
-        </h1>
+    <div className="flex items-center justify-center min-h-screen px-4">
+      <div className="w-full max-w-md p-8 space-y-3 rounded-xl shadow-md">
+        <h1 className="text-2xl font-bold text-center text-white">Login</h1>
         <form onSubmit={handleLogin} noValidate className="space-y-6">
           <div className="space-y-1 text-sm">
-            <label htmlFor="email" className="block text-white">
-              Email
-            </label>
+            <label htmlFor="email" className="block text-white">Email</label>
             <input
               type="email"
               name="email"
               id="email"
-              placeholder="email"
-              className="w-full px-4 py-3 rounded-md border border-gray-300 text-black focus:border-primary focus:outline-none bg-white"
+              placeholder="Email"
+              className="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none"
             />
           </div>
           <div className="relative space-y-1 text-sm">
-            <label htmlFor="password" className="block text-white">
-              Password
-            </label>
+            <label htmlFor="password" className="block text-white">Password</label>
             <input
               type={showPassword ? "text" : "password"}
               name="password"
               id="password"
               placeholder="Password"
-              className="w-full px-4 py-3 rounded-md border border-gray-300 text-black focus:border-primary focus:outline-none bg-white"
+              className="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none"
             />
             <p
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-9 hover:cursor-pointer"
+              className="absolute right-3 top-9 cursor-pointer"
             >
-              {showPassword ? (
-                <FaEyeSlash className="text-gray-500" />
-              ) : (
-                <FaEye className="text-gray-500" />
-              )}
+              {showPassword ? <FaEyeSlash className="text-gray-500" /> : <FaEye className="text-gray-500" />}
             </p>
-            <div className="flex justify-end text-xs text-gray-500 hover:cursor-pointer my-1">
-              <p onClick={() => navigate("/forgot-password")}>
-                Forgot Password?
-              </p>
-            </div>
           </div>
           {!isLoading ? (
-            <button
-              type="submit"
-              disabled={isLoading ? true : false}
-              className={
-                "block w-full p-3 text-center rounded-sm text-black bg-white hover:bg-secondary"
-              }
-            >
-              Sign in
+            <button type="submit" className="w-full p-3 text-center rounded-sm text-black bg-white hover:bg-gray-300">
+              Sign In
             </button>
           ) : (
-            <button className="flex justify-center items-center w-full p-3 text-center rounded-sm text-white bg-background">
-              <ThreeDots
-                visible={true}
-                height="30"
-                width="30"
-                color="#0d72b9"
-                radius="9"
-                ariaLabel="three-dots-loading"
-                wrapperStyle={{}}
-                wrapperClass=""
-              />
+            <button className="flex justify-center items-center w-full p-3 rounded-sm bg-gray-200">
+              <ThreeDots visible height="30" width="30" color="#0d72b9" />
             </button>
           )}
         </form>

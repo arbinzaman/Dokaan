@@ -11,6 +11,7 @@ import SalesPage from "../pages/dashboard/pages/SalesPage";
 import OrdersPage from "../pages/dashboard/pages/OrdersPage";
 import AnalyticsPage from "../pages/dashboard/pages/AnalyticsPage";
 import SettingsPage from "../pages/dashboard/pages/SettingsPage";
+import OtpVerification from "../components/landingPage/login/OtpVerification";
 const router = createBrowserRouter(
   [
     {
@@ -28,6 +29,10 @@ const router = createBrowserRouter(
         {
           path: "/signup",
           element: <SignUp />,
+        },
+        {
+          path: "/verify-otp",
+          element: <OtpVerification />,
         },
       ],
     },

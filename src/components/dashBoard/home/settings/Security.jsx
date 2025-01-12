@@ -1,12 +1,13 @@
 import { Lock } from "lucide-react";
 import SettingSection from "./SettingSection";
-import ToggleSwitch from "./ToggleSwitch";
+// import ToggleSwitch from "./ToggleSwitch";
 import ChangePasswordModal from "../../Profile/ChangePasswordModal";
 import { useState } from "react";
 import { useUser } from "../../../../contexts/AuthContext";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import TwoFactorAuth from "../../Profile/TwofactorAuth";
 
 const Security = () => {
   const [twoFactor, setTwoFactor] = useState(false);
@@ -50,11 +51,13 @@ const Security = () => {
   return (
     <>
       <SettingSection icon={Lock} title={"Security"}>
-        <ToggleSwitch
+        {/* <ToggleSwitch
           label={"Two-Factor Authentication"}
           isOn={twoFactor}
           onToggle={() => setTwoFactor(!twoFactor)}
-        />
+        /> */}
+<TwoFactorAuth isEnabled={twoFactor} onToggle={setTwoFactor} />
+
         <div className="mt-4">
           <button
             className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-200"

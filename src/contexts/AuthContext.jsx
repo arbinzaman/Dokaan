@@ -29,6 +29,7 @@ export const AuthProvider = ({ children }) => {
       );
 
       if (res.status === 200) {
+        console.log(res);
         const userData = res.data.user;
 
         // Save user data to context and localStorage
@@ -38,7 +39,7 @@ export const AuthProvider = ({ children }) => {
         // Save token in cookies for authenticated API requests
         Cookies.set("XTOKEN", res.data.access_token, { expires: 1, path: "/" });
 
-        return 200;
+        return res;
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Login failed!");
