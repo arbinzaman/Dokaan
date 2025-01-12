@@ -11,9 +11,9 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     // Get user data from localStorage on page load
     const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null; // or an empty object {}
+    return storedUser ? JSON.parse(storedUser) : null;
   });
-// console.log(user);
+
   useEffect(() => {
     // When the user changes, update localStorage
     if (user) {
@@ -29,7 +29,6 @@ export const AuthProvider = ({ children }) => {
       );
 
       if (res.status === 200) {
-        console.log(res);
         const userData = res.data.user;
 
         // Save user data to context and localStorage
@@ -45,6 +44,7 @@ export const AuthProvider = ({ children }) => {
       toast.error(error.response?.data?.message || "Login failed!");
     }
   };
+
   const logout = () => {
     // Clear user data from context, localStorage, and cookies
     setUser(null);
@@ -52,18 +52,29 @@ export const AuthProvider = ({ children }) => {
     Cookies.remove("XTOKEN");
   };
 
+  const updateTwoFactor = (newTwoFactorStatus) => {
+    // Update the twoFactorEnabled field in the user state
+    const updatedUser = { ...user, twoFactorEnabled: newTwoFactorStatus };
+    
+    // Update the context with the new user data
+    setUser(updatedUser);
+
+    // Update localStorage as well
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  };
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    // console.log("Restoring user from localStorage:", storedUser);
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
   }, []);
-  
 
   return (
-    <AuthContext.Provider value={{ user, setUser, login, logout }}>
+    <AuthContext.Provider value={{ user, setUser, login, logout, updateTwoFactor }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
+
