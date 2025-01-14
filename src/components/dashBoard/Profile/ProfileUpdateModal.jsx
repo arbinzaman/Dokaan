@@ -58,7 +58,7 @@ const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
 		// console.log('Data from server:', data.data);
         // Update context and localStorage
         setUser(data.data); // Update AuthContext
-		console.log("Updated user context:", data.data);  // This will show the updated context
+		// console.log("Updated user context:", data.data);  // This will show the updated context
         localStorage.setItem("user", JSON.stringify(data.data)); // Update localStorage
 		// console.log("Updated localStorage:", localStorage.getItem("user"));  // Confirming updated localStorage
 
