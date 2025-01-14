@@ -1,55 +1,17 @@
-import { Lock } from "lucide-react";
 import SettingSection from "./SettingSection";
-import { useState } from "react";
-import { useUser } from "../../../../contexts/AuthContext";
-import toast from "react-hot-toast";
-import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
 import TwoFactorAuth from "../../Profile/TwofactorAuth";
 import ChangePasswordModal from "../../Profile/ChangePasswordModal";
+import { useState } from "react";
+import { Lock } from "lucide-react";
 
 const Security = () => {
-  const { user, logout } = useUser();
-  const [twoFactor, setTwoFactor] = useState(user?.twoFactorEnabled || false);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
-
-  const navigate = useNavigate();
-
-  const handlePasswordChange = async (passwordData) => {
-    try {
-      const token = Cookies.get("XTOKEN");
-      const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/profile/change-password/${user?.id}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(passwordData),
-        }
-      );
-
-      if (response.status === 200) {
-        toast.success("Password changed successfully");
-        logout();
-        navigate("/login");
-        setIsChangePasswordModalOpen(false);
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || "Error changing password");
-      }
-    } catch (error) {
-      console.error("Error while changing password:", error);
-      toast.error("Something went wrong!");
-    }
-  };
 
   return (
     <>
       <SettingSection icon={Lock} title={"Security"}>
         {/* Two-Factor Authentication Settings */}
-        <TwoFactorAuth isEnabled={twoFactor} onToggle={setTwoFactor} />
+        <TwoFactorAuth />
 
         {/* Change Password Button */}
         <div className="mt-4">
@@ -67,7 +29,6 @@ const Security = () => {
         <ChangePasswordModal
           isOpen={isChangePasswordModalOpen}
           onClose={() => setIsChangePasswordModalOpen(false)}
-          onSubmit={handlePasswordChange}
         />
       )}
     </>

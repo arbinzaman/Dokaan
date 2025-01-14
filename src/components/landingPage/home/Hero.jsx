@@ -29,7 +29,6 @@ const Hero = () => {
       <div className="container relative" ref={parallaxRef}>
         <div className="relative z-1 max-w-[62rem] mx-auto text-center mb-[3.875rem] md:mb-20 lg:mb-[6.25rem]">
           <h1 className="h1 mb-6">
-          ব্যবসার হিসাব রাখুন হাতের নাগালে!
             <span className="inline-block relative">
              Dokaan
               <img
@@ -40,9 +39,10 @@ const Hero = () => {
                 alt="Curve"
               />
             </span>
+             - এখন ডিজিটাল
           </h1>
-          <p className="body-1 max-w-3xl mx-auto mb-6 text-n-2 lg:mb-8">
-            Digitalizing business everywhere.
+          <p className="body-1 text-3xl max-w-3xl mx-auto mb-6 text-n-2 lg:mb-8">
+          ব্যবসার হিসাব রাখুন হাতের নাগালে!
           </p>
           <Button  >
             Get started

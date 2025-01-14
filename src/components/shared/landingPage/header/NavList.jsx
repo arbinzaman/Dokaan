@@ -26,6 +26,13 @@ const NavList = ({ handleSectionNavigation, handleClick, openNavigation }) => {
         </button>
 
         {user ? (
+          <>
+          <Link
+            to="/dashboard"
+            className="block font-code text-2xl uppercase text-n-1 transition-colors hover:text-color-1 px-6 py-6 md:py-8 lg:text-xs lg:font-semibold"
+          >
+            Dashboard
+          </Link>
           <button
             onClick={() => {
               logout();
@@ -35,6 +42,8 @@ const NavList = ({ handleSectionNavigation, handleClick, openNavigation }) => {
           >
             Logout
           </button>
+          
+          </>
         ) : (
           <>
             <Link
