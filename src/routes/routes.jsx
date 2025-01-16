@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import Home from "../pages/landingPage/home/Homee";
 import Main from "../layouts/Main";
 import Login from "../pages/landingPage/home/Login";
-import SignUp from "../pages/landingPage/home/SignUp";
+// import SignUp from "../pages/landingPage/home/SignUp";
 import DashboardLayout from "../layouts/DashboardLayout"; 
 import OverviewPage from "../pages/dashboard/pages/OverviewPage";
 import ProductsPage from "../pages/dashboard/pages/ProductsPage";
@@ -12,6 +12,7 @@ import OrdersPage from "../pages/dashboard/pages/OrdersPage";
 import AnalyticsPage from "../pages/dashboard/pages/AnalyticsPage";
 import SettingsPage from "../pages/dashboard/pages/SettingsPage";
 import OtpVerification from "../components/landingPage/login/OtpVerification";
+import RegistrationStepper from "../pages/landingPage/RegistrationProcess/RegistrationStepper";
 const router = createBrowserRouter(
   [
     {
@@ -28,7 +29,7 @@ const router = createBrowserRouter(
         },
         {
           path: "/signup",
-          element: <SignUp />,
+          element: <RegistrationStepper />,
         },
         {
           path: "/verify-otp",

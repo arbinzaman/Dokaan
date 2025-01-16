@@ -9,18 +9,34 @@ export const useUser = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    // Get user data from localStorage on page load
     const storedUser = localStorage.getItem("user");
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
+  const [dokaan, setDokaan] = useState(() => {
+    const storedDokaan = localStorage.getItem("dokaan");
+    return storedDokaan ? JSON.parse(storedDokaan) : null;
+  });
+console.log(user);
+console.log(dokaan);
+  // Sync user and dokaan states with localStorage
   useEffect(() => {
-    // When the user changes, update localStorage
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("user");
     }
   }, [user]);
 
+  useEffect(() => {
+    if (dokaan) {
+      localStorage.setItem("dokaan", JSON.stringify(dokaan));
+    } else {
+      localStorage.removeItem("dokaan");
+    }
+  }, [dokaan]);
+
+  // Login function
   const login = async (email, password) => {
     try {
       const res = await axios.post(
@@ -29,15 +45,18 @@ export const AuthProvider = ({ children }) => {
       );
 
       if (res.status === 200) {
-        const userData = res.data.user;
+        const { user: userData, dokaan: dokaanData, access_token } = res.data;
 
-        // Save user data to context and localStorage
+        // Save user and dokaan data to context and localStorage
         setUser(userData);
+        setDokaan(dokaanData);
         localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("dokaan", JSON.stringify(dokaanData));
 
         // Save token in cookies for authenticated API requests
-        Cookies.set("XTOKEN", res.data.access_token, { expires: 1, path: "/" });
+        Cookies.set("XTOKEN", access_token, { expires: 1, path: "/" });
 
+        toast.success("Login successful!");
         return res;
       }
     } catch (error) {
@@ -45,36 +64,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Logout function
   const logout = () => {
-    // Clear user data from context, localStorage, and cookies
+    // Clear user and dokaan data from context, localStorage, and cookies
     setUser(null);
+    setDokaan(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("dokaan");
     Cookies.remove("XTOKEN");
+
+    toast.success("Logged out successfully!");
   };
-
-  const updateTwoFactor = (newTwoFactorStatus) => {
-    // Update the twoFactorEnabled field in the user state
-    const updatedUser = { ...user, twoFactorEnabled: newTwoFactorStatus };
-    
-    // Update the context with the new user data
-    setUser(updatedUser);
-
-    // Update localStorage as well
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-  };
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, login, logout, updateTwoFactor }}>
+    <AuthContext.Provider value={{ user, dokaan, login, logout, setUser, setDokaan }}>
       {children}
     </AuthContext.Provider>
   );
 };
-
-
