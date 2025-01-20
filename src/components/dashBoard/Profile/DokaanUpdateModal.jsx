@@ -3,15 +3,19 @@ import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { useUser } from "../../../contexts/AuthContext";
 
-const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
-  const { user ,setUser } = useUser(); // Use setUser from AuthContext
-  // console.log(user.user); // Debugging: Check the user context
+const DokaanUpdateModal = ({ isOpen, onClose }) => {
+  const { dokaan, setDokaan } = useUser(); // Use dokaan and setDokaan from AuthContext
+
   const [formData, setFormData] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
+    name: dokaan?.dokaan_name || "",
+    email: dokaan?.dokaan_email || "",
+    phone: dokaan?.dokaan_phone || "",
+    location: dokaan?.dokaan_location || "",
+    type: dokaan?.dokaan_type || "",
     profileImage: null,
   });
-  const [previewImage, setPreviewImage] = useState(user?.profileImageUrl);
+
+  const [previewImage, setPreviewImage] = useState(dokaan?.dokaan_imageUrl);
 
   if (!isOpen) return null;
 
@@ -37,15 +41,19 @@ const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
     e.preventDefault();
   
     const formDataToSend = new FormData();
-    if (formData?.name) formDataToSend.append("name", formData.name);
-    if (formData?.email) formDataToSend.append("email", formData.email);
-    if (formData?.profileImage) formDataToSend.append("profileImageUrl", formData.profileImage);
+    if (formData?.name) formDataToSend.append("dokaan_name", formData.name);
+    if (formData?.email) formDataToSend.append("dokaan_email", formData.email);
+    if (formData?.phone) formDataToSend.append("dokaan_phone", formData.phone);
+    if (formData?.location) formDataToSend.append("dokaan_location", formData.location);
+    if (formData?.type) formDataToSend.append("dokaan_type", formData.type);
+    if (formData?.profileImage) formDataToSend.append("dokaan_imageUrl", formData.profileImage);
   
     const token = Cookies.get("XTOKEN");
-  
+    
+    // Use `toast.promise` to handle async operation status
     await toast.promise(
       (async () => {
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/profile/${user?.id}`, {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/dokaan/${dokaan?.id}`, {
           method: "PUT",
           headers: {
             Authorization: `${token}`,
@@ -56,8 +64,7 @@ const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
         const data = await response.json();
   
         if (response?.status === 200) {
-          setUser(data.data); // Update AuthContext
-          localStorage.setItem("user", JSON.stringify(data.data)); // Update localStorage
+          setDokaan(data.data); // Update dokaan context
           onClose(); // Close the modal after successful update
           return data; // Resolve promise to trigger success toast
         } else {
@@ -65,8 +72,8 @@ const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
         }
       })(),
       {
-        loading: "Updating profile...",
-        success: <b>Profile updated successfully!</b>,
+        loading: "Saving...",
+        success: <b>Dokaan updated</b>,
         error: <b>Could not update profile. Please try again.</b>,
       }
     ).catch((error) => {
@@ -74,7 +81,6 @@ const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
     });
   };
   
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
@@ -92,7 +98,7 @@ const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
               value={formData.name}
               onChange={handleChange}
               className="w-full p-2 rounded bg-gray-700 text-white focus:ring-2 focus:ring-indigo-600 outline-none"
-              placeholder="Enter your name"
+              placeholder="Enter your dokaan name"
             />
           </div>
           <div>
@@ -104,6 +110,39 @@ const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
               onChange={handleChange}
               className="w-full p-2 rounded bg-gray-700 text-white focus:ring-2 focus:ring-indigo-600 outline-none"
               placeholder="Enter your email"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-400 mb-1">Phone</label>
+            <input
+              type="text"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full p-2 rounded bg-gray-700 text-white focus:ring-2 focus:ring-indigo-600 outline-none"
+              placeholder="Enter your phone number"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-400 mb-1">Location</label>
+            <input
+              type="text"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              className="w-full p-2 rounded bg-gray-700 text-white focus:ring-2 focus:ring-indigo-600 outline-none"
+              placeholder="Enter your location"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-400 mb-1">Type</label>
+            <input
+              type="text"
+              name="type"
+              value={formData.type}
+              onChange={handleChange}
+              className="w-full p-2 rounded bg-gray-700 text-white focus:ring-2 focus:ring-indigo-600 outline-none"
+              placeholder="Enter your dokaan type"
             />
           </div>
           <div>
@@ -145,4 +184,4 @@ const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
   );
 };
 
-export default ProfileUpdateModal;
+export default DokaanUpdateModal;

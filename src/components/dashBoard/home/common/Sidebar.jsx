@@ -9,18 +9,20 @@ import {
 	TrendingUp,
 	Users,
   } from "lucide-react";
+  import { GiShop } from "react-icons/gi";
   import { useState } from "react";
   import { AnimatePresence, motion } from "framer-motion";
   import { Link } from "react-router-dom";
   
   const SIDEBAR_ITEMS = [
+	{ name: "Dokaan Profile", icon:GiShop  , color: "#6EE7B7", href: "/dashboard/dokaanProfile" }, 
 	{ name: "Overview", icon: BarChart2, color: "#6366f1", href: "/dashboard" },
 	{ name: "Products", icon: ShoppingBag, color: "#8B5CF6", href: "/dashboard/products" },
 	{ name: "Users", icon: Users, color: "#EC4899", href: "/dashboard/users" },
 	{ name: "Sales", icon: DollarSign, color: "#10B981", href: "/dashboard/sales" },
 	{ name: "Orders", icon: ShoppingCart, color: "#F59E0B", href: "/dashboard/orders" },
 	{ name: "Analytics", icon: TrendingUp, color: "#3B82F6", href: "/dashboard/analytics" },
-	{ name: "Settings", icon: Settings, color: "#6EE7B7", href: "/dashboard/settings" },
+	{ name: "Settings", icon: Settings, color: "#6EE7B7", href: "/dashboard/settings" }, 
   ];
   
   const Sidebar = () => {
@@ -89,6 +91,7 @@ import {
 		  animate={{ width: isSidebarOpen ? 256 : 80 }}
 		>
 		  {/* Toggle Button */}
+		  
 		  <motion.button
 			whileHover={{ scale: 1.1 }}
 			whileTap={{ scale: 0.9 }}
@@ -100,6 +103,7 @@ import {
   
 		  {/* Navigation Items */}
 		  <nav className="mt-8 flex-grow">
+			
 			{SIDEBAR_ITEMS.map((item) => (
 			  <Link
 				key={item.href}
