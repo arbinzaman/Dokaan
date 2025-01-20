@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'; 
 import axios from 'axios';
 import { UserCheck, UserPlus, UsersIcon, UserX } from "lucide-react";
 import { motion } from "framer-motion";
@@ -14,26 +14,33 @@ import UserDemographicsChart from "../../../components/dashBoard/home/users/User
 const UsersPage = () => {
   const [totalUsers, setTotalUsers] = useState(0);
   const [newUsersToday, setNewUsersToday] = useState(0);
+  const [activeUsers, setActiveUsers] = useState(0); // State for active users
   const [userData, setUserData] = useState([]); // State to store all user data
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/user`); // Use axios for the request
-        setTotalUsers(response.data.data.length);
-        setUserData(response.data.data); // Store all user data
-        console.log(response);
+        const users = response.data.data;
 
+        setTotalUsers(users.length); // Total users count
+        setUserData(users); // Store all user data
+
+        // Calculate Active Users
+        const activeUsersCount = users.filter(user => user.subscriptionStatus === true).length;
+        setActiveUsers(activeUsersCount); // Update active users count
+
+        // Calculate New Users Today
         const today = new Date();
         const formattedToday = format(today, 'yyyy-MM-dd'); // Format today's date
 
-        const newUsers = response.data.filter(user => {
+        const newUsers = users.filter(user => {
           const userDate = new Date(user.createdAt);
           const formattedUserDate = format(userDate, 'yyyy-MM-dd');
           return formattedUserDate === formattedToday;
         });
 
-        setNewUsersToday(newUsers.length);
+        setNewUsersToday(newUsers.length); // Update new users count
       } catch (error) {
         console.error('Error fetching users:', error);
       }
@@ -45,7 +52,7 @@ const UsersPage = () => {
   const userStats = {
     totalUsers: totalUsers,
     newUsersToday: newUsersToday,
-    activeUsers: 98520, // Replace with actual data (consider fetching from API)
+    activeUsers: activeUsers, // Use dynamic active users count
     churnRate: "2.4%", // Replace with actual data (consider fetching from API)
   };
 
@@ -69,7 +76,7 @@ const UsersPage = () => {
           />
           <StatCard name='New Users Today' icon={UserPlus} value={userStats.newUsersToday} color='#10B981' />
           <StatCard
-            name='Active Users'
+            name='Subscribed Users'
             icon={UserCheck}
             value={userStats.activeUsers.toLocaleString()}
             color='#F59E0B'

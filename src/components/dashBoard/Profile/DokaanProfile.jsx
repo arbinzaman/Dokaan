@@ -1,21 +1,26 @@
 import { useUser } from "../../../contexts/AuthContext";
 
 const DokaanProfile = () => {
-    const{dokaan} = useUser();
+    const { dokaan } = useUser();
+
     return (
-        <div className="flex flex-col justify-center max-w-xs p-6 shadow-md rounded-xl sm:px-12 bg-gray-900 text-gray-100">
-        <img src={dokaan.dokaan_imageUrl} alt="" className="w-32 h-32 mx-auto rounded-full bg-gray-500 aspect-square" />
-        <div className="space-y-4 text-center divide-y divide-gray-700">
-            <div className="my-2 space-y-1">
-                <h2 className="text-xl font-semibold sm:text-2xl">{dokaan.dokaan_name}</h2>
-                <p className="px-5 text-xs sm:text-base text-gray-400">{dokaan.dokaan_phone}</p>
-                <p className="px-5 text-xs sm:text-base text-gray-400">{dokaan.dokaan_email}</p>
-                <p className=" text-xs sm:text-base text-gray-400">Dokaan Type: {dokaan.dokaan_type}</p>
-                <p className=" text-xs sm:text-base text-gray-400">{dokaan.dokaan_location}</p>
+        <div className="flex flex-col items-center p-4 rounded-lg bg-gray-800 text-gray-100">
+            {/* Profile Image */}
+            <img 
+                src={dokaan.dokaan_imageUrl} 
+                alt="Dokaan Profile" 
+                className="w-16 h-16 rounded-full bg-gray-700 object-cover mb-3" 
+            />
+
+            {/* Profile Information */}
+            <div className="text-center">
+                <h2 className="text-sm font-medium truncate">{dokaan.dokaan_name}</h2>
+                <p className="text-xs text-gray-400 truncate">{dokaan.dokaan_phone}</p>
+                <p className="text-xs text-gray-400 truncate">{dokaan.dokaan_email}</p>
+                <p className="text-xs text-gray-400 truncate">Type: {dokaan.dokaan_type}</p>
+                <p className="text-xs text-gray-400 truncate">{dokaan.dokaan_location}</p>
             </div>
-        
         </div>
-    </div>
     );
 };
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Search, Trash } from "lucide-react";
-import axios from 'axios'; // Import axios for making API requests
+import axios from 'axios';
 import toast from "react-hot-toast";
 
 const UsersTable = ({ userData }) => {
@@ -22,8 +22,8 @@ const UsersTable = ({ userData }) => {
     try {
       await axios.delete(`${import.meta.env.VITE_BASE_URL}/user/${userId}`); // Replace with your actual API endpoint
       // Update the state to reflect the deleted user
-      setFilteredUsers(filteredUsers.filter((user) => user.id !== userId)); 
-	toast.success("User deleted");
+      setFilteredUsers(filteredUsers.filter((user) => user.id !== userId));
+      toast.success("User deleted");
     } catch (error) {
       console.error("Error deleting user:", error);
       toast.error("Error deleting user");
@@ -31,12 +31,11 @@ const UsersTable = ({ userData }) => {
   };
 
   useEffect(() => {
-	setFilteredUsers(userData);
+    setFilteredUsers(userData);
   }, [userData]);
-	
 
   const displayData = filteredUsers.length > 0 ? filteredUsers : userData;
-  const limitedData = displayData.slice(0, 10); 
+  const limitedData = displayData.slice(0, 10);
 
   return (
     <motion.div
@@ -107,12 +106,12 @@ const UsersTable = ({ userData }) => {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
                     className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      user.status === "Active"
+                      user.subscriptionStatus
                         ? "bg-green-800 text-green-100"
                         : "bg-red-800 text-red-100"
                     }`}
                   >
-                    {user.status || "N/A"} {/* Display "N/A" if status is null */}
+                    {user.subscriptionStatus ? "Active" : "Inactive"} {/* Display status */}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
