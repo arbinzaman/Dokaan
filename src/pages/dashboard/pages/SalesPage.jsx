@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-import Header from "../../../components/dashBoard/home/common/Header";
+// import Header from "../../../components/dashBoard/home/common/Header";
 import StatCard from "../../../components/dashBoard/home/common/StatCard";
 import { CreditCard, DollarSign, ShoppingCart, TrendingUp } from "lucide-react";
 import SalesOverviewChart from "../../../components/dashBoard/home/sales/SalesOverviewChart";
@@ -17,7 +17,7 @@ const salesStats = {
 const SalesPage = () => {
 	return (
 		<div className='flex-1 overflow-auto relative z-10'>
-			<Header title='Sales Dashboard' />
+			{/* <Header title='Sales Dashboard' /> */}
 
 			<main className='max-w-7xl mx-auto py-6 px-4 lg:px-8'>
 				{/* SALES STATS */}

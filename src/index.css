@@ -6,6 +6,15 @@
 @tailwind components;
 @tailwind utilities;
 
+.dashboard-dark {
+  @apply bg-dashboard-dark-background text-dashboard-dark-text;
+}
+
+.dashboard-light {
+  @apply bg-dashboard-light-background text-dashboard-light-text;
+}
+
+
 :root {
   --font-sora: "Sora", sans-serif;
   --font-code: "Source Code Pro", monospace;

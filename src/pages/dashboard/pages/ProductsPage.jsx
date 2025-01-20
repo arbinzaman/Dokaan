@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-import Header from "../../../components/dashBoard/home/common/Header";
+// import Header from "../../../components/dashBoard/home/common/Header";
 import StatCard from "../../../components/dashBoard/home/common/StatCard";
 
 import { AlertTriangle, DollarSign, Package, TrendingUp } from "lucide-react";
@@ -11,7 +11,7 @@ import ProductsTable from "../../../components/dashBoard/home/products/ProductsT
 const ProductsPage = () => {
 	return (
 		<div className='flex-1 overflow-auto relative z-10'>
-			<Header title='Products' />
+			{/* <Header title='Products' /> */}
 
 			<main className='max-w-7xl mx-auto py-6 px-4 lg:px-8'>
 				{/* STATS */}

@@ -1,4 +1,4 @@
-import Header from "../../../components/dashBoard/home/common/Header";
+// import Header from "../../../components/dashBoard/home/common/Header";
 
 import OverviewCards from "../../../components/dashBoard/home/analytics/OverviewCards";
 import RevenueChart from "../../../components/dashBoard/home/analytics/RevenueChart";
@@ -11,7 +11,7 @@ import AIPoweredInsights from "../../../components/dashBoard/home/analytics/AIPo
 const AnalyticsPage = () => {
 	return (
 		<div className='flex-1 overflow-auto relative z-10 bg-gray-900'>
-			<Header title={"Analytics Dashboard"} />
+			{/* <Header title={"Analytics Dashboard"} /> */}
 
 			<main className='max-w-7xl mx-auto py-6 px-4 lg:px-8'>
 				<OverviewCards />

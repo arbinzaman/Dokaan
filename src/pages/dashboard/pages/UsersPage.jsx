@@ -4,7 +4,7 @@ import { UserCheck, UserPlus, UsersIcon, UserX } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from 'date-fns'; // Import date-fns for date formatting
 
-import Header from "../../../components/dashBoard/home/common/Header";
+// import Header from "../../../components/dashBoard/home/common/Header";
 import StatCard from "../../../components/dashBoard/home/common/StatCard";
 import UsersTable from "../../../components/dashBoard/home/users/UsersTable";
 import UserGrowthChart from "../../../components/dashBoard/home/users/UserGrowthChart";
@@ -58,7 +58,7 @@ const UsersPage = () => {
 
   return (
     <div className='flex-1 overflow-auto relative z-10'>
-      <Header title='Users' />
+      {/* <Header title='Users' /> */}
 
       <main className='max-w-7xl mx-auto py-6 px-4 lg:px-8'>
         {/* STATS */}

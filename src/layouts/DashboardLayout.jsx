@@ -1,16 +1,19 @@
 import Sidebar from "../components/dashBoard/home/common/Sidebar";
 import { Outlet } from "react-router-dom";
+import { ThemeModeProvider } from "../contexts/ThemeContext";
 
 const DashboardLayout = () => {
   return (
     <div className="flex h-screen">
-      {/* Sidebar */}
-      <Sidebar />
+      <ThemeModeProvider>
+        {/* Sidebar */}
+        <Sidebar />
 
-      {/* Main Content */}
-      <div className="flex-grow p-6 overflow-auto mt-16 lg:mt-0">
-        <Outlet />
-      </div>
+        {/* Main Content */}
+        <div className="flex-grow p-6 overflow-auto mt-16 lg:mt-0">
+          <Outlet />
+        </div>
+      </ThemeModeProvider>
     </div>
   );
 };

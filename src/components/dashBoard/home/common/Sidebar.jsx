@@ -1,4 +1,3 @@
-/* eslint-disable no-mixed-spaces-and-tabs */
 import {
 	BarChart2,
 	DollarSign,
@@ -15,6 +14,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import DokaanProfile from "../../../dashBoard/Profile/DokaanProfile";
 import { useUser } from "../../../../contexts/AuthContext";
+// import { useThemeMode } from "../../../../contexts/ThemeContext";
+import ThemeToggleButton from "../../../shared/Theme/ThemeToggleButton";
 
 const SIDEBAR_ITEMS = [
 	{ id: "overview", name: "Overview", icon: BarChart2, color: "#6366f1", href: "/dashboard" },
@@ -30,6 +31,7 @@ const Sidebar = () => {
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true); // For desktop sidebar
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // For mobile sidebar
 	const { dokaan } = useUser(); // Get dokaan data from context
+	// const { mode, toggleTheme } = useThemeMode();
 
 	return (
 		<>
@@ -67,17 +69,6 @@ const Sidebar = () => {
 							✕
 						</button>
 
-						{/* Dokaan Profile - Only Render if User Has Dokaan
-						{dokaan && (
-							<div
-							//  className="p-4 bg-gray-900 rounded-lg mb-4"
-		
-									className="flex items-center p-4 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors mb-2"
-							 >
-							<GiShop /> 
-							</div>
-						)} */}
-
 						{/* Navigation Items */}
 						<nav className="mt-4">
 							{SIDEBAR_ITEMS.map((item) => (
@@ -91,15 +82,24 @@ const Sidebar = () => {
 								</Link>
 							))}
 						</nav>
+
+						{/* Theme Toggle Button
+						<button
+							onClick={toggleTheme}
+							className="mt-auto flex items-center p-4 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
+						>
+							<span>{mode === "dark" ? "🌞 Light Mode" : "🌙 Dark Mode"}</span>
+						</button> */}
+
 					</motion.div>
 				)}
 			</AnimatePresence>
 
 			{/* Desktop Sidebar */}
 			<motion.div
-				className={`hidden lg:flex flex-col h-full bg-gray-800 text-white p-4 border-r border-gray-700 ${
+				className={`hidden lg:flex flex-col h-full bg-gray-100 dark:bg-gray-800 text-black dark:text-white p-4 border-r border-gray-300 dark:border-gray-700 ${
 					isSidebarOpen ? "w-64" : "w-20"
-				}`}
+				}`} 
 				animate={{ width: isSidebarOpen ? 256 : 80 }}
 			>
 				{/* Toggle Button */}
@@ -119,7 +119,9 @@ const Sidebar = () => {
 						{isSidebarOpen ? (
 							<DokaanProfile />
 						) : (
-							<Link to="dokaanProfile"><GiShop /></Link> // Replace with Dokaan Icon
+							<Link to="dokaanProfile">
+								<GiShop />
+							</Link>
 						)}
 					</div>
 				)}
@@ -139,6 +141,9 @@ const Sidebar = () => {
 						</Link>
 					))}
 				</nav>
+
+				{/* Theme Toggle Button */}
+				<ThemeToggleButton />
 			</motion.div>
 		</>
 	);

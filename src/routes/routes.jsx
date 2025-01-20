@@ -14,6 +14,7 @@ import SettingsPage from "../pages/dashboard/pages/SettingsPage";
 import OtpVerification from "../components/landingPage/login/OtpVerification";
 import RegistrationStepper from "../pages/landingPage/RegistrationProcess/RegistrationStepper";
 import DokaanProfile from "../components/dashBoard/Profile/DokaanProfile";
+import TestComponent from "../components/shared/Theme/TestComponent";
 const router = createBrowserRouter(
   [
     {
@@ -73,6 +74,10 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/dokaanProfile",
           element: <DokaanProfile />,
+        },
+        {
+          path: "/dashboard/test",
+          element: <TestComponent />,
         }
       ],
     }
