@@ -29,15 +29,15 @@ const DokaanProfile = () => {
 					/>
 					<div>
 						<h3 className='text-lg font-semibold text-gray-100'>{dokaan?.dokaan_name}</h3>
-						<p className='text-gray-400'>{dokaan?.dokaan_email}</p>
-						<p className='text-gray-400'>{dokaan?.dokaan_phone}</p>
-						<p className='text-gray-400'>Dokaan Type: {dokaan?.dokaan_type}</p>
-						<p className='text-gray-400'>{dokaan?.dokaan_location}</p>
-						<p className='text-gray-400'>{dokaan?.dokaan_phone}</p>
+						<p className='text-black dark:text-white'>{dokaan?.dokaan_email}</p>
+						<p className='text-black dark:text-white'>{dokaan?.dokaan_phone}</p>
+						<p className='text-black dark:text-white'>Dokaan Type: {dokaan?.dokaan_type}</p>
+						<p className='text-black dark:text-white'>{dokaan?.dokaan_location}</p>
+						<p className='text-black dark:text-white'>{dokaan?.dokaan_phone}</p>
 					</div>
 				</div>
 				<button
-					className='bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-200 w-full sm:w-auto'
+					className='bg-red-400 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-200 w-full sm:w-auto'
 					onClick={handleEditProfile} // Open the modal
 				>
 					Edit Dokaan Profile

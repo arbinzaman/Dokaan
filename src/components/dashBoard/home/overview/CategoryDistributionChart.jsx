@@ -14,12 +14,12 @@ const COLORS = ["#6366F1", "#8B5CF6", "#EC4899", "#10B981", "#F59E0B"];
 const CategoryDistributionChart = () => {
 	return (
 		<motion.div
-			className='bg-gray-800 dark:bg-gray-700 shadow-lg rounded-xl p-6 border border-gray-700'
+			className='bg-white dark:bg-black shadow-lg rounded-xl p-6 '
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ delay: 0.3 }}
 		>
-			<h2 className='text-lg font-medium mb-4 text-gray-100'>Category Distribution</h2>
+			<h2 className='text-lg font-medium mb-4 dark:text-white'>Category Distribution</h2>
 			<div className='h-80'>
 				<ResponsiveContainer width={"100%"} height={"100%"}>
 					<PieChart>

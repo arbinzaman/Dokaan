@@ -15,12 +15,12 @@ const userRetentionData = [
 const UserRetention = () => {
 	return (
 		<motion.div
-			className='bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-lg shadow-lg rounded-xl p-6 border border-gray-700'
+			className='bg-white dark:bg-black  bg-opacity-50 backdrop-filter backdrop-blur-lg shadow-lg rounded-xl p-6 '
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ delay: 0.5 }}
 		>
-			<h2 className='text-xl font-semibold text-gray-100 mb-4'>User Retention</h2>
+			<h2 className='text-xl font-semibold text-black dark:text-white mb-4'>User Retention</h2>
 			<div style={{ width: "100%", height: 300 }}>
 				<ResponsiveContainer>
 					<LineChart data={userRetentionData}>

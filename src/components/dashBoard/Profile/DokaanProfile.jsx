@@ -4,7 +4,7 @@ const DokaanProfile = () => {
     const { dokaan } = useUser();
 
     return (
-        <div className="flex flex-col items-center text-gray-100 ">
+        <div className="flex flex-col items-center bg-transparent dark:bg-transparent text-black dark:text-white ">
             {/* Profile Image */}
             <img 
                 src={dokaan.dokaan_imageUrl} 

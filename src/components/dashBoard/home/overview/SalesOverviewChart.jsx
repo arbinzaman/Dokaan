@@ -27,12 +27,12 @@ const salesData = [
 const SalesOverviewChart = ({ accentColor }) => {
   return (
     <motion.div
-      className="bg-gray-800 dark:bg-gray-700 shadow-lg rounded-xl p-6 border border-gray-700"
+      className="bg-white dark:bg-black shadow-lg rounded-xl p-6 "
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
     >
-      <h2 className="text-lg font-medium mb-4 text-gray-100 dark:text-white">
+      <h2 className="text-lg font-medium mb-4 text-black dark:text-white">
         Sales Overview
       </h2>
       <div className="h-80">

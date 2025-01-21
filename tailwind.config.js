@@ -15,7 +15,7 @@ export default {
             text: "#FFFFFF",
           },
           light: {
-            background: "#FFFFFF",
+            background: "#fdd4d4",
             sidebar: "#F5F5F5",
             text: "#000000",
           },

@@ -24,7 +24,7 @@ const LogoutZone = () => {
         <LogOut className="text-blue-400 mr-3" size={24} />
         <h2 className="text-xl font-semibold text-gray-100">Logout</h2>
       </div>
-      <p className="text-gray-300 mb-4">Sign out from your account securely.</p>
+      <p className="text-white mb-4">Sign out from your account securely.</p>
       <button
         onClick={handleLogout}
         className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200"

@@ -14,8 +14,8 @@ const OverviewCards = () => {
 			{overviewData.map((item, index) => (
 				<motion.div
 					key={item.name}
-					className='bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-lg shadow-lg
-            rounded-xl p-6 border border-gray-700
+					className='bg-white dark:bg-black bg-opacity-50 backdrop-filter backdrop-blur-lg shadow-lg
+            rounded-xl p-6 
           '
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
@@ -23,8 +23,8 @@ const OverviewCards = () => {
 				>
 					<div className='flex items-center justify-between'>
 						<div>
-							<h3 className='text-sm font-medium text-gray-400'>{item.name}</h3>
-							<p className='mt-1 text-xl font-semibold text-gray-100'>{item.value}</p>
+							<h3 className='text-sm font-medium text-black dark:text-white'>{item.name}</h3>
+							<p className='mt-1 text-xl font-semibold text-black dark:text-white'>{item.value}</p>
 						</div>
 
 						<div
@@ -42,7 +42,7 @@ const OverviewCards = () => {
 					>
 						{item.change >= 0 ? <ArrowUpRight size='20' /> : <ArrowDownRight size='20' />}
 						<span className='ml-1 text-sm font-medium'>{Math.abs(item.change)}%</span>
-						<span className='ml-2 text-sm text-gray-400'>vs last period</span>
+						<span className='ml-2 text-sm text-black dark:text-white'>vs last period</span>
 					</div>
 				</motion.div>
 			))}
