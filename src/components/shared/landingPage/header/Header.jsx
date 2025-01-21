@@ -1,16 +1,17 @@
+import { useUser } from "../../../../contexts/AuthContext"; // Adjust the import path
+import Button from "../../../landingPage/home/Button";
+import NavList from "./NavList";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { disablePageScroll, enablePageScroll } from "scroll-lock";
-import Button from "../../../landingPage/home/Button";
 import MenuSvg from "../../../../assets/svg/MenuSvg";
 import { useState, useEffect } from "react";
-import NavList from "./NavList"; // Import NavList component
 
 const Header = () => {
+  const { user, logout } = useUser();
   const { pathname, hash } = useLocation();
   const navigate = useNavigate();
   const [openNavigation, setOpenNavigation] = useState(false);
 
-  // Toggle the mobile navigation menu
   const toggleNavigation = () => {
     if (openNavigation) {
       setOpenNavigation(false);
@@ -21,21 +22,17 @@ const Header = () => {
     }
   };
 
-  // Close navigation menu when a link is clicked
   const handleClick = () => {
     if (!openNavigation) return;
     enablePageScroll();
     setOpenNavigation(false);
   };
 
-  // Function to handle navigation to sections on the homepage
   const handleSectionNavigation = (section) => {
-    handleClick(); // Close the mobile menu if it's open
+    handleClick();
     if (pathname !== "/") {
-      // Navigate to the homepage with the hash
       navigate(`/#${section}`);
     } else {
-      // Scroll to the section directly if already on the homepage
       const targetSection = document.querySelector(`#${section}`);
       if (targetSection) {
         targetSection.scrollIntoView({ behavior: "smooth" });
@@ -43,7 +40,6 @@ const Header = () => {
     }
   };
 
-  // Scroll to the section when the hash changes
   useEffect(() => {
     if (pathname === "/" && hash) {
       const section = document.querySelector(hash);
@@ -64,26 +60,30 @@ const Header = () => {
           {/* Add your logo here */}
         </Link>
 
-        {/* Navigation Menu */}
         <NavList
           handleSectionNavigation={handleSectionNavigation}
           handleClick={handleClick}
           openNavigation={openNavigation}
         />
 
-        {/* Desktop Buttons */}
-        <Link
-          to="/signup"
-          className="button hidden mr-8 text-n-1/50 transition-colors hover:text-n-1 lg:block"
-        >
-          New account
-        </Link>
+        {user ? (
+          <Button className="hidden lg:block" onClick={logout}>
+            Logout
+          </Button>
+        ) : (
+          <>
+            <Link
+              to="/signup"
+              className="button hidden mr-8 text-n-1/50 transition-colors hover:text-n-1 lg:block"
+            >
+              New account
+            </Link>
+            <Link to="/login" className="hidden lg:flex">
+              <Button>Sign in</Button>
+            </Link>
+          </>
+        )}
 
-        <Link to="/login" className="hidden lg:flex">
-          <Button>Sign in</Button>
-        </Link>
-
-        {/* Mobile Menu Toggle Button */}
         <Button
           className="ml-auto lg:hidden"
           px="px-3"

@@ -3,10 +3,23 @@ import { fontFamily } from "tailwindcss/defaultTheme";
 import plugin from "tailwindcss/plugin";
 
 export default {
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  darkMode: "class", // Enables class-based dark mode
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"], // Specify all content paths
   theme: {
     extend: {
       colors: {
+        dashboard: {
+          dark: {
+            background: "#121212",
+            sidebar: "#1E1E1E",
+            text: "#FFFFFF",
+          },
+          light: {
+            background: "#fdd4d4",
+            sidebar: "#F5F5F5",
+            text: "#000000",
+          },
+        },
         color: {
           1: "#AC6AFF",
           2: "#FFC876",
@@ -36,19 +49,19 @@ export default {
       },
       fontFamily: {
         sans: ["var(--font-sora)", ...fontFamily.sans],
-        code: "var(--font-code)",
-        grotesk: "var(--font-grotesk)",
+        code: ["var(--font-code)", "monospace"],
+        grotesk: ["var(--font-grotesk)", "sans-serif"],
       },
       letterSpacing: {
         tagline: ".15em",
       },
       spacing: {
-        0.25: "0.0625rem",
-        7.5: "1.875rem",
-        15: "3.75rem",
+        0.25: "0.0625rem", // 1px
+        7.5: "1.875rem", // 30px
+        15: "3.75rem", // 60px
       },
       opacity: {
-        15: ".15",
+        15: ".15", // 15% opacity
       },
       transitionDuration: {
         DEFAULT: "200ms",
@@ -64,7 +77,7 @@ export default {
         5: "5",
       },
       borderWidth: {
-        DEFAULT: "0.0625rem",
+        DEFAULT: "0.0625rem", // 1px
       },
       backgroundImage: {
         "radial-gradient": "radial-gradient(var(--tw-gradient-stops))",
@@ -75,7 +88,10 @@ export default {
   },
   plugins: [
     plugin(function ({ addBase, addComponents, addUtilities }) {
+      // Add base styles if needed (currently empty)
       addBase({});
+
+      // Add reusable component classes
       addComponents({
         ".container": {
           "@apply max-w-[77.5rem] mx-auto px-5 md:px-10 lg:px-15 xl:max-w-[87.5rem]":
@@ -122,9 +138,14 @@ export default {
           "@apply font-code text-xs font-bold uppercase tracking-wider": {},
         },
       });
+
+      // Add utility classes
       addUtilities({
         ".tap-highlight-color": {
           "-webkit-tap-highlight-color": "rgba(0, 0, 0, 0)",
+        },
+        ".no-tap-highlight": {
+          "-webkit-tap-highlight-color": "transparent",
         },
       });
     }),

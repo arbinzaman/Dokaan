@@ -1,22 +1,27 @@
 import { useState } from "react";
 import { ThreeDots } from "react-loader-spinner";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../../../contexts/AuthContext"; // Adjust the path as needed
+import toast from "react-hot-toast";
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [passwordsMatch, setPasswordsMatch] = useState(true);
+  const navigate = useNavigate();
+  const { login } = useUser(); // Assuming `login` is used to set the user context
 
   // Handle form submission
-  const handleLogin = async (event) => {
+  const handleRegister = async (event) => {
     event.preventDefault();
     setIsLoading(true);
     const form = event.target;
-    const name = form.name.value;
-    const email = form.email.value;
-    const password = form.password.value;
-    const confirmPassword = form.confirmPassword.value;
+    const name = form.name.value.trim();
+    const email = form.email.value.trim();
+    const password = form.password.value.trim();
+    const confirmPassword = form.confirmPassword.value.trim();
 
     if (password !== confirmPassword) {
       setPasswordsMatch(false);
@@ -24,15 +29,37 @@ const SignUp = () => {
       return;
     }
 
-    // Proceed with form submission logic (e.g., make API call)
-    console.log(name, email, password);
-    setIsLoading(false);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      if (response.ok) {
+        await response.json();
+        // Automatically log in the user after registration
+        const loginStatus = await login(email, password);
+        if (loginStatus === 200) {
+          toast.success("Registration successful!");
+          navigate("/dashboard"); // Redirect to the homepage
+        }
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || "Registration failed. Please try again.");
+      }
+    } catch (error) {
+      toast.error("An error occurred. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle password input change
   const handlePasswordChange = (event) => {
-    // eslint-disable-next-line no-unused-vars
-    const { name, value } = event.target;
+    const { name } = event.target;
     if (name === "password" || name === "confirmPassword") {
       setPasswordsMatch(true); // Reset the error message when user starts typing
     }
@@ -42,7 +69,7 @@ const SignUp = () => {
     <div className="flex items-center justify-center min-h-screen px-4">
       <div className="w-full max-w-md p-8 space-y-3 rounded-xl shadow-md">
         <h1 className="text-2xl font-bold text-center text-white">New Account</h1>
-        <form onSubmit={handleLogin} noValidate className="space-y-6">
+        <form onSubmit={handleRegister} noValidate className="space-y-6">
           <div className="space-y-2 text-sm">
             <label htmlFor="name" className="block text-white">
               Name
@@ -52,6 +79,7 @@ const SignUp = () => {
               name="name"
               id="name"
               placeholder="Name"
+              required
               className="w-full px-4 py-3 rounded-md border border-gray-300 text-black focus:border-primary focus:outline-none bg-white"
             />
             <label htmlFor="email" className="block text-white">
@@ -62,10 +90,11 @@ const SignUp = () => {
               name="email"
               id="email"
               placeholder="Email"
+              required
               className="w-full px-4 py-3 rounded-md border border-gray-300 text-black focus:border-primary focus:outline-none bg-white"
             />
           </div>
-          
+
           <div className="relative space-y-1 text-sm">
             <label htmlFor="password" className="block text-white">
               Password
@@ -76,6 +105,7 @@ const SignUp = () => {
               id="password"
               placeholder="Password"
               onChange={handlePasswordChange}
+              required
               className="w-full px-4 py-3 rounded-md border border-gray-300 text-black focus:border-primary focus:outline-none bg-white"
             />
             <p
@@ -100,6 +130,7 @@ const SignUp = () => {
               id="confirmPassword"
               placeholder="Confirm Password"
               onChange={handlePasswordChange}
+              required
               className="w-full px-4 py-3 rounded-md border border-gray-300 text-black focus:border-primary focus:outline-none bg-white"
             />
             <p
@@ -123,7 +154,7 @@ const SignUp = () => {
           {!isLoading ? (
             <button
               type="submit"
-              disabled={isLoading ? true : false}
+              disabled={isLoading}
               className="block w-full p-3 text-center rounded-sm text-black bg-white hover:bg-secondary"
             >
               Sign up
