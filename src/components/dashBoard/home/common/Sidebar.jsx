@@ -77,9 +77,22 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile Sticky Menu Button */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-red-400 dark:bg-gray-800 text-white flex justify-between items-center p-4 z-50">
-        <span className="text-xl font-bold">Dashboard</span>
+      {/* Mobile Sticky Menu Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-red-400 dark:bg-gray-800 text-white flex justify-between items-center px-4 py-2 z-50">
+        {/* Render Icons Only */}
+        <div className="flex items-center space-x-4">
+          {SIDEBAR_ITEMS.map((item) => (
+            <Link
+              key={item.id}
+              to={item.href || "#"}
+              className="p-2 rounded-full hover:bg-gray-700 transition-colors"
+            >
+              <item.icon size={24} style={{ color: item.color }} />
+            </Link>
+          ))}
+        </div>
+
+        {/* Mobile Sidebar Toggle Button */}
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
@@ -89,6 +102,9 @@ const Sidebar = () => {
           <Menu size={24} />
         </motion.button>
       </div>
+
+      {/* Add Padding to Avoid Content Overlap */}
+      <div className="lg:hidden h-16"></div>
 
       {/* Add Padding to Content Below the Sticky Menu */}
       <div className="lg:hidden h-16"></div>
@@ -127,7 +143,7 @@ const Sidebar = () => {
                 </Link>
               ))}
             </nav>
-			
+
             <ThemeToggleButton />
           </motion.div>
         )}
