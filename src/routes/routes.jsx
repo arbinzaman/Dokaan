@@ -15,6 +15,8 @@ import OtpVerification from "../components/landingPage/login/OtpVerification";
 import RegistrationStepper from "../pages/landingPage/RegistrationProcess/RegistrationStepper";
 import DokaanProfile from "../components/dashBoard/Profile/DokaanProfile";
 import TestComponent from "../components/shared/Theme/TestComponent";
+// import AddProducts from "../pages/dashboard/pages/AddProducts";
+ import AddProducts from "../components/dashBoard/home/products/AddProducts";
 const router = createBrowserRouter(
   [
     {
@@ -74,6 +76,10 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/dokaanProfile",
           element: <DokaanProfile />,
+        },
+        {
+          path: "/dashboard/product-add",
+          element: <AddProducts/>,
         },
         {
           path: "/dashboard/test",

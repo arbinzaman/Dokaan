@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 const UsersTable = ({ userData }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState(userData);
+  // console.log(userData);
 
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
