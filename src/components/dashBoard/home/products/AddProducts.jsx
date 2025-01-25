@@ -24,41 +24,35 @@ const AddProducts = () => {
   };
 
   const handleSubmit = () => {
-    // Build the payload
     const payload = {
       ...productData,
       code: qrResult || productData.code, // Use scanned code if available
       shopId: dokaan.id,  // Replace with actual dokaanId
       ownerId: user.id,    // Replace with actual ownerId
     };
-    console.log(payload);
-    
-    // Get the token from cookies
+
     const token = Cookies.get('XTOKEN'); // Assuming the token is stored as 'authToken' in cookies
-  
+
     if (!token) {
-      // Handle case where token is missing
       toast.error("Authentication token not found.");
       return;
     }
-  
-    // Wrap the API call inside toast.promise
+
     toast.promise(
       (async () => {
         setLoading(true);
         try {
-          // Make the API call
           const response = await fetch(`${import.meta.env.VITE_BASE_URL}/products`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `${token}`, // Add token to Authorization header
+              "Authorization": `${token}`,
             },
             body: JSON.stringify(payload),
           });
-  
+
           if (response.status === 200) {
-            await response.json(); // Parse the response if needed
+            await response.json();
             setMessage("Product added successfully!");
             setProductData({
               name: "",
@@ -73,7 +67,7 @@ const AddProducts = () => {
           }
         } catch (error) {
           setMessage(`Error: ${error.message}`);
-          throw new Error(error.message); // Rejecting the promise with error
+          throw new Error(error.message);
         } finally {
           setLoading(false);
         }
@@ -136,9 +130,9 @@ const AddProducts = () => {
                   onClick={handleCodeInputClick} // Trigger QR scanner when clicked
                   className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
                 />
-                {/* QR Scanner - Only visible on mobile devices */}
+                {/* QR Scanner - Only visible when triggered */}
                 {isScannerVisible && (
-                  <div className="qr-scanner-mobile sm:hidden absolute top-0 right-0 z-10">
+                  <div className="qr-scanner-mobile absolute top-0 left-0 z-10 w-full h-full">
                     <QrScanner
                       delay={300}
                       onScan={handleBarcodeScan}
