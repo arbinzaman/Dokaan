@@ -140,6 +140,7 @@ const AddProducts = () => {
                       delay={300}
                       onScan={handleBarcodeScan}
                       onError={handleBarcodeError}
+                      facingMode="environment" // This ensures the back camera is used
                       style={{
                         width: "100%",
                         maxHeight: "400px", // Set a max height to avoid it covering everything
