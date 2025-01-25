@@ -15,8 +15,8 @@ const AddProducts = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [qrResult, setQrResult] = useState("");
-  const {user,dokaan}=useUser();
-
+  const [isScannerVisible, setScannerVisible] = useState(false); // State to toggle QR scanner visibility
+  const {user, dokaan} = useUser();
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -31,7 +31,8 @@ const AddProducts = () => {
       shopId: dokaan.id,  // Replace with actual dokaanId
       ownerId: user.id,    // Replace with actual ownerId
     };
-  console.log(payload);
+    console.log(payload);
+    
     // Get the token from cookies
     const token = Cookies.get('XTOKEN'); // Assuming the token is stored as 'authToken' in cookies
   
@@ -84,14 +85,20 @@ const AddProducts = () => {
       }
     );
   };
-  
 
   const handleBarcodeScan = (data) => {
-    if (data) setQrResult(data.text);
+    if (data) {
+      setQrResult(data.text);
+      setScannerVisible(false); // Hide scanner after successful scan
+    }
   };
 
   const handleBarcodeError = (error) => {
     console.error("QR Code Error: ", error);
+  };
+
+  const handleCodeInputClick = () => {
+    setScannerVisible(true); // Show QR scanner when code input is clicked
   };
 
   return (
@@ -126,22 +133,25 @@ const AddProducts = () => {
                   type="text"
                   value={qrResult || productData.code}
                   onChange={handleInputChange}
+                  onClick={handleCodeInputClick} // Trigger QR scanner when clicked
                   className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
                 />
                 {/* QR Scanner - Only visible on mobile devices */}
-                <div className="qr-scanner-mobile sm:hidden absolute top-0 right-0 z-10">
-                  <QrScanner
-                    delay={300}
-                    onScan={handleBarcodeScan}
-                    onError={handleBarcodeError}
-                    style={{
-                      width: "100%",
-                      maxHeight: "200px",
-                      marginTop: "10px",
-                      position: "absolute",
-                    }}
-                  />
-                </div>
+                {isScannerVisible && (
+                  <div className="qr-scanner-mobile sm:hidden absolute top-0 right-0 z-10">
+                    <QrScanner
+                      delay={300}
+                      onScan={handleBarcodeScan}
+                      onError={handleBarcodeError}
+                      style={{
+                        width: "100%",
+                        maxHeight: "200px",
+                        marginTop: "10px",
+                        position: "absolute",
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </fieldset>
