@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import QrScanner from "react-qr-scanner";
-import Cookies from 'js-cookie';
-import {useUser} from '../../../../contexts/AuthContext';
+import QrScanner from "react-qr-scanner"; // Ensure you have this dependency installed
+import Cookies from "js-cookie";
+import { useUser } from "../../../../contexts/AuthContext";
 
 const AddProducts = () => {
   const [productData, setProductData] = useState({
@@ -16,7 +16,7 @@ const AddProducts = () => {
   const [message, setMessage] = useState("");
   const [qrResult, setQrResult] = useState("");
   const [isScannerVisible, setScannerVisible] = useState(false); // State to toggle QR scanner visibility
-  const {user, dokaan} = useUser();
+  const { user, dokaan } = useUser();
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -27,11 +27,11 @@ const AddProducts = () => {
     const payload = {
       ...productData,
       code: qrResult || productData.code, // Use scanned code if available
-      shopId: dokaan.id,  // Replace with actual dokaanId
-      ownerId: user.id,    // Replace with actual ownerId
+      shopId: dokaan.id, // Replace with actual dokaanId
+      ownerId: user.id, // Replace with actual ownerId
     };
 
-    const token = Cookies.get('XTOKEN'); // Assuming the token is stored as 'authToken' in cookies
+    const token = Cookies.get("XTOKEN"); // Assuming the token is stored as 'authToken' in cookies
 
     if (!token) {
       toast.error("Authentication token not found.");
@@ -42,14 +42,17 @@ const AddProducts = () => {
       (async () => {
         setLoading(true);
         try {
-          const response = await fetch(`${import.meta.env.VITE_BASE_URL}/products`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `${token}`,
-            },
-            body: JSON.stringify(payload),
-          });
+          const response = await fetch(
+            `${import.meta.env.VITE_BASE_URL}/products`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `${token}`,
+              },
+              body: JSON.stringify(payload),
+            }
+          );
 
           if (response.status === 200) {
             await response.json();
@@ -73,7 +76,7 @@ const AddProducts = () => {
         }
       })(),
       {
-        loading: 'Saving...',
+        loading: "Saving...",
         success: <b>Product added successfully!</b>,
         error: <b>Could not save product. Please try again.</b>,
       }
@@ -132,16 +135,16 @@ const AddProducts = () => {
                 />
                 {/* QR Scanner - Only visible when triggered */}
                 {isScannerVisible && (
-                  <div className="qr-scanner-mobile absolute top-0 left-0 z-10 w-full h-full">
+                  <div className="qr-scanner-mobile absolute top-0 left-0 z-10 w-full h-full bg-black bg-opacity-60">
                     <QrScanner
                       delay={300}
                       onScan={handleBarcodeScan}
                       onError={handleBarcodeError}
                       style={{
                         width: "100%",
-                        maxHeight: "200px",
-                        marginTop: "10px",
-                        position: "absolute",
+                        maxHeight: "400px", // Set a max height to avoid it covering everything
+                        marginTop: "10px", // Set some margin to adjust position
+                        position: "absolute", // Keep it positioned
                       }}
                     />
                   </div>
