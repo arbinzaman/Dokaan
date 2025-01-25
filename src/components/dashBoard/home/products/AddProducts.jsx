@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import QrScanner from "react-qr-scanner"; // Ensure you have this dependency installed
 import Cookies from "js-cookie";
 import { useUser } from "../../../../contexts/AuthContext";
+import Scanner from "../../../shared/Scanner/Scanner"; // Import the custom Scanner component
 
 const AddProducts = () => {
   const [productData, setProductData] = useState({
@@ -14,9 +14,20 @@ const AddProducts = () => {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [qrResult, setQrResult] = useState("");
-  const [isScannerVisible, setScannerVisible] = useState(false); // State to toggle QR scanner visibility
+  const [isScannerVisible, setScannerVisible] = useState(false); // Toggle QR scanner visibility
   const { user, dokaan } = useUser();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Check if the device is mobile or tablet (using a simple user agent check)
+    const checkDevice = () => {
+      const isMobileDevice = /Mobi|Android/i.test(navigator.userAgent);
+      setIsMobile(isMobileDevice);
+    };
+    checkDevice(); // Check on initial render
+    window.addEventListener("resize", checkDevice); // Optional: recheck on resize
+    return () => window.removeEventListener("resize", checkDevice); // Clean up
+  }, []);
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -26,12 +37,11 @@ const AddProducts = () => {
   const handleSubmit = () => {
     const payload = {
       ...productData,
-      code: qrResult || productData.code, // Use scanned code if available
-      shopId: dokaan.id, // Replace with actual dokaanId
-      ownerId: user.id, // Replace with actual ownerId
+      shopId: dokaan.id,
+      ownerId: user.id,
     };
 
-    const token = Cookies.get("XTOKEN"); // Assuming the token is stored as 'authToken' in cookies
+    const token = Cookies.get("XTOKEN");
 
     if (!token) {
       toast.error("Authentication token not found.");
@@ -48,14 +58,13 @@ const AddProducts = () => {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `${token}`,
+                Authorization: `Bearer ${token}`,
               },
               body: JSON.stringify(payload),
             }
           );
 
           if (response.status === 200) {
-            await response.json();
             setMessage("Product added successfully!");
             setProductData({
               name: "",
@@ -70,7 +79,6 @@ const AddProducts = () => {
           }
         } catch (error) {
           setMessage(`Error: ${error.message}`);
-          throw new Error(error.message);
         } finally {
           setLoading(false);
         }
@@ -83,26 +91,15 @@ const AddProducts = () => {
     );
   };
 
-  const handleBarcodeScan = (data) => {
-    if (data) {
-      setQrResult(data.text);
-      setScannerVisible(false); // Hide scanner after successful scan
-    }
-  };
-
-  const handleBarcodeError = (error) => {
-    console.error("QR Code Error: ", error);
-  };
-
-  const handleCodeInputClick = () => {
-    setScannerVisible(true); // Show QR scanner when code input is clicked
+  const handleScan = (result) => {
+    setProductData((prev) => ({ ...prev, code: result }));
+    setScannerVisible(false); // Hide scanner after successful scan
   };
 
   return (
     <div>
       <section className="dark:text-gray-50">
         <form noValidate className="container">
-          {/* Name and Code Section */}
           <fieldset className="grid grid-cols-4 gap-6 p-6 rounded-md shadow-sm bg-white dark:bg-gray-900">
             <div className="col-span-full">
               <h3 className="text-xl">Name and Code</h3>
@@ -110,9 +107,7 @@ const AddProducts = () => {
             </div>
             <div className="grid grid-cols-2 gap-4 col-span-full lg:col-span-3">
               <div className="col-span-full sm:col-span-1 relative">
-                <label htmlFor="name" className="text-sm">
-                  Name
-                </label>
+                <label htmlFor="name" className="text-sm">Name</label>
                 <input
                   id="name"
                   type="text"
@@ -122,40 +117,21 @@ const AddProducts = () => {
                 />
               </div>
               <div className="col-span-full sm:col-span-1 relative">
-                <label htmlFor="code" className="text-sm">
-                  Code
-                </label>
+                <label htmlFor="code" className="text-sm">Code</label>
                 <input
                   id="code"
                   type="text"
-                  value={qrResult || productData.code}
+                  value={productData.code}
                   onChange={handleInputChange}
-                  onClick={handleCodeInputClick} // Trigger QR scanner when clicked
+                  onClick={() => isMobile && setScannerVisible(true)} // Show scanner only on mobile
                   className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
                 />
-                {/* QR Scanner - Only visible when triggered */}
-                {isScannerVisible && (
-                  <div className="qr-scanner-mobile absolute top-0 left-0 z-10 w-full h-full bg-black bg-opacity-60">
-                    <QrScanner
-                      delay={300}
-                      onScan={handleBarcodeScan}
-                      onError={handleBarcodeError}
-                      facingMode="environment" // This ensures the back camera is used
-                      style={{
-                        width: "100%",
-                        maxHeight: "400px", // Set a max height to avoid it covering everything
-                        marginTop: "10px", // Set some margin to adjust position
-                        position: "absolute", // Keep it positioned
-                      }}
-                    />
-                  </div>
-                )}
+                {isScannerVisible && <Scanner onScan={handleScan} />}
               </div>
             </div>
           </fieldset>
 
           <hr className="my-6 border-black dark:border-gray-300" />
-
           {/* Pricing Section */}
           <fieldset className="grid grid-cols-4 gap-6 p-6 rounded-md shadow-sm bg-white dark:bg-gray-900">
             <div className="col-span-full">
