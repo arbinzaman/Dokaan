@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import Cookies from "js-cookie";
 import { useUser } from "../../../../contexts/AuthContext";
-import Scanner from "../../../shared/Scanner/Scanner"; // Import the custom Scanner component
+import Quagga from "quagga"; // Import Quagga library
+import { Button } from "@mui/material";
 
 const AddProducts = () => {
   const [productData, setProductData] = useState({
@@ -12,35 +13,85 @@ const AddProducts = () => {
     salesPrice: "",
     initialStock: "",
   });
+
+  const [refresh, setRefresh] = useState(false);
+  const [scannedBarcodes, setScanBarcodes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [isScannerVisible, setScannerVisible] = useState(false); // QR scanner visibility
   const { user, dokaan } = useUser();
 
   useEffect(() => {
-    // Automatically show the scanner when the component mounts
-    setScannerVisible(true);
-  }, []);
+    Quagga.init(
+      {
+        inputStream: {
+          type: "LiveStream",
+          constraints: {
+            width: 800,
+            facingMode: "environment", // or "user" for the front camera
+          },
+        },
+        locator: {
+          patchSize: "medium",
+          halfSample: false,
+        },
+        numOfWorkers: navigator.hardwareConcurrency,
+        decoder: {
+          readers: ["ean_reader"],
+          debug: {
+            drawBoundingBox: true,
+            showFrequency: true,
+            drawScanline: true,
+            showPattern: true,
+          },
+          multiple: false,
+        },
+        locate: true,
+      },
+      function (err) {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        console.log("Initialization finished. Ready to start");
+        Quagga.start();
+      }
+    );
+
+    // Detect barcode and output result
+    Quagga.onDetected((data) => {
+      const scannedCode = data.codeResult.code;
+
+      if (scannedCode) {
+        setProductData((prev) => ({ ...prev, code: scannedCode })); // Directly update the state with scanned code
+        setScanBarcodes((prevItems) => [...prevItems, data]);
+        console.log(scannedCode); // Log barcode data
+        Quagga.stop(); // Stop scanning after a barcode is detected
+      }
+    });
+
+    // Clean up
+    return () => {
+      Quagga.offDetected(); // Remove event listener
+      Quagga.stop(); // Stop Quagga
+    };
+  }, [refresh]);
+
+  const scan = () => {
+    setRefresh((prev) => !prev);
+  };
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
     setProductData((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleScan = (result) => {
-    console.log("Barcode scanned in AddProducts:", result);
-    if (result) {
-      setProductData((prev) => ({ ...prev, code: result })); // Updates code
-      setScannerVisible(false); // Hide scanner
-    }
-  };
-  
   const handleSubmit = () => {
     const payload = {
       ...productData,
       shopId: dokaan.id,
       ownerId: user.id,
     };
+    console.log(payload);
 
     const token = Cookies.get("XTOKEN");
 
@@ -59,12 +110,12 @@ const AddProducts = () => {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
+                Authorization: `${token}`,
               },
               body: JSON.stringify(payload),
             }
           );
-
+          console.log(response);
           if (response.status === 200) {
             setMessage("Product added successfully!");
             setProductData({
@@ -103,7 +154,9 @@ const AddProducts = () => {
             </div>
             <div className="grid grid-cols-2 gap-4 col-span-full lg:col-span-3">
               <div className="col-span-full sm:col-span-1 relative">
-                <label htmlFor="name" className="text-sm">Name</label>
+                <label htmlFor="name" className="text-sm">
+                  Name
+                </label>
                 <input
                   id="name"
                   type="text"
@@ -112,16 +165,22 @@ const AddProducts = () => {
                   className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
                 />
               </div>
-              <div className="col-span-full sm:col-span-1 relative">
-                <label htmlFor="code" className="text-sm">Code</label>
-                <input
-                  id="code"
-                  type="text"
-                  value={productData.code}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
-                />
-                {isScannerVisible && <Scanner onScan={handleScan} />}
+
+              <div style={{ display: "flex" }}>
+                <div id="interactive" className="viewport w-40 h-40 mr-10" />
+                <div style={{}}>
+                  <Button onClick={scan}>Re-Scan</Button>
+                  {scannedBarcodes.map((data, id) => (
+                    <input
+                      key={id}
+                      id="code"
+                      type="text"
+                      value={data.codeResult.code}
+                      onChange={handleInputChange}
+                      className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </fieldset>
@@ -135,7 +194,9 @@ const AddProducts = () => {
             </div>
             <div className="grid grid-cols-2 gap-4 col-span-full lg:col-span-3">
               <div className="col-span-full sm:col-span-1 relative">
-                <label htmlFor="purchasePrice" className="text-sm">Purchase Price</label>
+                <label htmlFor="purchasePrice" className="text-sm">
+                  Purchase Price
+                </label>
                 <input
                   id="purchasePrice"
                   type="text"
@@ -145,7 +206,9 @@ const AddProducts = () => {
                 />
               </div>
               <div className="col-span-full sm:col-span-1 relative">
-                <label htmlFor="salesPrice" className="text-sm">Sales Price</label>
+                <label htmlFor="salesPrice" className="text-sm">
+                  Sales Price
+                </label>
                 <input
                   id="salesPrice"
                   type="text"
@@ -165,7 +228,9 @@ const AddProducts = () => {
               <hr className="my-2 border-dashed bg-black dark:border-gray-300" />
             </div>
             <div className="col-span-full sm:col-span-2 relative">
-              <label htmlFor="initialStock" className="text-sm">Initial Stock</label>
+              <label htmlFor="initialStock" className="text-sm">
+                Initial Stock
+              </label>
               <input
                 id="initialStock"
                 type="text"

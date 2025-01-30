@@ -17,6 +17,7 @@ import DokaanProfile from "../components/dashBoard/Profile/DokaanProfile";
 import TestComponent from "../components/shared/Theme/TestComponent";
 // import AddProducts from "../pages/dashboard/pages/AddProducts";
  import AddProducts from "../components/dashBoard/home/products/AddProducts";
+ import BarcodeScanner from "../components/shared/Scanner/BarcodeScanner";
 const router = createBrowserRouter(
   [
     {
@@ -84,6 +85,10 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/test",
           element: <TestComponent />,
+        },
+        {
+          path: "/dashboard/barcode",
+          element: <BarcodeScanner />,
         }
       ],
     }
