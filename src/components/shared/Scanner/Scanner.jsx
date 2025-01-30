@@ -1,96 +1,128 @@
-// src/components/Scanner.js
-import  { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import Quagga from "quagga";
 
 const Scanner = ({ onScan }) => {
-  const [isScanning, setIsScanning] = useState(false);
   const [scannedResult, setScannedResult] = useState(null);
   const videoRef = useRef(null);
-  const streamRef = useRef(null); // Ref to store the media stream for proper cleanup
-  const quaggaInitialized = useRef(false); // Track if Quagga has been initialized
+  const streamRef = useRef(null);
+  const quaggaInitialized = useRef(false);
+
+  console.log("onScan prop received:", onScan);
 
   useEffect(() => {
-    // Initialize scanner on mount
-    if (isScanning) {
-      startScanning();
-    } else {
-      stopScanning();
-    }
+    // Start scanning when the component mounts
+    startScanning();
 
+    // Cleanup resources when the component unmounts
     return () => {
-      stopScanning(); // Clean up when the component is unmounted
+      stopScanning();
     };
-  }, [isScanning]);
+  }, []);
 
   const startScanning = () => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      console.error("Camera API not supported by this browser.");
+      alert("Your browser does not support camera access.");
+      return;
+    }
+
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then((stream) => {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          streamRef.current = stream; // Save the stream reference for cleanup
+          streamRef.current = stream;
         }
 
-        // Initialize Quagga only once
+        // Initialize Quagga if not already initialized
         if (!quaggaInitialized.current) {
           Quagga.init(
             {
               inputStream: {
                 name: "Live",
                 type: "LiveStream",
-                target: videoRef.current,
+                target: videoRef.current, // Attach the video element
               },
               decoder: {
-                readers: ["code_128_reader", "ean_reader", "ean_13_reader", "upc_reader"], // Add other formats if necessary
+                readers: [
+                  "code_128_reader",
+                  "ean_reader",
+                  "ean_13_reader",
+                  "upc_reader",
+                ], // Add more barcode formats if needed
               },
             },
             (err) => {
               if (err) {
                 console.error("Error initializing Quagga:", err);
+                alert("Failed to initialize barcode scanner. Please try again.");
               } else {
-                quaggaInitialized.current = true; // Mark as initialized
+                quaggaInitialized.current = true;
                 Quagga.start();
                 Quagga.onDetected(handleBarcodeScan);
+                console.log("Quagga initialized and scanning started.");
               }
             }
           );
         }
-
-        videoRef.current.play();
+      })
+      .catch((err) => {
+        console.error("Error accessing the camera:", err);
+        if (err.name === "NotReadableError") {
+          alert(
+            "The camera is already in use by another application. Please close other apps or tabs using the camera."
+          );
+        } else if (err.name === "NotAllowedError") {
+          alert(
+            "Camera access was denied. Please enable camera permissions in your browser settings."
+          );
+        } else {
+          alert("An error occurred while accessing the camera. Please try again.");
+        }
       });
-    }
   };
 
   const stopScanning = () => {
+    // Stop Quagga if it's running
     if (quaggaInitialized.current) {
       Quagga.stop();
-      quaggaInitialized.current = false; // Reset initialized flag
+      Quagga.offDetected(handleBarcodeScan);
+      quaggaInitialized.current = false;
     }
 
+    // Stop video stream to release the camera
     if (streamRef.current) {
-      // Properly stop the video stream tracks
       const tracks = streamRef.current.getTracks();
       tracks.forEach((track) => track.stop());
-      streamRef.current = null; // Clear the stream reference
+      streamRef.current = null;
     }
   };
 
   const handleBarcodeScan = (result) => {
-    setScannedResult(result.codeResult.code);
-    onScan(result.codeResult.code);
+    if (result?.codeResult?.code) {
+      console.log("Detected barcode:", result.codeResult.code);
+      setScannedResult(result.codeResult.code);
+      onScan(result.codeResult.code); // Pass the scanned result to the parent component
+      stopScanning(); // Stop scanning after a successful detection
+    } else {
+      console.log("No barcode detected or invalid format.");
+    }
   };
 
   return (
-    <div>
-      <video ref={videoRef} width="100%" height="100%" style={{ maxHeight: "400px", position: "relative" }} />
+    <div className="scanner-container">
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        width="100%"
+        height="100%"
+        style={{ maxHeight: "400px", borderRadius: "8px" }}
+      />
       {scannedResult && (
         <div className="scan-result">
           <p>Scanned Result: {scannedResult}</p>
         </div>
-      )}
-      {!isScanning ? (
-        <button onClick={() => setIsScanning(true)}>Start Scanning</button>
-      ) : (
-        <button onClick={() => setIsScanning(false)}>Stop Scanning</button>
       )}
     </div>
   );
