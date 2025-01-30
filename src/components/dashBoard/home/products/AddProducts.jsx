@@ -14,19 +14,12 @@ const AddProducts = () => {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [isScannerVisible, setScannerVisible] = useState(false); // Toggle QR scanner visibility
+  const [isScannerVisible, setScannerVisible] = useState(false); // QR scanner visibility
   const { user, dokaan } = useUser();
-  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Check if the device is mobile or tablet (using a simple user agent check)
-    const checkDevice = () => {
-      const isMobileDevice = /Mobi|Android/i.test(navigator.userAgent);
-      setIsMobile(isMobileDevice);
-    };
-    checkDevice(); // Check on initial render
-    window.addEventListener("resize", checkDevice); // Optional: recheck on resize
-    return () => window.removeEventListener("resize", checkDevice); // Clean up
+    // Automatically show the scanner when the component mounts
+    setScannerVisible(true);
   }, []);
 
   const handleInputChange = (e) => {
@@ -34,6 +27,14 @@ const AddProducts = () => {
     setProductData((prev) => ({ ...prev, [id]: value }));
   };
 
+  const handleScan = (result) => {
+    console.log("Barcode scanned in AddProducts:", result);
+    if (result) {
+      setProductData((prev) => ({ ...prev, code: result })); // Updates code
+      setScannerVisible(false); // Hide scanner
+    }
+  };
+  
   const handleSubmit = () => {
     const payload = {
       ...productData,
@@ -91,11 +92,6 @@ const AddProducts = () => {
     );
   };
 
-  const handleScan = (result) => {
-    setProductData((prev) => ({ ...prev, code: result }));
-    setScannerVisible(false); // Hide scanner after successful scan
-  };
-
   return (
     <div>
       <section className="dark:text-gray-50">
@@ -123,7 +119,6 @@ const AddProducts = () => {
                   type="text"
                   value={productData.code}
                   onChange={handleInputChange}
-                  onClick={() => isMobile && setScannerVisible(true)} // Show scanner only on mobile
                   className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
                 />
                 {isScannerVisible && <Scanner onScan={handleScan} />}
@@ -132,7 +127,7 @@ const AddProducts = () => {
           </fieldset>
 
           <hr className="my-6 border-black dark:border-gray-300" />
-          {/* Pricing Section */}
+
           <fieldset className="grid grid-cols-4 gap-6 p-6 rounded-md shadow-sm bg-white dark:bg-gray-900">
             <div className="col-span-full">
               <h3 className="text-xl">Pricing</h3>
@@ -140,9 +135,7 @@ const AddProducts = () => {
             </div>
             <div className="grid grid-cols-2 gap-4 col-span-full lg:col-span-3">
               <div className="col-span-full sm:col-span-1 relative">
-                <label htmlFor="purchasePrice" className="text-sm">
-                  Purchase Price
-                </label>
+                <label htmlFor="purchasePrice" className="text-sm">Purchase Price</label>
                 <input
                   id="purchasePrice"
                   type="text"
@@ -152,9 +145,7 @@ const AddProducts = () => {
                 />
               </div>
               <div className="col-span-full sm:col-span-1 relative">
-                <label htmlFor="salesPrice" className="text-sm">
-                  Sales Price
-                </label>
+                <label htmlFor="salesPrice" className="text-sm">Sales Price</label>
                 <input
                   id="salesPrice"
                   type="text"
@@ -168,16 +159,13 @@ const AddProducts = () => {
 
           <hr className="my-6 border-black dark:border-gray-300" />
 
-          {/* Stock Section */}
           <fieldset className="grid grid-cols-4 gap-6 p-6 rounded-md shadow-sm bg-white dark:bg-gray-900">
             <div className="col-span-full">
               <h3 className="text-xl">Stock</h3>
               <hr className="my-2 border-dashed bg-black dark:border-gray-300" />
             </div>
             <div className="col-span-full sm:col-span-2 relative">
-              <label htmlFor="initialStock" className="text-sm">
-                Initial Stock
-              </label>
+              <label htmlFor="initialStock" className="text-sm">Initial Stock</label>
               <input
                 id="initialStock"
                 type="text"
