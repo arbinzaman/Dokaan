@@ -8,7 +8,7 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
-import { GiShop } from "react-icons/gi";
+// import { GiShop } from "react-icons/gi";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -174,7 +174,7 @@ const Sidebar = () => {
               <DokaanProfile />
             ) : (
               <Link to="dokaanProfile">
-                <GiShop />
+                {/* <GiShop /> */}
               </Link>
             )}
           </div>
