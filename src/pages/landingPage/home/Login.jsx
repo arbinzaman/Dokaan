@@ -24,7 +24,7 @@ const Login = () => {
         login(email, password),
         {
           loading: 'Logging in... ⏳',
-          success: <b>Login Success! 🎉</b>,
+          // success: <b>Login Success! 🎉</b>,
           error: <b>Could not login. Please try again. ❌</b>,
         }
       )
@@ -48,7 +48,7 @@ const Login = () => {
                 .then(() => navigate("/verify-otp"))
                 .catch(() => {});
             } else {
-              // toast.success("Login successful! 🎉");
+              toast.success("Login successful! 🎉");
               navigate("/dashboard");
             }
           }
