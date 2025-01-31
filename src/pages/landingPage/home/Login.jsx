@@ -18,39 +18,50 @@ const Login = () => {
       const form = event.target;
       const email = form.email.value;
       const password = form.password.value;
-  
-      const res = await login(email, password);
-      if (res.data.status === 200) {
-        if (res.data.user.twoFactorEnabled) {
-          toast.promise(
-            fetch(`${import.meta.env.VITE_BASE_URL}/auth/send-otp`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `${res.data.access_token}`, // Pass token for authentication
-              },
-            }),
-            {
-              loading: "Sending OTP...",
-              success: <b>OTP sent successfully!</b>,
-              error: <b>Failed to send OTP.</b>,
-            }
-          )
-            .then(() => navigate("/verify-otp")) // Redirect on success
-            .catch(() => {}); // Handle error within toast.promise
-        } else {
-          toast.success("Login successful!");
-          navigate("/dashboard"); // Direct to dashboard if 2FA is disabled
+
+      // Wrap login in toast.promise
+      toast.promise(
+        login(email, password),
+        {
+          loading: 'Logging in... ⏳',
+          success: <b>Login Success! 🎉</b>,
+          error: <b>Could not login. Please try again. ❌</b>,
         }
-      }
+      )
+        .then((res) => {
+          if (res.data.status === 200) {
+            if (res.data.user.twoFactorEnabled) {
+              toast.promise(
+                fetch(`${import.meta.env.VITE_BASE_URL}/auth/send-otp`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `${res.data.access_token}`,
+                  },
+                }),
+                {
+                  loading: "Sending OTP... ⏳",
+                  success: <b>OTP sent successfully! 📩</b>,
+                  error: <b>Failed to send OTP. ❌</b>,
+                }
+              )
+                .then(() => navigate("/verify-otp"))
+                .catch(() => {});
+            } else {
+              // toast.success("Login successful! 🎉");
+              navigate("/dashboard");
+            }
+          }
+        })
+        .catch(() => {
+          toast.error("Invalid email or password! ❌");
+        });
     } catch (error) {
-      toast.error("Invalid email or password!");
+      toast.error("Something went wrong. ❌");
     } finally {
       setIsLoading(false);
     }
   };
-  
-  
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4">
