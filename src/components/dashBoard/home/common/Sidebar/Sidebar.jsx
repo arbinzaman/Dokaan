@@ -11,7 +11,7 @@ const SIDEBAR_ITEMS = [
   { id: "sales", name: "Sales", icon: DollarSign, color: "#10B981", href: "/dashboard/sales" },
   { id: "orders", name: "Orders", icon: ShoppingCart, color: "#F59E0B", href: "/dashboard/orders" },
   { id: "analytics", name: "Analytics", icon: TrendingUp, color: "#3B82F6", href: "/dashboard/analytics" },
-  { id: "settings", name: "Settings", icon: Settings, color: "#6EE7B7", href: "/dashboard/settings" },
+  { id: "settings", name: "Settings", icon: Settings, color: "#6EE7B7", href: "#" },
 ];
 
 const Sidebar = () => {
