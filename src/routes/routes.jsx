@@ -18,6 +18,7 @@ import TestComponent from "../components/shared/Theme/TestComponent";
 // import AddProducts from "../pages/dashboard/pages/AddProducts";
  import AddProducts from "../components/dashBoard/home/products/AddProducts";
  import Scanner from "../components/dashBoard/home/products/Scanner/Scanner";
+// import MobileSidebar from "../components/dashBoard/home/common/MobileSidebar";
 const router = createBrowserRouter(
   [
     {
@@ -89,7 +90,11 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/barcode",
           element: <Scanner />,
-        }
+        },
+        // {
+        //   path: "/dashboard/mobile-nav",
+        //   element: <MobileSidebar />,
+        // }
       ],
     }
   ],

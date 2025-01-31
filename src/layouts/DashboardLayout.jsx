@@ -1,4 +1,4 @@
-import Sidebar from "../components/dashBoard/home/common/Sidebar";
+import Sidebar from "../components/dashBoard/home/common/Sidebar/Sidebar";
 import { Outlet } from "react-router-dom";
 import { ThemeModeProvider } from "../contexts/ThemeContext";
 
