@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import Quagga from 'quagga'; // Import Quagga library
 import { Button } from '@mui/material';
 
-const QuaggaScanner = () => {
+const Scanner = () => {
   const [refresh, setRefresh] = useState(false);
   const [scannedBarcodes, setScanBarcodes] = useState([]);
 
@@ -107,4 +107,4 @@ const QuaggaScanner = () => {
   );
 };
 
-export default QuaggaScanner;
+export default Scanner;

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, useContext, useEffect } from "react";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
@@ -17,8 +18,8 @@ export const AuthProvider = ({ children }) => {
     const storedDokaan = localStorage.getItem("dokaan");
     return storedDokaan ? JSON.parse(storedDokaan) : null;
   });
-console.log(user);
-console.log(dokaan);
+// console.log(user);
+// console.log(dokaan);
   // Sync user and dokaan states with localStorage
   useEffect(() => {
     if (user) {
@@ -56,7 +57,7 @@ console.log(dokaan);
         // Save token in cookies for authenticated API requests
         Cookies.set("XTOKEN", access_token, { expires: 1, path: "/" });
 
-        toast.success("Login successful!");
+        // toast.success("Login successful!");
         return res;
       }
     } catch (error) {
