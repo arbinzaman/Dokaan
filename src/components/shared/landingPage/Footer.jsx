@@ -1,4 +1,3 @@
-
 import Section from "../../../components/landingPage/home/Section";
 import { socials } from "../../../constants/home/social";
 
@@ -11,14 +10,16 @@ const Footer = () => {
         </p>
 
         <ul className="flex gap-5 flex-wrap">
-          {socials.map((item) => (
+          {socials.map(({ id,  icon: Icon, url }) => (
             <a
-              key={item.id}
-              href={item.url}
+              key={id}
+              href={url}
               target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center justify-center w-10 h-10 bg-n-7 rounded-full transition-colors hover:bg-n-6"
             >
-              <img src={item.icon} width={16} height={16} alt={item.title} />
+              <Icon className="w-5 h-5 text-white" />{" "}
+              {/* ✅ Correct way to render React icons */}
             </a>
           ))}
         </ul>
