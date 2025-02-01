@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { disablePageScroll, enablePageScroll } from "scroll-lock";
 import MenuSvg from "../../../../assets/svg/MenuSvg";
 import { useState, useEffect } from "react";
+import finalLogo from "../../../../../public/assets/logos/DOKAAN Only D.png";
 
 const Header = () => {
   const { user, logout } = useUser();
@@ -55,9 +56,14 @@ const Header = () => {
         openNavigation ? "bg-n-8" : "bg-n-8/90 backdrop-blur-sm"
       }`}
     >
-      <div className="flex items-center px-5 lg:px-7.5 xl:px-10 max-lg:py-4">
+      <div className="flex items-center px-5 p-2 lg:px-7.5 xl:px-10 max-lg:py-4">
         <Link className="block w-[12rem] xl:mr-8" to="/">
           {/* Add your logo here */}
+          <img
+            src={finalLogo}
+            alt="Dokaan"
+            className="w-10"
+          />
         </Link>
 
         <NavList

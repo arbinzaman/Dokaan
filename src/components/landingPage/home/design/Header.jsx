@@ -1,4 +1,5 @@
-import { background } from "../../../../assets";
+// import { background } from "../../../../assets";
+import dokaanLogo from "../../../../../public/assets/logos/DOKAAN Only D.png";
 
 export const Rings = () => {
   return (
@@ -30,22 +31,19 @@ export const BackgroundCircles = () => {
 
 export const HamburgerMenu = () => {
   return (
-    <div className="absolute inset-0 pointer-events-none lg:hidden">
-      <div className="absolute inset-0 opacity-[.03]">
-        <img
-          className="w-full h-full object-cover"
-          src={background}
-          width={688}
-          height={953}
-          alt="Background"
-        />
-      </div>
+    <div className="absolute inset-0 pointer-events-none lg:hidden flex items-center justify-center">
+  <div className="opacity-[.03]">
+    <img
+      className="w-full h-auto max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl"
+      src={dokaanLogo}
+      alt="Background"
+    />
+  </div>
 
-      <Rings />
+  <Rings />
+  <SideLines />
+  <BackgroundCircles />
+</div>
 
-      <SideLines />
-
-      <BackgroundCircles />
-    </div>
   );
 };
