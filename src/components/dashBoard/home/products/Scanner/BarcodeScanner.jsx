@@ -5,6 +5,12 @@ import { Button } from "@mui/material";
 const BarcodeScanner = ({ onScan, handleInputChange }) => {
   const [scannedBarcodes, setScannedBarcodes] = useState([]);
 
+  // Play beep sound after scanning
+  const playBeep = () => {
+    const beep = new Audio(`/audios/beep.mp3`);
+    beep.play().catch((error) => console.error("Error playing sound:", error));
+  };
+
   useEffect(() => {
     Quagga.init(
       {
@@ -16,7 +22,7 @@ const BarcodeScanner = ({ onScan, handleInputChange }) => {
           },
         },
         locator: {
-          patchSize: "medium",
+          patchSize: "large",
           halfSample: false,
         },
         numOfWorkers: navigator.hardwareConcurrency,
@@ -39,6 +45,11 @@ const BarcodeScanner = ({ onScan, handleInputChange }) => {
       if (scannedCode) {
         setScannedBarcodes((prev) => [...prev, scannedCode]);
         onScan(scannedCode);
+
+        // 🔊 Play beep sound
+        playBeep();
+
+        // Stop scanning after detection
         Quagga.stop();
       }
     });
@@ -52,10 +63,10 @@ const BarcodeScanner = ({ onScan, handleInputChange }) => {
   return (
     <>
       <div className="flex">
-        {/* Barcode Scanner Viewport (Always Visible) */}
+        {/* Barcode Scanner Viewport */}
         <div id="interactive" className="viewport w-40 h-40 mr-4"></div>
 
-        {/* 📌 Visible ONLY on Desktop */}
+        {/* Desktop View */}
         <div className="hidden sm:block col-span-full sm:col-span-1 relative">
           <Button onClick={() => Quagga.start()}>Re-Scan</Button>
           {scannedBarcodes.map((data, id) => (
@@ -70,7 +81,8 @@ const BarcodeScanner = ({ onScan, handleInputChange }) => {
           ))}
         </div>
       </div>
-      {/* 📌 Visible ONLY on Mobile */}
+
+      {/* Mobile View */}
       <div className="block sm:hidden col-span-full sm:col-span-1 relative mt-4">
         <Button onClick={() => Quagga.start()}>Re-Scan</Button>
         {scannedBarcodes.map((data, id) => (
