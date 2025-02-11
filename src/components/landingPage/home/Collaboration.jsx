@@ -1,11 +1,10 @@
-import {check } from "../../../assets";
-// import { collabApps, collabContent,  } from "../../../constants";
+import {check } from "../../../assets/Home";
 import {collabText,collabContent} from "../../../constants/home/collabrationText";
 import { collabApps } from "../../../constants/home/collabApps";
 import Button from "./Button";
 import Section from "./Section";
 import { LeftCurve, RightCurve } from "./design/Collaboration";
-import dokaanLogo from "../../../../public/assets/logos/DOKAAN_Mobile[1].png";
+import dokaanLogo from "../../../../src/assets/Home/logos/DOKAAN_Mobile[1].png";
 const Collaboration = () => {
   return (
     <Section id="features" crosses>

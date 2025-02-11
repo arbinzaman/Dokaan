@@ -1,11 +1,11 @@
-// import group from "../../assets/benefits/group.png";
-import people from "../../assets/benefits/people.png";
-import sales from "../../assets/benefits/sales.png";
-import inventory from "../../assets/benefits/inventory.png";
-import receipt from "../../assets/benefits/receipt.png";
-import employee from "../../assets/benefits/employee.png";
-import analytics from "../../assets/benefits/analytics.png";
-import qrIcon from "../../assets/benefits/qr.png";
+
+import people from "../../assets/Home/benefits/people.png";
+import sales from "../../assets/Home/benefits/sales.png";
+import inventory from "../../assets/Home/benefits/inventory.png";
+import receipt from "../../assets/Home/benefits/receipt.png";
+import employee from "../../assets/Home/benefits/employee.png";
+import analytics from "../../assets/Home/benefits/analytics.png";
+import qrIcon from "../../assets/Home/benefits/qr.png";
 export const benefits = [
     {
       id: "0",

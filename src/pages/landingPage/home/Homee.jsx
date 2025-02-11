@@ -3,7 +3,7 @@ import Hero from "../../../components/landingPage/home/Hero";
 import Benefits from "../../../components/landingPage/home/Benefits";
 import Collaboration from "../../../components/landingPage/home/Collaboration";
 import Pricing from "../../../components/landingPage/home/Pricing";
-import ButtonGradient from "../../../assets/svg/ButtonGradient";
+import ButtonGradient from "../../../assets/home/svg/ButtonGradient";
 
 const home = () => {
     return (

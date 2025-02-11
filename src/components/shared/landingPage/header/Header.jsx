@@ -3,9 +3,9 @@ import Button from "../../../landingPage/home/Button";
 import NavList from "./NavList";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { disablePageScroll, enablePageScroll } from "scroll-lock";
-import MenuSvg from "../../../../assets/svg/MenuSvg";
+import MenuSvg from "../../../../assets/Home/svg/MenuSvg";
 import { useState, useEffect } from "react";
-import finalLogo from "../../../../../public/assets/logos/DOKAAN Only D.png";
+import finalLogo from "../../../../assets/Home/logos/DOKAAN Only D.png";
 
 const Header = () => {
   const { user, logout } = useUser();
