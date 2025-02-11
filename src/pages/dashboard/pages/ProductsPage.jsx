@@ -7,8 +7,10 @@ import ProductsTable from "../../../components/dashBoard/home/products/ProductsT
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useQuery } from "@tanstack/react-query"; // Import the useQuery hook from TanStack Query
+import { useUser } from "../../../contexts/AuthContext";
 
 const ProductsPage = () => {
+  const {user} = useUser(); // Get user details from context
   // Fetch products using TanStack Query
   const { data: products = [], isLoading, isError, error } = useQuery({
     queryKey: ["products"], // The query key
@@ -19,7 +21,7 @@ const ProductsPage = () => {
         throw new Error("No token found in cookies");
       }
 
-      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products`, {
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/${user?.email}`, {
         headers: {
           Authorization: `${token}`,
         },
