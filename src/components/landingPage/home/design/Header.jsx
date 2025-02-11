@@ -1,5 +1,5 @@
 // import { background } from "../../../../assets";
-import dokaanLogo from "../../../../../public/assets/logos/DOKAAN Only D.png";
+import dokaanLogo from "../../../../assets/Home/logos/DOKAAN Only D.png";
 
 export const Rings = () => {
   return (

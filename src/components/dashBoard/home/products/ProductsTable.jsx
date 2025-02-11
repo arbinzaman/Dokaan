@@ -1,30 +1,49 @@
 import { motion } from "framer-motion";
 import { Edit, Search, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { useUser } from "../../../../contexts/AuthContext"; // Adjust path if needed
 
-const ProductsTable = ({ products }) => {
-  // console.log("Products received:", products); // Confirm the data is received
+const fetchProducts = async () => {
+  const token = Cookies.get("XTOKEN");
+  const response = await axios.get(
+    `${import.meta.env.VITE_BASE_URL}/api/v1/products`,
+    {
+      headers: { Authorization: `${token}` },
+    }
+  );
+  return response.data;
+};
+
+const ProductsTable = () => {
+  const { user } = useUser(); // Get user details
+  const email = user?.email; // Get email from context
+
+  const { data: products, 
+    // isLoading,
+     isError } = useQuery({
+    queryKey: ["products"],
+    queryFn: fetchProducts,
+  });
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState(products);
 
-  useEffect(() => {
-    setFilteredProducts(products);
-  }, [products]); // Ensure products state is set correctly
+  const filteredProducts = products
+    ? products.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (product.itemCategory &&
+            product.itemCategory.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+    : [];
 
-  const handleSearch = (e) => {
-    const term = e.target.value.toLowerCase();
-    setSearchTerm(term);
-    const filtered = products.filter(
-      (product) =>
-        product.name.toLowerCase().includes(term) ||
-        (product.itemCategory &&
-          product.itemCategory.toLowerCase().includes(term))
-    );
-    setFilteredProducts(filtered);
-  };
+  console.log("Filtered Products:", filteredProducts);
+  console.log("User Email:", email);
 
-  console.log("Filtered Products:", filteredProducts); // Check if filtering works
+  // if (isLoading) return <p className="text-center text-gray-500">Loading products...</p>;
+  if (isError) return <p className="text-center text-red-500">{isError}</p>;
 
   return (
     <motion.div
@@ -42,7 +61,7 @@ const ProductsTable = ({ products }) => {
             type="text"
             placeholder="Search"
             className="bg-red-400 dark:bg-gray-400 text-white placeholder-white rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={handleSearch}
+            onChange={(e) => setSearchTerm(e.target.value)}
             value={searchTerm}
           />
           <Search
@@ -93,7 +112,7 @@ const ProductsTable = ({ products }) => {
                             product.imageUrl
                           }`
                         : "/default-image.jpg"
-                    } // Check if imageUrl exists
+                    }
                     alt="Product img"
                     className="size-10 rounded-full"
                   />
@@ -101,19 +120,17 @@ const ProductsTable = ({ products }) => {
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
-                  {product.itemCategory ? product.itemCategory : "No category"}{" "}
-                  {/* Use itemCategory instead of category */}
+                  {product.itemCategory ? product.itemCategory : "No category"}
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
-                  ৳ {product.salesPrice ? product.salesPrice.toFixed(2) : "N/A"}{" "}
-                  {/* Use salesPrice instead of price */}
+                  ৳ {product.salesPrice ? product.salesPrice.toFixed(2) : "N/A"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
                   {product.initialStock}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
-                  {product.sales || 0} {/* Show sales or 0 if not available */}
+                  {product.sales || 0}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
                   <button className="text-indigo-400 hover:text-indigo-300 mr-2">

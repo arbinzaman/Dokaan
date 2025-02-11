@@ -1,11 +1,11 @@
-import inventoryIcon from "../../assets/benefits/inventory.png";
-import people from "../../assets/benefits/people.png";
-import analyticsIcon from "../../assets/benefits/analytics.png";
-import barcodeIcon from "../../assets/benefits/qr.png";
-import employeeIcon from "../../assets/benefits/employee.png";
-import supplierIcon from "../../assets/benefits/supplier.png";
-import expenseIcon from "../../assets/benefits/budget.png";
-import posIcon from "../../assets/benefits/pos.png";
+import inventoryIcon from "../../assets/Home/benefits/inventory.png";
+import people from "../../assets/Home/benefits/people.png";
+import analyticsIcon from "../../assets/Home/benefits/analytics.png";
+import barcodeIcon from "../../assets/Home/benefits/qr.png";
+import employeeIcon from "../../assets/Home/benefits/employee.png";
+import supplierIcon from "../../assets/Home/benefits/supplier.png";
+import expenseIcon from "../../assets/Home/benefits/budget.png";
+import posIcon from "../../assets/Home/benefits/pos.png";
 export const collabApps = [
     {
       id: "0",
