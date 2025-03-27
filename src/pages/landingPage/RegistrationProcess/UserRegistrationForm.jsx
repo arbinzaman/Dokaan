@@ -1,94 +1,73 @@
 import { useState } from "react";
-import { TextField, Typography, IconButton, InputAdornment } from "@mui/material";
+import { TextField, IconButton, InputAdornment,  } from "@mui/material";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 
-const UserRegistrationForm = ({ userData, setUserData }) => {
+const UserRegistrationForm = ({ userData, setUserData, errors }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handlePasswordChange = (e) => {
-    const password = e.target.value;
-    setUserData({ ...userData, password });
-    validatePasswords(password, confirmPassword);
-  };
-
-  const handleConfirmPasswordChange = (e) => {
-    const confirm = e.target.value;
-    setConfirmPassword(confirm);
-    validatePasswords(userData.password, confirm);
-  };
-
   const validatePasswords = (password, confirm) => {
-    if (password && confirm && password !== confirm) {
-      setError("Passwords do not match");
-    } else {
-      setError("");
-    }
+    setError(password && confirm && password !== confirm ? "Passwords do not match" : "");
   };
-
-  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
-  const toggleConfirmPasswordVisibility = () => setShowConfirmPassword((prev) => !prev);
 
   return (
     <>
-      <TextField
-        label="Name"
-        fullWidth
-        margin="normal"
-        value={userData.name}
-        onChange={(e) => setUserData({ ...userData, name: e.target.value })}
-      />
-      <TextField
-        label="Email"
-        type="email"
-        fullWidth
-        margin="normal"
-        value={userData.email}
-        onChange={(e) => setUserData({ ...userData, email: e.target.value })}
-      />
-      <TextField
-        label="Password"
-        type={showPassword ? "text" : "password"}
-        fullWidth
-        margin="normal"
-        value={userData.password}
-        onChange={handlePasswordChange}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={togglePasswordVisibility} edge="end">
-                {showPassword ? <AiFillEyeInvisible size={20} color="white" /> : <AiFillEye size={20} color="white" />}
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
+      {["name", "email", "password"].map((field) => (
+        <TextField
+          key={field}
+          label={field.charAt(0).toUpperCase() + field.slice(1)}
+          type={field === "password" && !showPassword ? "password" : "text"}
+          fullWidth
+          margin="normal"
+          value={userData[field]}
+          onChange={(e) => setUserData({ ...userData, [field]: e.target.value })}
+          error={!!errors[field]}
+          helperText={errors[field]}
+          InputLabelProps={{ sx: { color: "white" } }}
+          InputProps={{
+            sx: {
+              color: "white",
+              "& .MuiOutlinedInput-notchedOutline": { borderColor: "white" },
+              "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "white" },
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "white" },
+            },
+            endAdornment: field === "password" && (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                  {showPassword ? <AiFillEyeInvisible size={20} color="white" /> : <AiFillEye size={20} color="white" />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+      ))}
+
       <TextField
         label="Confirm Password"
         type={showConfirmPassword ? "text" : "password"}
         fullWidth
         margin="normal"
         value={confirmPassword}
-        onChange={handleConfirmPasswordChange}
+        onChange={(e) => {
+          setConfirmPassword(e.target.value);
+          validatePasswords(userData.password, e.target.value);
+        }}
         error={!!error}
         helperText={error}
+        InputLabelProps={{ sx: { color: "white" } }}
         InputProps={{
+          sx: { color: "white" },
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton onClick={toggleConfirmPasswordVisibility} edge="end">
-                {showConfirmPassword ? <AiFillEyeInvisible size={20} color="white" /> : <AiFillEye size={20} color="white"  />}
+              <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
+                {showConfirmPassword ? <AiFillEyeInvisible size={20} color="white" /> : <AiFillEye size={20} color="white" />}
               </IconButton>
             </InputAdornment>
           ),
         }}
       />
-      {error && (
-        <Typography color="error" variant="body2" sx={{ mt: 1 }}>
-          {error}
-        </Typography>
-      )}
     </>
   );
 };

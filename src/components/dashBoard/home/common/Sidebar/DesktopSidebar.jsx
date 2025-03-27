@@ -56,7 +56,7 @@ const DesktopSidebar = ({ sidebarItems, isSidebarOpen, setIsSidebarOpen, dokaan 
         />
       </div>
 
-      <ThemeToggleButton />
+      {/* <ThemeToggleButton /> */}
     </motion.div>
   );
 };
