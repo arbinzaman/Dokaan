@@ -2,7 +2,7 @@ import { Menu } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import DokaanProfile from "../../../../dashBoard/Profile/DokaanProfile";
-import ThemeToggleButton from "../../../../shared/Theme/ThemeToggleButton";
+// import ThemeToggleButton from "../../../../shared/Theme/ThemeToggleButton";
 import dokaanLogoDark from "../../../../../assets/Home/logos/DOKAAN.png"; // Dark mode logo
 import dokaanLogoLight from "../../../../../assets/Home/logos/Dokaan_White.png"; // Light mode logo
 
