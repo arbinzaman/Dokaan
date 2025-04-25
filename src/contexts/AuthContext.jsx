@@ -18,8 +18,7 @@ export const AuthProvider = ({ children }) => {
     const storedDokaan = localStorage.getItem("dokaan");
     return storedDokaan ? JSON.parse(storedDokaan) : null;
   });
-// console.log(user);
-// console.log(dokaan);
+
   // Sync user and dokaan states with localStorage
   useEffect(() => {
     if (user) {
@@ -48,16 +47,13 @@ export const AuthProvider = ({ children }) => {
       if (res.status === 200) {
         const { user: userData, dokaan: dokaanData, access_token } = res.data;
 
-        // Save user and dokaan data to context and localStorage
         setUser(userData);
         setDokaan(dokaanData);
         localStorage.setItem("user", JSON.stringify(userData));
         localStorage.setItem("dokaan", JSON.stringify(dokaanData));
 
-        // Save token in cookies for authenticated API requests
         Cookies.set("XTOKEN", access_token, { expires: 1, path: "/" });
 
-        // toast.success("Login successful!");
         return res;
       }
     } catch (error) {
@@ -67,7 +63,6 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = () => {
-    // Clear user and dokaan data from context, localStorage, and cookies
     setUser(null);
     setDokaan(null);
     localStorage.removeItem("user");
@@ -76,19 +71,25 @@ export const AuthProvider = ({ children }) => {
 
     toast.success("Logged out successfully!", {
       style: {
-        border: '1px solid #713200',
-        padding: '16px',
-        color: '#713200',
+        border: "1px solid #713200",
+        padding: "16px",
+        color: "#713200",
       },
       iconTheme: {
-        primary: '#713200',
-        secondary: '#FFFAEE',
+        primary: "#713200",
+        secondary: "#FFFAEE",
       },
     });
+
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 500);
   };
 
   return (
-    <AuthContext.Provider value={{ user, dokaan, login, logout, setUser, setDokaan }}>
+    <AuthContext.Provider
+      value={{ user, dokaan, login, logout, setUser, setDokaan }}
+    >
       {children}
     </AuthContext.Provider>
   );
