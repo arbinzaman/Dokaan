@@ -8,60 +8,68 @@ import { ThreeDots } from "react-loader-spinner";
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(""); // Error message state
   const navigate = useNavigate();
   const { login } = useUser();
 
   const handleLogin = async (event) => {
+    event.preventDefault();
+  
+    setIsLoading(true);
+    setError("");
+  
+    const form = event.target;
+    const email = form.email.value;
+    const password = form.password.value;
+  
+    if (!email || !password) {
+      setError("Email and password are required! ❌");
+      setIsLoading(false);
+      return;
+    }
+  
     try {
-      setIsLoading(true);
-      event.preventDefault();
-      const form = event.target;
-      const email = form.email.value;
-      const password = form.password.value;
-
-      // Wrap login in toast.promise
-      toast.promise(
-        login(email, password),
-        {
-          loading: 'Logging in... ⏳',
-          // success: <b>Login Success! 🎉</b>,
-          error: <b>Could not login. Please try again. ❌</b>,
-        }
-      )
-        .then((res) => {
-          if (res.data.status === 200) {
-            if (res.data.user.twoFactorEnabled) {
-              toast.promise(
-                fetch(`${import.meta.env.VITE_BASE_URL}/auth/send-otp`, {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `${res.data.access_token}`,
-                  },
-                }),
-                {
-                  loading: "Sending OTP... ⏳",
-                  success: <b>OTP sent successfully! 📩</b>,
-                  error: <b>Failed to send OTP. ❌</b>,
-                }
-              )
-                .then(() => navigate("/verify-otp"))
-                .catch(() => {});
-            } else {
-              toast.success("Login successful! 🎉");
-              navigate("/dashboard");
-            }
+      // Call login and await response
+      const res = await login(email, password);
+  
+      if (res && res.data && res.data.status === 200) {
+        const { data } = res;
+  
+        if (data.user.twoFactorEnabled) {
+          toast.loading("Sending OTP...");
+  
+          try {
+            const otpRes = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/send-otp`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `${data.access_token}`,
+              },
+            });
+  
+            if (!otpRes.ok) throw new Error();
+  
+            toast.dismiss(); // remove loading
+            toast.success("OTP sent successfully! 📩");
+            navigate("/verify-otp");
+          } catch (err) {
+            toast.dismiss();
+            setError("Failed to send OTP.");
           }
-        })
-        .catch(() => {
-          toast.error("Invalid email or password! ❌");
-        });
-    } catch (error) {
-      toast.error("Something went wrong. ❌");
+        } else {
+          toast.success("Login successful! 🎉");
+          navigate("/dashboard");
+        }
+      } else {
+        setError("Invalid email or password! ❌");
+      }
+    } catch (err) {
+      setError("Something went wrong. ❌");
     } finally {
       setIsLoading(false);
     }
   };
+  
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4">
@@ -93,6 +101,7 @@ const Login = () => {
             >
               {showPassword ? <FaEyeSlash className="text-gray-500" /> : <FaEye className="text-gray-500" />}
             </p>
+            {error && <p className="text-red-500 text-xs mt-1">{error}</p>} {/* Show error below password */}
           </div>
           {!isLoading ? (
             <button type="submit" className="w-full p-3 text-center rounded-sm text-black bg-white hover:bg-gray-300">
