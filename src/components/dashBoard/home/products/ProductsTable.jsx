@@ -21,9 +21,11 @@ const ProductsTable = () => {
   const { user } = useUser(); // Get user details
   const email = user?.email; // Get email from context
 
-  const { data: products, 
+  const {
+    data: products,
     // isLoading,
-     isError } = useQuery({
+    isError,
+  } = useQuery({
     queryKey: ["products"],
     queryFn: fetchProducts,
   });
@@ -35,7 +37,9 @@ const ProductsTable = () => {
         (product) =>
           product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           (product.itemCategory &&
-            product.itemCategory.toLowerCase().includes(searchTerm.toLowerCase()))
+            product.itemCategory
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()))
       )
     : [];
 
@@ -130,8 +134,9 @@ const ProductsTable = () => {
                   {product.initialStock}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
-                  {product.sales || 0}
+                  {product.sales?.length || 0}
                 </td>
+
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
                   <button className="text-indigo-400 hover:text-indigo-300 mr-2">
                     <Edit size={18} />
