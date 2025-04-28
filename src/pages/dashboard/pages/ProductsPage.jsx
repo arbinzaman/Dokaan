@@ -11,7 +11,11 @@ import { useUser } from "../../../contexts/AuthContext";
 
 const ProductsPage = () => {
   const { user, dokaan } = useUser(); // Get user details from context
+  // const token = Cookies.get("XTOKEN");
+  // console.log(token);
+  // console.log(typeof(dokaan.id));
 
+  
   // Fetch all products
   const { data: products = [], isLoading: productsLoading, isError: productsError, error: productsErrorMsg } = useQuery({
     queryKey: ["products", user?.email],
@@ -25,7 +29,10 @@ const ProductsPage = () => {
       const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/${user?.email}`, {
         headers: {
           Authorization: `${token}`,
-        },
+          Accept: "application/json",        // <--- ADD this
+          "Content-Type": "application/json" // <--- ADD this
+        }
+        ,
       });
 
       return response.data.data;
@@ -46,27 +53,67 @@ const ProductsPage = () => {
       }
 
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/sales/top-selling?shopId=${dokaan?.id}`, // Use dokaan?.id
+        `${import.meta.env.VITE_BASE_URL}/sales/top-selling?shopId=1`, // Use dokaan?.id
         {
           headers: {
             Authorization: `${token}`,
-          },
+            Accept: "application/json",        // <--- ADD this
+            "Content-Type": "application/json" // <--- ADD this
+          }
+          ,
         }
       );
-
-      // Log the full response to check if it's correct
-      console.log("Top Selling API Response:", response.data);
 
       return response.data;
     },
     enabled: !!dokaan?.id, // Ensure dokaan has id before making the request
   });
 
-  console.log(topSellingData); // Log the topSellingData to check its structure
+// Fetch low stock products
+const { data: lowStockData = {}, isLoading: lowStockLoading } = useQuery({
+  queryKey: ["lowStockProducts", dokaan?.id],
+  queryFn: async () => {
+    const token = Cookies.get("XTOKEN");
 
-  // Access totalTopSellingProducts safely
+    if (!token) {
+      throw new Error("No token found in cookies");
+    }
+
+    const shopId = Number(dokaan?.id);
+
+    if (isNaN(shopId)) {
+      throw new Error("Invalid shop ID");
+    }
+
+    const response = await axios.get(
+      `${import.meta.env.VITE_BASE_URL}/sales/products/low-stock`,
+      {
+        headers: {
+          Authorization: `${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        params: {
+          shopId,
+        },
+      }
+    );
+
+    return response.data;
+  },
+  enabled: !!dokaan?.id,
+});
+
+// const shopId = Number(dokaan?.id);
+// console.log("Token:", token);
+// console.log("Dokaan ID:", dokaan?.id);
+// console.log("Shop ID (converted):", shopId);
+
+
+
   const topSellingCount = topSellingData?.totalTopSellingProducts || 0;
-  // console.log("Top Selling Count:", topSellingCount); // This should safely log 0 if the data is not available
+  const lowStockCount = lowStockData?.totalLowStockProducts || 0;
+  console.log(lowStockData);
 
   return (
     <div className="flex-1 overflow-auto relative z-10">
@@ -80,7 +127,7 @@ const ProductsPage = () => {
         >
           <StatCard name="Total Products" icon={Package} value={productCount} color="#6366F1" />
           <StatCard name="Top Selling" icon={TrendingUp} value={topSellingLoading ? "..." : topSellingCount} color="#10B981" />
-          <StatCard name="Low Stock" icon={AlertTriangle} value={23} color="#F59E0B" />
+          <StatCard name="Low Stock" icon={AlertTriangle} value={lowStockLoading ? "..." : lowStockCount} color="#F59E0B" />
           <StatCard name="Total Revenue" icon={DollarSign} value={"$543,210"} color="#EF4444" />
         </motion.div>
 
