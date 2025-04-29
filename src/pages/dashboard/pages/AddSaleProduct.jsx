@@ -14,6 +14,7 @@ const AddSaleProduct = () => {
   const { user, dokaan } = useUser();
 
   const handleScan = async (barcodeObject) => {
+    console.log(barcodeObject.barcode); // Log the scanned barcode
     try {
       const token = Cookies.get("XTOKEN");
       const response = await axios.post(
