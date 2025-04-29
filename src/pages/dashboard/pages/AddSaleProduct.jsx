@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 import { toast } from "react-hot-toast";
 import { useUser } from "@/contexts/AuthContext";
 import { Button } from "@mui/material";
-import SaleBarcodeScanner from "@/components/dashBoard/home/sales/saleScanner/SaleBarcodeScanner";
+import SaleBarcodeScanner from "../../../components/dashBoard/home/sales/saleScanner/SaleBarcodeScanner";
 
 const AddSaleProduct = () => {
   const [scannedProduct, setScannedProduct] = useState(null);
@@ -13,12 +13,12 @@ const AddSaleProduct = () => {
   const [loading, setLoading] = useState(false);
   const { user, dokaan } = useUser();
 
-  const handleScan = async (scannedCode) => {
+  const handleScan = async (barcodeObject) => {
     try {
-      // Fetch product details by barcode
       const token = Cookies.get("XTOKEN");
-      const response = await axios.get(
-        `http://localhost:5000/api/v1/products/code/${scannedCode}`,
+      const response = await axios.post(
+        `http://localhost:5000/api/v1/products/scan`,
+        barcodeObject, // e.g., { barcode: '6760700816045' }
         {
           headers: { Authorization: `${token}` },
         }

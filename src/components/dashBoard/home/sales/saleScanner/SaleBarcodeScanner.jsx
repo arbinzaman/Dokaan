@@ -43,7 +43,7 @@ const SaleBarcodeScanner = ({ onScan }) => {
       const code = data.codeResult.code;
       if (code) {
         setScannedCode(code);
-        onScan(code);
+        onScan({ barcode: code }); // Send object with barcode key
         playBeep();
         Quagga.stop();
       }
