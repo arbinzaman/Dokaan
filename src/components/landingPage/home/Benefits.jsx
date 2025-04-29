@@ -1,7 +1,7 @@
 import { benefits } from "../../../constants/home/benefits";
 import Heading from "./Heading";
 import Section from "./Section";
-import Arrow from "../../../assets/home/svg/Arrow";
+// import Arrow from "../../../assets/home/svg/Arrow";
 import { GradientLight } from "./design/Benefits";
 import ClipPath from "../../../assets/home/svg/ClipPath";
 
@@ -36,7 +36,9 @@ const Benefits = () => {
                   <p className="ml-auto font-code text-xs font-bold text-n-1 uppercase tracking-wider">
                     Explore more
                   </p>
-                  <Arrow />
+                  <svg className="ml-5 fill-n-1" width="24" height="24">
+                    <path d="M8.293 5.293a1 1 0 0 1 1.414 0l6 6a1 1 0 0 1 0 1.414l-6 6a1 1 0 0 1-1.414-1.414L13.586 12 8.293 6.707a1 1 0 0 1 0-1.414z" />
+                  </svg>
                 </div>
               </div>
 
