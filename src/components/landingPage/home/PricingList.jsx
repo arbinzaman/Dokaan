@@ -1,4 +1,4 @@
-import { check } from "../../../assets/Home/check.svg";
+import  check  from "../../../assets/Home/check.svg";
 import { pricing } from "../../../constants/home/pricing";
 import Button from "./Button";
 
