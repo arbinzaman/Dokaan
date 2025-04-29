@@ -1,9 +1,18 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
-import { 
-  BarChart2, DollarSign, Menu, ShoppingBag, TrendingUp, Users, ShoppingCart, ScanLine, User 
+import {
+  BarChart2,
+  DollarSign,
+  Menu,
+  ShoppingBag,
+  TrendingUp,
+  Users,
+  ShoppingCart,
+  ScanLine,
+  User,
+  Box, // Inventory icon
 } from "lucide-react";
 import ThemeToggleButton from "../../../../shared/Theme/ThemeToggleButton";
+import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const handleItemClick = () => {
@@ -22,16 +31,16 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
           <BarChart2 size={26} style={{ color: "#6366f1" }} />
         </Link>
 
-        {/* Products Button */}
+        {/* Inventory Button (Newly Added) */}
         <Link
-          to="/dashboard/products"
+          to="/dashboard/inventory"
           className="p-2 rounded-full hover:bg-gray-700 transition-colors"
         >
-          <ShoppingBag size={26} style={{ color: "#8B5CF6" }} />
+          <Box size={26} style={{ color: "#FF9900" }} />
         </Link>
 
         {/* Scan Button (Updated Background) */}
-        <Link to="/dashboard/product-add">
+        <Link to="/dashboard/product-sell">
           <button className="p-4 mb-3 bg-gray-300 dark:bg-gray-500 rounded-full shadow-lg hover:bg-blue-600 dark:hover:bg-blue-800 transition-colors">
             <ScanLine size={32} className="text-white" />
           </button>
@@ -93,6 +102,15 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
               >
                 <Users size={24} style={{ color: "#EC4899" }} className="min-w-[24px]" />
                 <span className="ml-4">Users</span>
+              </Link>
+
+              <Link
+                to="/dashboard/products"
+                className="flex items-center p-4 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                onClick={handleItemClick}
+              >
+                <ShoppingBag size={24} style={{ color: "#8B5CF6" }} className="min-w-[24px]" />
+                <span className="ml-4">Products</span>
               </Link>
 
               <Link

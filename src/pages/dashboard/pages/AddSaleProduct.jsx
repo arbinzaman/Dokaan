@@ -1,97 +1,166 @@
 import { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { useUser } from "@/contexts/AuthContext"; // ✅ Make sure this path is correct
-import BarcodeScannerComponent from "../../../components/dashBoard/home/sales/saleScanner/SaleBarcodeScanner";
+import { toast } from "react-hot-toast";
+import { useUser } from "@/contexts/AuthContext";
+import { Button } from "@mui/material";
+import SaleBarcodeScanner from "@/components/dashBoard/home/sales/saleScanner/SaleBarcodeScanner";
 
 const AddSaleProduct = () => {
   const [scannedProduct, setScannedProduct] = useState(null);
   const [sellingPrice, setSellingPrice] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const { user, dokaan } = useUser();
 
-  const { user, dokaan } = useUser(); // ✅ Get user and dokaan from AuthContext
+  const handleScan = async (scannedCode) => {
+    try {
+      // Fetch product details by barcode
+      const token = Cookies.get("XTOKEN");
+      const response = await axios.get(
+        `http://localhost:5000/api/v1/products/code/${scannedCode}`,
+        {
+          headers: { Authorization: `${token}` },
+        }
+      );
+
+      if (response.status === 200) {
+        setScannedProduct(response.data.data);
+        toast.success("Product fetched successfully!");
+      } else {
+        toast.error("Product not found!");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Error fetching product.");
+    }
+  };
 
   const handleSubmit = async () => {
     const token = Cookies.get("XTOKEN");
 
-    if (!user || !dokaan) {
-      alert("User or shop info is missing.");
+    if (!user || !dokaan || !scannedProduct) {
+      toast.error("Missing user/shop/product information.");
       return;
     }
 
+    const payload = {
+      productCode: scannedProduct.code,
+      code: scannedProduct.code,
+      productName: scannedProduct.name,
+      brand: scannedProduct.brand || "Unknown",
+      salesPrice: parseFloat(sellingPrice),
+      quantity: quantity,
+      totalPrice: quantity * parseFloat(sellingPrice),
+      shopAddress: dokaan.address || "N/A",
+      ownerName: dokaan.ownerName || user.name,
+      sellerId: user.id,
+      shopId: dokaan.id,
+      branch: dokaan.branch || "Main",
+      soldAt: new Date().toISOString(),
+    };
+
     try {
-      const payload = {
-        productCode: scannedProduct.productCode,
-        code: scannedProduct.productCode,
-        productName: scannedProduct.productName,
-        brand: scannedProduct.brand,
-        salesPrice: parseFloat(sellingPrice),
-        quantity: quantity,
-        totalPrice: quantity * parseFloat(sellingPrice),
-        shopAddress: scannedProduct.shopAddress,
-        ownerName: scannedProduct.ownerName,
-        sellerId: user.id,
-        shopId: dokaan.id,
-        branch: dokaan.branch || "Main",
-        soldAt: new Date().toISOString(),
-      };
+      setLoading(true);
 
       await axios.post("http://localhost:5000/api/v1/sales", payload, {
-        headers: {
-          Authorization: `${token}`,
-        },
+        headers: { Authorization: `${token}` },
       });
 
-      alert("Sale saved successfully!");
+      toast.success("Sale recorded successfully!");
       setScannedProduct(null);
       setSellingPrice("");
       setQuantity(1);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to submit sale.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to record sale.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto p-4 border rounded shadow">
-      <h2 className="text-xl font-semibold mb-4">Sell a Product</h2>
+    <div>
+      <section className="dark:text-gray-50">
+        <form noValidate className="container">
+          <fieldset className="grid grid-cols-4 gap-6 p-6 rounded-md shadow-sm bg-white dark:bg-gray-900">
+            <div className="col-span-full">
+              <h3 className="text-xl">Scan Product</h3>
+              <hr className="my-2 border-dashed bg-black dark:border-gray-300" />
+            </div>
+            <div className="grid grid-cols-2 gap-4 col-span-full lg:col-span-3">
+              <div className="col-span-full sm:col-span-1">
+                <SaleBarcodeScanner onScan={handleScan} />
+              </div>
+            </div>
+          </fieldset>
 
-      <BarcodeScannerComponent onProductScanned={setScannedProduct} />
+          {scannedProduct && (
+            <>
+              <hr className="my-6 border-black dark:border-gray-300" />
+              <fieldset className="grid grid-cols-4 gap-6 p-6 rounded-md shadow-sm bg-white dark:bg-gray-900">
+                <div className="col-span-full">
+                  <h3 className="text-xl">Product Details</h3>
+                  <hr className="my-2 border-dashed bg-black dark:border-gray-300" />
+                </div>
+                <div className="grid grid-cols-2 gap-4 col-span-full lg:col-span-3">
+                  <div className="col-span-full sm:col-span-1">
+                    <label className="text-sm">Product Name</label>
+                    <input
+                      type="text"
+                      value={scannedProduct.name}
+                      readOnly
+                      className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
+                    />
+                  </div>
 
-      {scannedProduct && (
-        <div className="mt-4">
-          <p><strong>Product:</strong> {scannedProduct.productName}</p>
-          <p><strong>Code:</strong> {scannedProduct.productCode}</p>
-          <p><strong>Brand:</strong> {scannedProduct.brand}</p>
-          <p><strong>Purchase Price:</strong> {scannedProduct.purchasePrice}</p>
-          <p><strong>Shop Address:</strong> {scannedProduct.shopAddress}</p>
-          <p><strong>Owner:</strong> {scannedProduct.ownerName}</p>
+                  <div className="col-span-full sm:col-span-1">
+                    <label className="text-sm">Product Code</label>
+                    <input
+                      type="text"
+                      value={scannedProduct.code}
+                      readOnly
+                      className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
+                    />
+                  </div>
 
-          <input
-            type="number"
-            placeholder="Enter sale price"
-            value={sellingPrice}
-            onChange={(e) => setSellingPrice(e.target.value)}
-            className="border mt-2 p-2 w-full"
-          />
+                  <div className="col-span-full sm:col-span-1">
+                    <label className="text-sm">Selling Price</label>
+                    <input
+                      type="number"
+                      value={sellingPrice}
+                      onChange={(e) => setSellingPrice(e.target.value)}
+                      className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
+                    />
+                  </div>
 
-          <input
-            type="number"
-            placeholder="Quantity"
-            value={quantity}
-            min={1}
-            onChange={(e) => setQuantity(Number(e.target.value))}
-            className="border mt-2 p-2 w-full"
-          />
+                  <div className="col-span-full sm:col-span-1">
+                    <label className="text-sm">Quantity</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Number(e.target.value))}
+                      className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
+                    />
+                  </div>
+                </div>
+              </fieldset>
 
-          <button
-            onClick={handleSubmit}
-            className="bg-green-500 text-white px-4 py-2 mt-2 rounded w-full"
-          >
-            Submit Sale
-          </button>
-        </div>
-      )}
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={loading}
+                variant="contained"
+                color="primary"
+                className="w-full mt-4"
+              >
+                {loading ? "Saving..." : "Submit Sale"}
+              </Button>
+            </>
+          )}
+        </form>
+      </section>
     </div>
   );
 };
