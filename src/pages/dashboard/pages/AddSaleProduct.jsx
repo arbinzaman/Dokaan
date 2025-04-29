@@ -13,6 +13,7 @@ const AddSaleProduct = () => {
   const [loading, setLoading] = useState(false);
   const { user, dokaan } = useUser();
 
+  console.log(scannedProduct, "scannedProduct");
   const handleScan = async (barcodeObject) => {
     console.log(barcodeObject.barcode); // Log the scanned barcode
     try {
@@ -26,7 +27,8 @@ const AddSaleProduct = () => {
       );
 
       if (response.status === 200) {
-        setScannedProduct(response.data.data);
+        console.log(response.data, "response.data.data");
+        setScannedProduct(response.data);
         toast.success("Product fetched successfully!");
       } else {
         toast.error("Product not found!");
@@ -46,9 +48,9 @@ const AddSaleProduct = () => {
     }
 
     const payload = {
-      productCode: scannedProduct.code,
-      code: scannedProduct.code,
-      productName: scannedProduct.name,
+      productCode: scannedProduct.matchedProduct.code,
+      code: scannedProduct.matchedProduct.productCode,
+      productName: scannedProduct.matchedProduct.productName,
       brand: scannedProduct.brand || "Unknown",
       salesPrice: parseFloat(sellingPrice),
       quantity: quantity,
@@ -109,7 +111,7 @@ const AddSaleProduct = () => {
                     <label className="text-sm">Product Name</label>
                     <input
                       type="text"
-                      value={scannedProduct.name}
+                      value={scannedProduct.matchedProduct.productName}
                       readOnly
                       className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
                     />
@@ -119,7 +121,7 @@ const AddSaleProduct = () => {
                     <label className="text-sm">Product Code</label>
                     <input
                       type="text"
-                      value={scannedProduct.code}
+                      value={scannedProduct.matchedProduct.productCode}
                       readOnly
                       className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
                     />
@@ -129,7 +131,7 @@ const AddSaleProduct = () => {
                     <label className="text-sm">Selling Price</label>
                     <input
                       type="number"
-                      value={sellingPrice}
+                      value={scannedProduct.matchedProduct.salesPrice}
                       onChange={(e) => setSellingPrice(e.target.value)}
                       className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
                     />
