@@ -18,6 +18,8 @@ import TestComponent from "../components/shared/Theme/TestComponent";
 // import AddProducts from "../pages/dashboard/pages/AddProducts";
  import AddProducts from "../components/dashBoard/home/products/AddProducts";
  import Scanner from "../components/dashBoard/home/products/Scanner/Scanner";
+import AddSaleProduct from "../pages/dashboard/pages/AddSaleProduct";
+import Inventory from "../pages/dashboard/pages/Inventory";
 // import MobileSidebar from "../components/dashBoard/home/common/MobileSidebar";
 const router = createBrowserRouter(
   [
@@ -84,12 +86,20 @@ const router = createBrowserRouter(
           element: <AddProducts/>,
         },
         {
+          path: "/dashboard/product-sell",
+          element: <AddSaleProduct/>,
+        },
+        {
           path: "/dashboard/test",
           element: <TestComponent />,
         },
         {
           path: "/dashboard/barcode",
           element: <Scanner />,
+        },
+        {
+          path: "/dashboard/inventory",
+          element: <Inventory />,
         },
         // {
         //   path: "/dashboard/mobile-nav",

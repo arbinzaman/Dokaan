@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { TextField, Button, Typography, Divider, Switch, Box, Stack } from "@mui/material";
-import { useMediaQuery } from "@mui/material";
+// import { useMediaQuery } from "@mui/material";
 
 const AddProducts = () => {
   const [productData, setProductData] = useState({

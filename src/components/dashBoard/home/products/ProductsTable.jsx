@@ -1,33 +1,8 @@
 import { motion } from "framer-motion";
 import { Edit, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import Cookies from "js-cookie";
-import { useUser } from "../../../../contexts/AuthContext"; // Adjust path if needed
 
-const fetchProducts = async () => {
-  const token = Cookies.get("XTOKEN");
-  const response = await axios.get(
-    `${import.meta.env.VITE_BASE_URL}/api/v1/products`,
-    {
-      headers: { Authorization: `${token}` },
-    }
-  );
-  return response.data;
-};
-
-const ProductsTable = () => {
-  const { user } = useUser(); // Get user details
-  const email = user?.email; // Get email from context
-
-  const { data: products, 
-    // isLoading,
-     isError } = useQuery({
-    queryKey: ["products"],
-    queryFn: fetchProducts,
-  });
-
+const ProductsTable = ({ products, loading }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredProducts = products
@@ -35,15 +10,14 @@ const ProductsTable = () => {
         (product) =>
           product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           (product.itemCategory &&
-            product.itemCategory.toLowerCase().includes(searchTerm.toLowerCase()))
+            product.itemCategory
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()))
       )
     : [];
 
-  console.log("Filtered Products:", filteredProducts);
-  console.log("User Email:", email);
-
-  // if (isLoading) return <p className="text-center text-gray-500">Loading products...</p>;
-  if (isError) return <p className="text-center text-red-500">{isError}</p>;
+  // If loading, show a loading message
+  if (loading) return <p className="text-center text-gray-500">Loading products...</p>;
 
   return (
     <motion.div
@@ -130,8 +104,9 @@ const ProductsTable = () => {
                   {product.initialStock}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
-                  {product.sales || 0}
+                  {product.sales?.length || 0}
                 </td>
+
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
                   <button className="text-indigo-400 hover:text-indigo-300 mr-2">
                     <Edit size={18} />

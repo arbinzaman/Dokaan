@@ -1,5 +1,6 @@
 import Section from "./Section";
-import { smallSphere, stars } from "../../../assets/home";
+import smallSphere from "../../../assets/Home/4-small.png";
+import stars from "../../../assets/Home/pricing/stars.svg";
 import Heading from "./Heading";
 import PricingList from "./PricingList";
 import { LeftLine, RightLine } from "./design/Pricing";
