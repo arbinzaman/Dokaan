@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Edit, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 
-const ProductsTable = ({ products, loading }) => {
+const ProductsTable = ({ products,  }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredProducts = products
@@ -17,7 +17,7 @@ const ProductsTable = ({ products, loading }) => {
     : [];
 
   // If loading, show a loading message
-  if (loading) return <p className="text-center text-gray-500">Loading products...</p>;
+  // if (loading) return <p className="text-center text-gray-500">Loading products...</p>;
 
   return (
     <motion.div

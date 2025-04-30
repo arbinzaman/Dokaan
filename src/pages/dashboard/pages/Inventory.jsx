@@ -17,7 +17,12 @@ const Inventory = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
 
   // Fetch inventory data
-  const { data: inventory = [], isLoading, isError, error } = useQuery({
+  const {
+    data: inventory = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["inventory", user?.id],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
@@ -40,26 +45,32 @@ const Inventory = () => {
   });
 
   const totalItems = inventory.length;
-  const inStockCount = inventory.filter(item => item.initialStock > 0).length;
-  const outOfStockCount = inventory.filter(item => item.initialStock <= 0).length;
+  const inStockCount = inventory.filter((item) => item.initialStock > 0).length;
+  const outOfStockCount = inventory.filter(
+    (item) => item.initialStock <= 0
+  ).length;
 
   // Filtered inventory
-  const filteredInventory = inventory.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory ? item.itemCategory === selectedCategory : true;
+  const filteredInventory = inventory.filter((item) => {
+    const matchesSearch = item.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory
+      ? item.itemCategory === selectedCategory
+      : true;
     return matchesSearch && matchesCategory;
   });
 
   const uniqueCategories = [
     ...new Set(
       inventory
-        .map(item => item.itemCategory)
-        .filter(category => category && category.trim() !== "")
+        .map((item) => item.itemCategory)
+        .filter((category) => category && category.trim() !== "")
     ),
   ];
-  
-  console.log(filteredInventory);
- 
+
+  console.log(inventory);
+
   return (
     <div className="flex-1 overflow-auto relative z-10">
       <main className="max-w-7xl mx-auto py-6 px-4 lg:px-8">
@@ -70,9 +81,39 @@ const Inventory = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
         >
-          <StatCard name="Total Items" icon={Boxes} value={totalItems} color="#6366F1" />
-          <StatCard name="In Stock" icon={PackageCheck} value={inStockCount} color="#10B981" />
-          <StatCard name="Out of Stock" icon={PackageX} value={outOfStockCount} color="#EF4444" />
+          <StatCard
+            name="Total Items"
+            icon={Boxes}
+            value={totalItems}
+            color="#6366F1"
+            onClick={() =>
+              navigate("/dashboard/total-products", {
+                state: { items: inventory },
+              })
+            }
+          />
+          <StatCard
+            name="In Stock"
+            icon={PackageCheck}
+            value={inStockCount}
+            color="#10B981"
+            onClick={() =>
+              navigate("/dashboard/products/in-stock", {
+                state: { items: inventory },
+              })
+            }
+          />
+          <StatCard
+            name="Out of Stock"
+            icon={PackageX}
+            value={outOfStockCount}
+            color="#EF4444"
+            onClick={() =>
+              navigate("/dashboard/products/out-of-stock", {
+                state: { items: inventory },
+              })
+            }
+          />
         </motion.div>
 
         {/* Header Actions */}
@@ -108,10 +149,15 @@ const Inventory = () => {
 
         {/* Inventory Table */}
         <InventoryTable items={filteredInventory} loading={isLoading} />
-
         {/* Loading / Error Messages */}
-        {isLoading && <div className="text-center text-gray-500 dark:text-gray-400">Loading inventory...</div>}
-        {isError && <div className="text-center text-red-500">Error: {error.message}</div>}
+        {isLoading && (
+          <div className="text-center text-gray-500 dark:text-gray-400">
+            Loading inventory...
+          </div>
+        )}
+        {isError && (
+          <div className="text-center text-red-500">Error: {error.message}</div>
+        )}
       </main>
     </div>
   );
