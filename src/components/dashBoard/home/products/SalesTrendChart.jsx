@@ -30,7 +30,7 @@ const SalesTrendChart = () => {
     queryKey: ["salesTrend"],
     queryFn: fetchSalesData,
   });
-
+console.log(salesData);
   // if (isLoading) return <div></div>;
   if (isError) return <div>{error?.message || "Failed to load sales data."}</div>;
 

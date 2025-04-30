@@ -5,10 +5,10 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { FaBangladeshiTakaSign } from "react-icons/fa6";
 import StatCard from "../../../components/dashBoard/home/common/StatCard";
-import SalesOverviewChart from "../../../components/dashBoard/home/overview/SalesOverviewChart";
 import CategoryDistributionChart from "../../../components/dashBoard/home/overview/CategoryDistributionChart";
 import SalesChannelChart from "../../../components/dashBoard/home/overview/SalesChannelChart";
 import { useUser } from "../../../contexts/AuthContext";
+import SalesTrendChart from "../../../components/dashBoard/home/products/SalesTrendChart";
 
 const ACCENT_COLOR = "rgb(204, 51, 51)";
 
@@ -110,7 +110,7 @@ const OverviewPage = () => {
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <SalesOverviewChart accentColor={ACCENT_COLOR} />
+          <SalesTrendChart accentColor={ACCENT_COLOR} />
           <CategoryDistributionChart accentColor={ACCENT_COLOR} />
           <SalesChannelChart accentColor={ACCENT_COLOR} />
         </div>
