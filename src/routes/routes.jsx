@@ -20,6 +20,10 @@ import TestComponent from "../components/shared/Theme/TestComponent";
  import Scanner from "../components/dashBoard/home/products/Scanner/Scanner";
 import AddSaleProduct from "../pages/dashboard/pages/AddSaleProduct";
 import Inventory from "../pages/dashboard/pages/Inventory";
+import ProductDetails from "../components/dashBoard/home/products/inventory/ProductDetails";
+import TotalItemsTable from "../components/dashBoard/home/products/inventory/TotalItemsTable";
+import InStockItemsTable from "../components/dashBoard/home/products/inventory/InStockItemsTable";
+import OutOfStockItemsTable from "../components/dashBoard/home/products/inventory/OutOfStockItemsTable";
 // import MobileSidebar from "../components/dashBoard/home/common/MobileSidebar";
 const router = createBrowserRouter(
   [
@@ -100,6 +104,22 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/inventory",
           element: <Inventory />,
+        },
+        {
+          path: "/dashboard/product/:id",
+          element: <ProductDetails />,
+        },
+        {
+          path: "/dashboard/total-products",
+          element: <TotalItemsTable />,
+        },
+        {
+          path: "/dashboard/products/in-stock",
+          element: <InStockItemsTable />,
+        },
+        {
+          path: "/dashboard/products/out-of-stock",
+          element: <OutOfStockItemsTable />,
         },
         // {
         //   path: "/dashboard/mobile-nav",
