@@ -1,35 +1,38 @@
 import { motion } from "framer-motion";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { useEffect, useState } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
+const fetchSalesData = async () => {
+  const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/sales/stats-by-month`);
+  return response.data.map(item => ({
+    month: item.month,
+    sales: item.sales,
+  }));
+};
+
 const SalesTrendChart = () => {
-  const [salesData, setSalesData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const {
+    data: salesData = [],
+    // isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["salesTrend"],
+    queryFn: fetchSalesData,
+  });
 
-  useEffect(() => {
-    // Fetch sales trend data from the backend API
-    const fetchSalesData = async () => {
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/sales/sales-trend`); // Backend endpoint to get sales trend
-        const formattedData = response.data.map(item => ({
-          month: item.month,  // Assuming the API returns 'month' and 'sales' fields
-          sales: item.sales,  // 'sales' is the total sales for that month
-        }));
-        setSalesData(formattedData);
-      } catch (error) {
-        setError("Failed to load sales data.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSalesData();
-  }, []);
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  // if (isLoading) return <div></div>;
+  if (isError) return <div>{error?.message || "Failed to load sales data."}</div>;
 
   return (
     <motion.div

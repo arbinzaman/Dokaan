@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import StatCard from "../../../components/dashBoard/home/common/StatCard";
-import { AlertTriangle, DollarSign, Package, TrendingUp } from "lucide-react";
+import { AlertTriangle, Package, TrendingUp } from "lucide-react";
+import { FaBangladeshiTakaSign } from "react-icons/fa6";
 import CategoryDistributionChart from "../../../components/dashBoard/home/overview/CategoryDistributionChart";
 import SalesTrendChart from "../../../components/dashBoard/home/products/SalesTrendChart";
 import ProductsTable from "../../../components/dashBoard/home/products/ProductsTable";
@@ -15,9 +16,13 @@ const ProductsPage = () => {
   // console.log(token);
   // console.log(typeof(dokaan.id));
 
-  
   // Fetch all products
-  const { data: products = [], isLoading: productsLoading, isError: productsError, error: productsErrorMsg } = useQuery({
+  const {
+    data: products = [],
+    isLoading: productsLoading,
+    isError: productsError,
+    error: productsErrorMsg,
+  } = useQuery({
     queryKey: ["products", user?.email],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
@@ -26,14 +31,16 @@ const ProductsPage = () => {
         throw new Error("No token found in cookies");
       }
 
-      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/${user?.email}`, {
-        headers: {
-          Authorization: `${token}`,
-          Accept: "application/json",        // <--- ADD this
-          "Content-Type": "application/json" // <--- ADD this
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/products/${user?.email}`,
+        {
+          headers: {
+            Authorization: `${token}`,
+            Accept: "application/json", // <--- ADD this
+            "Content-Type": "application/json", // <--- ADD this
+          },
         }
-        ,
-      });
+      );
 
       return response.data.data;
     },
@@ -57,10 +64,9 @@ const ProductsPage = () => {
         {
           headers: {
             Authorization: `${token}`,
-            Accept: "application/json",        // <--- ADD this
-            "Content-Type": "application/json" // <--- ADD this
-          }
-          ,
+            Accept: "application/json", // <--- ADD this
+            "Content-Type": "application/json", // <--- ADD this
+          },
         }
       );
 
@@ -69,47 +75,79 @@ const ProductsPage = () => {
     enabled: !!dokaan?.id, // Ensure dokaan has id before making the request
   });
 
-// Fetch low stock products
-const { data: lowStockData = {}, isLoading: lowStockLoading } = useQuery({
-  queryKey: ["lowStockProducts", dokaan?.id],
-  queryFn: async () => {
-    const token = Cookies.get("XTOKEN");
+  // Fetch low stock products
+  const { data: lowStockData = {}, isLoading: lowStockLoading } = useQuery({
+    queryKey: ["lowStockProducts", dokaan?.id],
+    queryFn: async () => {
+      const token = Cookies.get("XTOKEN");
 
-    if (!token) {
-      throw new Error("No token found in cookies");
-    }
-
-    const shopId = Number(dokaan?.id);
-
-    if (isNaN(shopId)) {
-      throw new Error("Invalid shop ID");
-    }
-
-    const response = await axios.get(
-      `${import.meta.env.VITE_BASE_URL}/sales/products/low-stock`,
-      {
-        headers: {
-          Authorization: `${token}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        params: {
-          shopId,
-        },
+      if (!token) {
+        throw new Error("No token found in cookies");
       }
-    );
 
-    return response.data;
-  },
-  enabled: !!dokaan?.id,
-});
+      const shopId = Number(dokaan?.id);
 
-// const shopId = Number(dokaan?.id);
-// console.log("Token:", token);
-// console.log("Dokaan ID:", dokaan?.id);
-// console.log("Shop ID (converted):", shopId);
+      if (isNaN(shopId)) {
+        throw new Error("Invalid shop ID");
+      }
 
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/sales/products/low-stock`,
+        {
+          headers: {
+            Authorization: `${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          params: {
+            shopId,
+          },
+        }
+      );
 
+      return response.data;
+    },
+    enabled: !!dokaan?.id,
+  });
+
+  // Fetch total revenue
+  const { data: revenueData = {}, isLoading: revenueLoading } = useQuery({
+    queryKey: ["totalRevenue", dokaan?.id],
+    queryFn: async () => {
+      const token = Cookies.get("XTOKEN");
+
+      if (!token) {
+        throw new Error("No token found in cookies");
+      }
+
+      const shopId = Number(dokaan?.id);
+      if (isNaN(shopId)) {
+        throw new Error("Invalid shop ID");
+      }
+
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/sales/total-revenue`,
+        {
+          headers: {
+            Authorization: `${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          params: { shopId },
+        }
+      );
+
+      return response.data;
+    },
+    enabled: !!dokaan?.id,
+  });
+
+  const totalRevenue = revenueData?.totalRevenue || 0;
+
+  // const shopId = Number(dokaan?.id);
+  // console.log("Token:", token);
+  // console.log("Dokaan ID:", dokaan?.id);
+  // console.log("Shop ID (converted):", shopId);
 
   const topSellingCount = topSellingData?.totalTopSellingProducts || 0;
   const lowStockCount = lowStockData?.totalLowStockProducts || 0;
@@ -125,10 +163,30 @@ const { data: lowStockData = {}, isLoading: lowStockLoading } = useQuery({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
         >
-          <StatCard name="Total Products" icon={Package} value={productCount} color="#6366F1" />
-          <StatCard name="Top Selling" icon={TrendingUp} value={topSellingLoading ? "..." : topSellingCount} color="#10B981" />
-          <StatCard name="Low Stock" icon={AlertTriangle} value={lowStockLoading ? "..." : lowStockCount} color="#F59E0B" />
-          <StatCard name="Total Revenue" icon={DollarSign} value={"$543,210"} color="#EF4444" />
+          <StatCard
+            name="Total Products"
+            icon={Package}
+            value={productCount}
+            color="#6366F1"
+          />
+          <StatCard
+            name="Top Selling"
+            icon={TrendingUp}
+            value={topSellingLoading ? "..." : topSellingCount}
+            color="#10B981"
+          />
+          <StatCard
+            name="Low Stock"
+            icon={AlertTriangle}
+            value={lowStockLoading ? "..." : lowStockCount}
+            color="#F59E0B"
+          />
+          <StatCard
+            name="Total Revenue"
+            icon={FaBangladeshiTakaSign} // Swap to Rupee or Taka-looking icon
+            value={revenueLoading ? "..." : `৳${totalRevenue.toLocaleString()}`}
+            color="#EF4444"
+          />
         </motion.div>
 
         {/* Products Table */}
