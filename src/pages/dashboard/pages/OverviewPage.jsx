@@ -35,7 +35,7 @@ const OverviewPage = () => {
   });
 
   const formattedSales = data?.totalSales
-    ? `$${data.totalSales.toLocaleString()}`
+    ? `৳${data.totalSales.toLocaleString()}`
     : isError
     ? "Error"
     : "৳0";
