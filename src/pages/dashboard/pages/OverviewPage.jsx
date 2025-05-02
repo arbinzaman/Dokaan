@@ -101,7 +101,7 @@ const OverviewPage = () => {
             color={ACCENT_COLOR}
           />
           <StatCard
-            name="Total Revenue"
+            name="Total Profit"
             icon={FaBangladeshiTakaSign} // Swap to Rupee or Taka-looking icon
             value={revenueLoading ? "..." : `৳${totalRevenue.toLocaleString()}`}
             color="#EF4444"

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { toast } from "react-hot-toast";
@@ -6,35 +6,44 @@ import { useUser } from "@/contexts/AuthContext";
 import { Button } from "@mui/material";
 import SaleBarcodeScanner from "../../../components/dashBoard/home/sales/saleScanner/SaleBarcodeScanner";
 
+
 const AddSaleProduct = () => {
   const [scannedProduct, setScannedProduct] = useState(null);
-  const [sellingPrice, setSellingPrice] = useState("");
+  const [sellingPrice, setSellingPrice] = useState(); // Default to 0
   const [quantity, setQuantity] = useState(1);
+  const [discount, setDiscount] = useState(0);
   const [loading, setLoading] = useState(false);
   const { user, dokaan } = useUser();
+  const [totalPrice, setTotalPrice] = useState(0);
+console.log(scannedProduct?.matchedProduct?.salesPrice);
+  useEffect(() => {
+    // Recalculate total price whenever sellingPrice, quantity, or discount change
+    const totalBeforeDiscount = quantity * sellingPrice;
+    const discountAmount = (discount / 100) * totalBeforeDiscount;
+    const finalTotalPrice = totalBeforeDiscount - discountAmount;
 
-  console.log(scannedProduct, "scannedProduct");
+    setTotalPrice(finalTotalPrice); // Update the total price
+  }, [sellingPrice, quantity, discount]); // Trigger on changes
+
   const handleScan = async (barcodeObject) => {
-    console.log(barcodeObject.barcode); // Log the scanned barcode
     try {
       const token = Cookies.get("XTOKEN");
       const response = await axios.post(
         `http://localhost:5000/api/v1/products/scan`,
-        barcodeObject, // e.g., { barcode: '6760700816045' }
+        barcodeObject,
         {
           headers: { Authorization: `${token}` },
         }
       );
 
       if (response.status === 200) {
-        console.log(response.data, "response.data.data");
         setScannedProduct(response.data);
+        setSellingPrice(response.data.matchedProduct.salesPrice); // Set the selling price from the scanned product
         toast.success("Product fetched successfully!");
       } else {
         toast.error("Product not found!");
       }
     } catch (error) {
-      console.error(error);
       toast.error("Error fetching product.");
     }
   };
@@ -54,7 +63,8 @@ const AddSaleProduct = () => {
       brand: scannedProduct.brand || "Unknown",
       salesPrice: parseFloat(sellingPrice),
       quantity: quantity,
-      totalPrice: quantity * parseFloat(sellingPrice),
+      discount: discount,
+      totalPrice: totalPrice, // Use the calculated total price
       shopAddress: dokaan.address || "N/A",
       ownerName: dokaan.ownerName || user.name,
       sellerId: user.id,
@@ -65,17 +75,16 @@ const AddSaleProduct = () => {
 
     try {
       setLoading(true);
-
       await axios.post("http://localhost:5000/api/v1/sales", payload, {
         headers: { Authorization: `${token}` },
       });
 
       toast.success("Sale recorded successfully!");
       setScannedProduct(null);
-      setSellingPrice("");
+      setSellingPrice(0);
       setQuantity(1);
+      setDiscount(0);
     } catch (error) {
-      console.error(error);
       toast.error("Failed to record sale.");
     } finally {
       setLoading(false);
@@ -131,8 +140,8 @@ const AddSaleProduct = () => {
                     <label className="text-sm">Selling Price</label>
                     <input
                       type="number"
-                      value={scannedProduct.matchedProduct.salesPrice}
-                      onChange={(e) => setSellingPrice(e.target.value)}
+                      value={sellingPrice}
+                      onChange={(e) => setSellingPrice(Number(e.target.value))}
                       className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
                     />
                   </div>
@@ -144,6 +153,28 @@ const AddSaleProduct = () => {
                       min="1"
                       value={quantity}
                       onChange={(e) => setQuantity(Number(e.target.value))}
+                      className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
+                    />
+                  </div>
+
+                  <div className="col-span-full sm:col-span-1">
+                    <label className="text-sm">Discount (%)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={discount}
+                      onChange={(e) => setDiscount(Number(e.target.value))}
+                      className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
+                    />
+                  </div>
+
+                  <div className="col-span-full sm:col-span-1">
+                    <label className="text-sm">Total Price (After Discount)</label>
+                    <input
+                      type="text"
+                      readOnly
+                      value={totalPrice.toFixed(2)}
                       className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
                     />
                   </div>
