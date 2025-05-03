@@ -35,7 +35,7 @@ const OverviewPage = () => {
   });
 
   const formattedSales = data?.totalSales
-    ? `$${data.totalSales.toLocaleString()}`
+    ? `৳${data.totalSales.toLocaleString()}`
     : isError
     ? "Error"
     : "৳0";
@@ -101,7 +101,7 @@ const OverviewPage = () => {
             color={ACCENT_COLOR}
           />
           <StatCard
-            name="Total Revenue"
+            name="Total Profit"
             icon={FaBangladeshiTakaSign} // Swap to Rupee or Taka-looking icon
             value={revenueLoading ? "..." : `৳${totalRevenue.toLocaleString()}`}
             color="#EF4444"

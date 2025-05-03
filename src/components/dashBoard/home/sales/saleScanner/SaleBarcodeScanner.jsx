@@ -17,16 +17,41 @@ const SaleBarcodeScanner = ({ onScan }) => {
           type: "LiveStream",
           constraints: {
             width: 800,
+            height: 600,
             facingMode: "environment",
           },
+          area: {
+            // crop image to focus center
+            top: "25%",
+            right: "25%",
+            left: "25%",
+            bottom: "25%",
+          },
+          singleChannel: false,
         },
+        frequency: 10, // try 5–15
+
         locator: {
-          patchSize: "large",
-          halfSample: false,
+          patchSize: "x-large", // better for distant barcodes
+          halfSample: true, // speeds up and improves performance
         },
+
         numOfWorkers: navigator.hardwareConcurrency,
         decoder: {
-          readers: ["ean_reader"],
+          readers: [
+            "code_128_reader",
+            "ean_reader",
+            "ean_8_reader",
+            "upc_reader",
+            "upc_e_reader",
+            "code_39_reader",
+            "code_39_vin_reader",
+            "codabar_reader",
+            "i2of5_reader",
+            "i2of5_reader",
+            "code_93_reader"
+
+          ],
         },
         locate: true,
       },
@@ -39,11 +64,22 @@ const SaleBarcodeScanner = ({ onScan }) => {
       }
     );
 
+    let lastScannedCode = null;
+
     Quagga.onDetected((data) => {
       const code = data.codeResult.code;
-      if (code) {
+
+      const errors = data.codeResult.decodedCodes
+        .map((d) => d.error)
+        .filter((e) => e !== undefined);
+
+      const averageError = errors.reduce((a, b) => a + b, 0) / errors.length;
+
+      // Filter out weak scans (adjust threshold as needed)
+      if (code && averageError < 0.25 && code !== lastScannedCode) {
+        lastScannedCode = code;
         setScannedCode(code);
-        onScan({ barcode: code }); // Send object with barcode key
+        onScan({ barcode: code });
         playBeep();
         Quagga.stop();
       }
@@ -66,7 +102,6 @@ const SaleBarcodeScanner = ({ onScan }) => {
             <input
               type="text"
               value={scannedCode}
-              readOnly
               className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2 mt-2"
             />
           )}
@@ -79,7 +114,6 @@ const SaleBarcodeScanner = ({ onScan }) => {
           <input
             type="text"
             value={scannedCode}
-            readOnly
             className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2 mt-2"
           />
         )}
