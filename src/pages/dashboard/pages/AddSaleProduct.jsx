@@ -29,7 +29,7 @@ console.log(scannedProduct?.matchedProduct?.salesPrice);
     try {
       const token = Cookies.get("XTOKEN");
       const response = await axios.post(
-        `http://localhost:5000/api/v1/products/scan`,
+       `${import.meta.env.VITE_BASE_URL}/products/scan`,
         barcodeObject,
         {
           headers: { Authorization: `${token}` },
@@ -75,7 +75,7 @@ console.log(scannedProduct?.matchedProduct?.salesPrice);
 
     try {
       setLoading(true);
-      await axios.post("http://localhost:5000/api/v1/sales", payload, {
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/api/v1/sales`, payload, {
         headers: { Authorization: `${token}` },
       });
 
