@@ -75,7 +75,7 @@ console.log(scannedProduct?.matchedProduct?.salesPrice);
 
     try {
       setLoading(true);
-      await axios.post(`${import.meta.env.VITE_BASE_URL}/api/v1/sales`, payload, {
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/sales`, payload, {
         headers: { Authorization: `${token}` },
       });
 
