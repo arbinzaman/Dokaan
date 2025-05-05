@@ -3,7 +3,7 @@ import Home from "../pages/landingPage/home/Homee";
 import Main from "../layouts/Main";
 import Login from "../pages/landingPage/home/Login";
 // import SignUp from "../pages/landingPage/home/SignUp";
-import DashboardLayout from "../layouts/DashboardLayout"; 
+import DashboardLayout from "../layouts/DashboardLayout";
 import OverviewPage from "../pages/dashboard/pages/OverviewPage";
 import ProductsPage from "../pages/dashboard/pages/ProductsPage";
 import UsersPage from "../pages/dashboard/pages/UsersPage";
@@ -16,14 +16,15 @@ import RegistrationStepper from "../pages/landingPage/RegistrationProcess/Regist
 import DokaanProfile from "../components/dashBoard/Profile/DokaanProfile";
 import TestComponent from "../components/shared/Theme/TestComponent";
 // import AddProducts from "../pages/dashboard/pages/AddProducts";
- import AddProducts from "../components/dashBoard/home/products/AddProducts";
- import Scanner from "../components/dashBoard/home/products/Scanner/Scanner";
+import AddProducts from "../components/dashBoard/home/products/AddProducts";
+import Scanner from "../components/dashBoard/home/products/Scanner/Scanner";
 import AddSaleProduct from "../pages/dashboard/pages/AddSaleProduct";
 import Inventory from "../pages/dashboard/pages/Inventory";
 import ProductDetails from "../components/dashBoard/home/products/inventory/ProductDetails";
 import TotalItemsTable from "../components/dashBoard/home/products/inventory/TotalItemsTable";
 import InStockItemsTable from "../components/dashBoard/home/products/inventory/InStockItemsTable";
 import OutOfStockItemsTable from "../components/dashBoard/home/products/inventory/OutOfStockItemsTable";
+import PrivateRoute from "./PrivateRoutes";
 // import MobileSidebar from "../components/dashBoard/home/common/MobileSidebar";
 const router = createBrowserRouter(
   [
@@ -50,32 +51,36 @@ const router = createBrowserRouter(
       ],
     },
     {
-      path: "/dashboard",	
-      element: <DashboardLayout />,
+      path: "/dashboard",
+      element: (
+        <PrivateRoute>
+          <DashboardLayout />
+        </PrivateRoute>
+      ),
       children: [
         {
           path: "/dashboard",
           element: <OverviewPage />,
         },
         {
-          path : "/dashboard/products",
-          element : <ProductsPage />
+          path: "/dashboard/products",
+          element: <ProductsPage />,
         },
         {
-          path : "/dashboard/users",
-          element : <UsersPage />
+          path: "/dashboard/users",
+          element: <UsersPage />,
         },
         {
-          path : "/dashboard/sales",
-          element : <SalesPage />
+          path: "/dashboard/sales",
+          element: <SalesPage />,
         },
         {
-          path : "/dashboard/orders",
-          element : <OrdersPage />
+          path: "/dashboard/orders",
+          element: <OrdersPage />,
         },
         {
-          path : "/dashboard/analytics",
-          element : <AnalyticsPage />
+          path: "/dashboard/analytics",
+          element: <AnalyticsPage />,
         },
         {
           path: "/dashboard/settings",
@@ -87,11 +92,11 @@ const router = createBrowserRouter(
         },
         {
           path: "/dashboard/product-add",
-          element: <AddProducts/>,
+          element: <AddProducts />,
         },
         {
           path: "/dashboard/product-sell",
-          element: <AddSaleProduct/>,
+          element: <AddSaleProduct />,
         },
         {
           path: "/dashboard/test",
@@ -126,7 +131,7 @@ const router = createBrowserRouter(
         //   element: <MobileSidebar />,
         // }
       ],
-    }
+    },
   ],
   {
     future: {
