@@ -1,6 +1,6 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../../../contexts/AuthContext";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { ThreeDots } from "react-loader-spinner";
@@ -113,6 +113,12 @@ const Login = () => {
             </button>
           )}
         </form>
+        <p className="text-center text-white text-sm mt-4">
+          Don’t have an account?{" "}
+          <Link to='/signup' className="text-blue-400 ">
+            Register at Dokaan
+          </Link>
+        </p>
       </div>
     </div>
   );

@@ -37,7 +37,7 @@ const SalesPage = () => {
       }
 
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/sales/total-revenue`,
+        `${import.meta.env.VITE_BASE_URL}/sales/total-revenue/?shopId=${shopId}`,
         {
           headers: {
             Authorization: `${token}`,
