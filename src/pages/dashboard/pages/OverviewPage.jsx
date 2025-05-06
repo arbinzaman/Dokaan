@@ -13,18 +13,28 @@ import SalesTrendChart from "../../../components/dashBoard/home/products/SalesTr
 const ACCENT_COLOR = "rgb(204, 51, 51)";
 
 const OverviewPage = () => {
-   const {  dokaan } = useUser(); // Get user details from context
+  const { dokaan } = useUser(); // Get user details from context
+
+  // Fetch total sales
   const { data, isError } = useQuery({
     queryKey: ["totalSales"],
     queryFn: async () => {
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/sales/total`
+        `${import.meta.env.VITE_BASE_URL}/sales/total?shopId=${dokaan.id}`
       );
       return response.data;
     },
   });
 
-  const { data: productData, isError: isProductError } = useQuery({
+  // console.log(data, "total sales data");
+
+  // Check if dokaan is defined before accessing its properties
+  const matchedShopSales = data?.find(
+    (item) => String(item.shopId) === String(dokaan?.id)
+  );
+
+  // Fetch total products
+  const { data: productData } = useQuery({
     queryKey: ["totalProducts"],
     queryFn: async () => {
       const response = await axios.get(
@@ -33,18 +43,27 @@ const OverviewPage = () => {
       return response.data;
     },
   });
+  // console.log(productData, "total products data");
 
-  const formattedSales = data?.totalSales
-    ? `৳${data.totalSales.toLocaleString()}`
-    : isError
+  const formattedSales = isError
     ? "Error"
-    : "৳0";
+    : `৳${(matchedShopSales?.totalSales ?? 0).toLocaleString()}`;
 
-  const formattedProducts = productData?.data
-    ? productData.data
-    : isProductError
+
+
+  // Check if dokaan is defined before accessing its properties
+  const matchedShopProduct = productData?.data?.find(
+    (item) => String(item.shopId) === String(dokaan?.id)
+  );
+// console.log(matchedShopProduct, "matchedShopProduct");
+
+
+
+  const formattedProducts = isError
     ? "Error"
-    : "0";
+    : matchedShopProduct?.totalProducts ?? 0;
+
+
   // Fetch total revenue
   const { data: revenueData = {}, isLoading: revenueLoading } = useQuery({
     queryKey: ["totalRevenue", dokaan?.id],
@@ -61,7 +80,9 @@ const OverviewPage = () => {
       }
 
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/sales/total-revenue/?shopId=${shopId}`,
+        `${
+          import.meta.env.VITE_BASE_URL
+        }/sales/total-revenue/?shopId=${shopId}`,
         {
           headers: {
             Authorization: `${token}`,
