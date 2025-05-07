@@ -20,8 +20,8 @@ const Inventory = () => {
   const {
     data: inventory = [],
     isLoading,
-    isError,
-    error,
+    // isError,
+    // error,
   } = useQuery({
     queryKey: ["inventory", user?.id],
     queryFn: async () => {
@@ -149,15 +149,7 @@ const Inventory = () => {
 
         {/* Inventory Table */}
         <InventoryTable items={filteredInventory} loading={isLoading} />
-        {/* Loading / Error Messages */}
-        {isLoading && (
-          <div className="text-center text-gray-500 dark:text-gray-400">
-            Loading inventory...
-          </div>
-        )}
-        {isError && (
-          <div className="text-center text-red-500">Error: {error.message}</div>
-        )}
+
       </main>
     </div>
   );

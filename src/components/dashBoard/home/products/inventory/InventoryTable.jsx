@@ -13,7 +13,12 @@ const InventoryTable = ({ items, loading }) => {
     }
   
     if (!items || items.length === 0) {
-      return <div className="text-center text-gray-500 dark:text-gray-400">No inventory items found.</div>;
+      return (
+        <>
+          <div className="text-center text-gray-500 dark:text-gray-400">No inventory items found.<br />Please add some product.</div>
+          
+        </>
+      );
     }
   
     return (
