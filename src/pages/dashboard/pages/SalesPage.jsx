@@ -10,6 +10,7 @@ import SalesByCategoryChart from "../../../components/dashBoard/home/sales/Sales
 import DailySalesTrend from "../../../components/dashBoard/home/sales/DailySalesTrend";
 import { useUser } from "../../../contexts/AuthContext";
 import SalesTrendChart from "../../../components/dashBoard/home/products/SalesTrendChart";
+import CategoryDistributionChart from "../../../components/dashBoard/home/overview/CategoryDistributionChart";
 
 const salesStats = {
   totalRevenue: "$1,234,567",
@@ -17,7 +18,7 @@ const salesStats = {
   conversionRate: "3.45%",
   salesGrowth: "12.3%",
 };
-
+const ACCENT_COLOR = "rgb(204, 51, 51)";
 const SalesPage = () => {
   const { dokaan } = useUser();
 
@@ -98,6 +99,7 @@ const SalesPage = () => {
 
         <div className=" mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <SalesByCategoryChart />
+          <CategoryDistributionChart accentColor={ACCENT_COLOR} />
           <DailySalesTrend />
         </div>
       </main>

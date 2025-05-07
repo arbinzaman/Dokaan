@@ -9,20 +9,23 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-
-const fetchCategoryDistribution = async () => {
-  const { data } = await axios.get(
-    `${import.meta.env.VITE_BASE_URL}/sales/category-wise`
-  );
-  return data.map(item => ({
-    name: item.category,
-    value: item.totalSalesAmount,
-  }));
-};
+import { useUser } from "../../../../contexts/AuthContext";
 
 const COLORS = ["#6366F1", "#8B5CF6", "#EC4899", "#10B981", "#F59E0B"];
 
 const CategoryDistributionChart = () => {
+
+const { dokaan } = useUser(); // Get user details from context
+  const fetchCategoryDistribution = async () => {
+    const { data } = await axios.get(
+      `${import.meta.env.VITE_BASE_URL}/sales/category-wise?shopId=${dokaan.id}`
+    );
+    return data.map((item) => ({
+      name: item.category,
+      value: item.totalSalesAmount,
+    }));
+  };
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["category-distribution"],
     queryFn: fetchCategoryDistribution,
@@ -30,19 +33,21 @@ const CategoryDistributionChart = () => {
 
   return (
     <motion.div
-      className='bg-white dark:bg-black shadow-lg rounded-xl p-6'
+      className="bg-white dark:bg-black shadow-lg rounded-xl p-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
     >
-      <h2 className='text-lg font-medium mb-4 dark:text-white'>Category Distribution</h2>
+      <h2 className="text-lg font-medium mb-4 dark:text-white">
+        Category Distribution
+      </h2>
 
       {isLoading ? (
-        <p className='text-gray-500 dark:text-gray-400'>Loading chart...</p>
+        <p className="text-gray-500 dark:text-gray-400">Loading chart...</p>
       ) : isError ? (
-        <p className='text-sm text-red-500'>Failed to load data.</p>
+        <p className="text-sm text-red-500">Failed to load data.</p>
       ) : data?.length > 0 ? (
-        <div className='h-80'>
+        <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -76,7 +81,7 @@ const CategoryDistributionChart = () => {
           </ResponsiveContainer>
         </div>
       ) : (
-        <p className='text-sm text-gray-500 dark:text-gray-400'>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           No data available
         </p>
       )}

@@ -11,16 +11,21 @@ import {
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { useUser } from "../../../../contexts/AuthContext";
 
-const fetchSalesData = async () => {
-  const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/sales/stats-by-month`);
-  return response.data.map(item => ({
-    month: item.month,
-    sales: item.sales,
-  }));
-};
+
 
 const SalesTrendChart = () => {
+  const {dokaan} = useUser(); // Get user details from context
+  
+  const fetchSalesData = async () => {
+    const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/sales/stats-by-month?shopId=${dokaan.id}`);
+    return response.data.map(item => ({
+      month: item.month,
+      sales: item.sales,
+    }));
+  };
+ 
   const {
     data: salesData = [],
     // isLoading,

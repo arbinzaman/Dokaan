@@ -29,9 +29,8 @@ const OverviewPage = () => {
   // console.log(data, "total sales data");
 
   // Check if dokaan is defined before accessing its properties
-  const matchedShopSales = data?.find(
-    (item) => String(item.shopId) === String(dokaan?.id)
-  );
+  const matchedShopSales = data && String(data.shopId) === String(dokaan?.id) ? data : null;
+
 
   // Fetch total products
   const { data: productData } = useQuery({
@@ -49,20 +48,15 @@ const OverviewPage = () => {
     ? "Error"
     : `৳${(matchedShopSales?.totalSales ?? 0).toLocaleString()}`;
 
-
-
   // Check if dokaan is defined before accessing its properties
   const matchedShopProduct = productData?.data?.find(
     (item) => String(item.shopId) === String(dokaan?.id)
   );
-// console.log(matchedShopProduct, "matchedShopProduct");
-
-
+  // console.log(matchedShopProduct, "matchedShopProduct");
 
   const formattedProducts = isError
     ? "Error"
     : matchedShopProduct?.totalProducts ?? 0;
-
 
   // Fetch total revenue
   const { data: revenueData = {}, isLoading: revenueLoading } = useQuery({
@@ -82,7 +76,7 @@ const OverviewPage = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_BASE_URL
-        }/sales/total-revenue/?shopId=${shopId}`,
+        }/sales/total-revenue?${shopId}`,
         {
           headers: {
             Authorization: `${token}`,
@@ -98,7 +92,8 @@ const OverviewPage = () => {
     enabled: !!dokaan?.id,
   });
   const totalRevenue = revenueData?.totalRevenue || 0;
-
+  // console.log(revenueData, "total revenue data");
+  // console.log(dokaan.id, "shop id");
   return (
     <div className="flex-1 overflow-auto relative z-10">
       <main className="max-w-7xl mx-auto py-6 px-4 lg:px-8">

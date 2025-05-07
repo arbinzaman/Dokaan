@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Edit, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 
-const ProductsTable = ({ products,  }) => {
+const ProductsTable = ({ products }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredProducts = products
@@ -15,9 +15,6 @@ const ProductsTable = ({ products,  }) => {
               .includes(searchTerm.toLowerCase()))
       )
     : [];
-
-  // If loading, show a loading message
-  // if (loading) return <p className="text-center text-gray-500">Loading products...</p>;
 
   return (
     <motion.div
@@ -71,52 +68,63 @@ const ProductsTable = ({ products,  }) => {
           </thead>
 
           <tbody className="divide-y divide-gray-700">
-            {filteredProducts.map((product) => (
-              <motion.tr
-                key={product.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black dark:text-white flex gap-2 items-center">
-                  <img
-                    src={
-                      product.imageUrl
-                        ? `${import.meta.env.VITE_BASE_URL}/products/${
-                            product.imageUrl
-                          }`
-                        : "/default-image.jpg"
-                    }
-                    alt="Product img"
-                    className="size-10 rounded-full"
-                  />
-                  {product.name}
+            {filteredProducts.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="text-center text-gray-500 dark:text-gray-400 py-8"
+                >
+                  No products available. Add some products.
                 </td>
+              </tr>
+            ) : (
+              filteredProducts.map((product) => (
+                <motion.tr
+                  key={product.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black dark:text-white flex gap-2 items-center">
+                    <img
+                      src={
+                        product.imageUrl
+                          ? `${import.meta.env.VITE_BASE_URL}/products/${product.imageUrl}`
+                          : "/default-image.jpg"
+                      }
+                      alt="Product img"
+                      className="size-10 rounded-full"
+                    />
+                    {product.name}
+                  </td>
 
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
-                  {product.itemCategory ? product.itemCategory : "No category"}
-                </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
+                    {product.itemCategory || "No category"}
+                  </td>
 
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
-                  ৳ {product.salesPrice ? product.salesPrice.toFixed(2) : "N/A"}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
-                  {product.initialStock}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
-                  {product.sales?.length || 0}
-                </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
+                    ৳ {product.salesPrice ? product.salesPrice.toFixed(2) : "N/A"}
+                  </td>
 
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
-                  <button className="text-indigo-400 hover:text-indigo-300 mr-2">
-                    <Edit size={18} />
-                  </button>
-                  <button className="text-red-400 hover:text-red-300">
-                    <Trash2 size={18} />
-                  </button>
-                </td>
-              </motion.tr>
-            ))}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
+                    {product.initialStock}
+                  </td>
+
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
+                    {product.sales?.length || 0}
+                  </td>
+
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
+                    <button className="text-indigo-400 hover:text-indigo-300 mr-2">
+                      <Edit size={18} />
+                    </button>
+                    <button className="text-red-400 hover:text-red-300">
+                      <Trash2 size={18} />
+                    </button>
+                  </td>
+                </motion.tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

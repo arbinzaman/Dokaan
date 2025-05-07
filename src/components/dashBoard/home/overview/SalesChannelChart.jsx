@@ -10,22 +10,24 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
-const fetchSalesCategoryWise = async () => {
-  const { data } = await axios.get(
-    `${import.meta.env.VITE_BASE_URL}/sales/category-wise`
-  );
-  // Map API response to recharts-friendly format
-  return data.map((item) => ({
-    name: item.category,
-    value: item.totalSalesAmount,
-  }));
-};
+import { useUser } from "../../../../contexts/AuthContext";
 
 const SalesChannelChart = ({
   accentColor = "#6366F1",
   title = "Sales by Category",
 }) => {
+  const { dokaan } = useUser(); // Get user details from context
+  const fetchSalesCategoryWise = async () => {
+    const { data } = await axios.get(
+      `${import.meta.env.VITE_BASE_URL}/sales/category-wise?shopId=${dokaan.id}`
+    );
+    // Map API response to recharts-friendly format
+    return data.map((item) => ({
+      name: item.category,
+      value: item.totalSalesAmount,
+    }));
+  };
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["sales-category-wise"],
     queryFn: fetchSalesCategoryWise,
