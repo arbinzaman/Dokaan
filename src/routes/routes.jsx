@@ -25,6 +25,7 @@ import TotalItemsTable from "../components/dashBoard/home/products/inventory/Tot
 import InStockItemsTable from "../components/dashBoard/home/products/inventory/InStockItemsTable";
 import OutOfStockItemsTable from "../components/dashBoard/home/products/inventory/OutOfStockItemsTable";
 import PrivateRoute from "./PrivateRoutes";
+import SalesTable from "../components/dashBoard/home/sales/SalesTable";
 // import MobileSidebar from "../components/dashBoard/home/common/MobileSidebar";
 const router = createBrowserRouter(
   [
@@ -125,6 +126,10 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/products/out-of-stock",
           element: <OutOfStockItemsTable />,
+        },
+        {
+          path: "/dashboard/sales-table",
+          element: <SalesTable />,
         },
         // {
         //   path: "/dashboard/mobile-nav",
