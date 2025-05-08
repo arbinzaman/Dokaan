@@ -57,7 +57,7 @@ const Login = () => {
             setError("Failed to send OTP.");
           }
         } else {
-          toast.success("Login successful! 🎉");
+          // toast.success("Login successful! 🎉");
           navigate("/dashboard");
         }
       } else {
