@@ -11,6 +11,7 @@ import DailySalesTrend from "../../../components/dashBoard/home/sales/DailySales
 import { useUser } from "../../../contexts/AuthContext";
 import SalesTrendChart from "../../../components/dashBoard/home/products/SalesTrendChart";
 import CategoryDistributionChart from "../../../components/dashBoard/home/overview/CategoryDistributionChart";
+import SalesTable from "../../../components/dashBoard/home/sales/SalesTable";
 
 const salesStats = {
   totalRevenue: "$1,234,567",
@@ -95,7 +96,7 @@ const SalesPage = () => {
             color="#EF4444"
           />
         </motion.div>
-
+        <SalesTable />
         {/* <SalesOverviewChart /> */}
         <SalesTrendChart />
 

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useUser } from "../../../../contexts/AuthContext";
 import { Link } from "react-router-dom";
@@ -27,7 +27,6 @@ const fetchSalesData = async ({ queryKey }) => {
   );
 
   if (!res.ok) throw new Error("Failed to fetch sales");
-  console.log(res);
   const response = await res.json();
   return Array.isArray(response.filteredSales) ? response.filteredSales : [];
 };
@@ -39,6 +38,9 @@ const SalesTable = () => {
   const [month, setMonth] = useState("");
   const [day, setDay] = useState("");
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   const {
     data: sales = [],
     isLoading,
@@ -49,10 +51,9 @@ const SalesTable = () => {
     enabled: !!dokaan?.id,
   });
 
-  console.log(sales);
+  // Filter logic
   const filteredSales = sales.filter((sale) => {
     const term = searchTerm.toLowerCase();
-
     const name = sale.name ? sale.name.toLowerCase() : "";
     const itemCategory = sale.itemCategory
       ? sale.itemCategory.toLowerCase()
@@ -63,6 +64,23 @@ const SalesTable = () => {
       name.includes(term) || itemCategory.includes(term) || code.includes(term)
     );
   });
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, year, month, day]);
+
+  // Pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentSales = filteredSales.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredSales.length / itemsPerPage);
+
+  const goToPage = (pageNum) => {
+    if (pageNum >= 1 && pageNum <= totalPages) {
+      setCurrentPage(pageNum);
+    }
+  };
 
   const renderOptions = (options) =>
     options.map((opt) => (
@@ -177,7 +195,7 @@ const SalesTable = () => {
                   Error loading sales
                 </td>
               </tr>
-            ) : filteredSales.length === 0 ? (
+            ) : currentSales.length === 0 ? (
               <tr>
                 <td colSpan={9} className="text-center py-8 text-gray-500">
                   No sales records available.
@@ -191,7 +209,7 @@ const SalesTable = () => {
                 </td>
               </tr>
             ) : (
-              filteredSales.map((sale) => (
+              currentSales.map((sale) => (
                 <motion.tr
                   key={sale.id}
                   initial={{ opacity: 0 }}
@@ -217,7 +235,9 @@ const SalesTable = () => {
                     {sale.code}
                   </td>
                   <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    {sale.soldAt ? new Date(sale.soldAt).toLocaleString() : "-"}
+                    {sale.soldAt
+                      ? new Date(sale.soldAt).toLocaleString()
+                      : "-"}
                   </td>
                   <td className="px-6 py-4 text-sm text-black dark:text-white">
                     {sale.seller?.name || "-"}
@@ -231,6 +251,42 @@ const SalesTable = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-6 gap-2 flex-wrap">
+          <button
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1 bg-gray-300 dark:bg-gray-700 text-black dark:text-white rounded disabled:opacity-50"
+          >
+            Prev
+          </button>
+          {[...Array(totalPages)].map((_, i) => {
+            const page = i + 1;
+            return (
+              <button
+                key={page}
+                onClick={() => goToPage(page)}
+                className={`px-3 py-1 rounded ${
+                  page === currentPage
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
+                }`}
+              >
+                {page}
+              </button>
+            );
+          })}
+          <button
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 bg-gray-300 dark:bg-gray-700 text-black dark:text-white rounded disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 };
