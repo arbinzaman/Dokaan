@@ -9,35 +9,37 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import InventoryTable from "../../../components/dashBoard/home/products/inventory/InventoryTable";
 
+const ITEMS_PER_PAGE = 10;
+
 const Inventory = () => {
-  const { user } = useUser();
+  const { user, dokaan } = useUser();
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [page, setPage] = useState(1);
 
-  // Fetch inventory data
   const {
     data: inventory = [],
     isLoading,
-    // isError,
-    // error,
   } = useQuery({
-    queryKey: ["inventory", user?.id],
+    queryKey: ["inventory", user?.id, selectedCategory],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
       if (!token) throw new Error("No token found in cookies");
 
-      const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/products/${user?.email}`,
-        {
-          headers: {
-            Authorization: `${token}`,
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const baseUrl = import.meta.env.VITE_BASE_URL;
+      const endpoint = selectedCategory
+        ? `${baseUrl}/products/category?shopId=${dokaan.id}&categories=${selectedCategory}`
+        : `${baseUrl}/products/${user?.email}`;
+
+      const response = await axios.get(endpoint, {
+        headers: {
+          Authorization: `${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
 
       return response.data.data;
     },
@@ -46,20 +48,17 @@ const Inventory = () => {
 
   const totalItems = inventory.length;
   const inStockCount = inventory.filter((item) => item.initialStock > 0).length;
-  const outOfStockCount = inventory.filter(
-    (item) => item.initialStock <= 0
-  ).length;
+  const outOfStockCount = inventory.filter((item) => item.initialStock <= 0).length;
 
-  // Filtered inventory
-  const filteredInventory = inventory.filter((item) => {
-    const matchesSearch = item.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory
-      ? item.itemCategory === selectedCategory
-      : true;
-    return matchesSearch && matchesCategory;
-  });
+  // Filter and paginate
+  const filteredInventory = inventory.filter((item) =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const paginatedItems = filteredInventory.slice(
+    (page - 1) * ITEMS_PER_PAGE,
+    page * ITEMS_PER_PAGE
+  );
 
   const uniqueCategories = [
     ...new Set(
@@ -69,7 +68,7 @@ const Inventory = () => {
     ),
   ];
 
-  console.log(inventory);
+  const totalPages = Math.ceil(filteredInventory.length / ITEMS_PER_PAGE);
 
   return (
     <div className="flex-1 overflow-auto relative z-10">
@@ -87,9 +86,7 @@ const Inventory = () => {
             value={totalItems}
             color="#6366F1"
             onClick={() =>
-              navigate("/dashboard/total-products", {
-                state: { items: inventory },
-              })
+              navigate("/dashboard/total-products", { state: { items: inventory } })
             }
           />
           <StatCard
@@ -98,9 +95,7 @@ const Inventory = () => {
             value={inStockCount}
             color="#10B981"
             onClick={() =>
-              navigate("/dashboard/products/in-stock", {
-                state: { items: inventory },
-              })
+              navigate("/dashboard/products/in-stock", { state: { items: inventory } })
             }
           />
           <StatCard
@@ -123,15 +118,21 @@ const Inventory = () => {
               type="text"
               placeholder="Search products..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
               className="border rounded-md px-3 py-2 w-full sm:w-64 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
             />
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setPage(1);
+              }}
               className="border rounded-md px-3 py-2 w-full sm:w-48 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
             >
-              <option value="">Categories</option>
+              <option value="">All Categories</option>
               {uniqueCategories.map((category, idx) => (
                 <option key={idx} value={category}>
                   {category}
@@ -139,6 +140,7 @@ const Inventory = () => {
               ))}
             </select>
           </div>
+
           <button
             onClick={() => navigate("/dashboard/product-add")}
             className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
@@ -148,8 +150,26 @@ const Inventory = () => {
         </div>
 
         {/* Inventory Table */}
-        <InventoryTable items={filteredInventory} loading={isLoading} />
+        <InventoryTable items={paginatedItems} loading={isLoading} />
 
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-6 space-x-2">
+            {Array.from({ length: totalPages }, (_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setPage(idx + 1)}
+                className={`px-3 py-1 rounded-md ${
+                  page === idx + 1
+                    ? "bg-indigo-600 text-white"
+                    : "bg-gray-200 dark:bg-gray-700 dark:text-white"
+                }`}
+              >
+                {idx + 1}
+              </button>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );

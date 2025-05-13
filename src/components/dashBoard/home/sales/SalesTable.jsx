@@ -1,93 +1,36 @@
 import { motion } from "framer-motion";
-import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useUser } from "../../../../contexts/AuthContext";
-import { Link } from "react-router-dom";
-import Cookies from "js-cookie";
+import { Edit, Search, Trash2 } from "lucide-react";
+import { useState } from "react";
 
-const fetchSalesData = async ({ queryKey }) => {
-  const [, shopId, year, month, day] = queryKey;
-  const token = Cookies.get("XTOKEN");
-
-  const params = new URLSearchParams();
-  if (shopId) params.append("shopId", shopId);
-  if (year) params.append("year", year);
-  if (month) params.append("month", month);
-  if (day) params.append("day", day);
-
-  const res = await fetch(
-    `${import.meta.env.VITE_BASE_URL}/sales?${params.toString()}`,
-    {
-      headers: {
-        Authorization: token,
-        Accept: "application/json",
-      },
-    }
-  );
-
-  if (!res.ok) throw new Error("Failed to fetch sales");
-  const response = await res.json();
-  return Array.isArray(response.filteredSales) ? response.filteredSales : [];
-};
-
-const SalesTable = () => {
-  const { dokaan } = useUser();
+const ProductsTable = ({ products }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [year, setYear] = useState("");
-  const [month, setMonth] = useState("");
-  const [day, setDay] = useState("");
-
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const {
-    data: sales = [],
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["sales", dokaan?.id, year, month, day],
-    queryFn: fetchSalesData,
-    enabled: !!dokaan?.id,
-  });
+  const filteredProducts = products
+    ? products.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (product.itemCategory &&
+            product.itemCategory
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()))
+      )
+    : [];
 
-  // Filter logic
-  const filteredSales = sales.filter((sale) => {
-    const term = searchTerm.toLowerCase();
-    const name = sale.name ? sale.name.toLowerCase() : "";
-    const itemCategory = sale.itemCategory
-      ? sale.itemCategory.toLowerCase()
-      : "";
-    const code = sale.code ? sale.code.toLowerCase() : "";
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
-    return (
-      name.includes(term) || itemCategory.includes(term) || code.includes(term)
-    );
-  });
-
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, year, month, day]);
-
-  // Pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentSales = filteredSales.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredSales.length / itemsPerPage);
-
-  const goToPage = (pageNum) => {
-    if (pageNum >= 1 && pageNum <= totalPages) {
-      setCurrentPage(pageNum);
-    }
+  const handlePrev = () => {
+    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
   };
 
-  const renderOptions = (options) =>
-    options.map((opt) => (
-      <option key={opt} value={opt}>
-        {opt}
-      </option>
-    ));
+  const handleNext = () => {
+    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+  };
 
   return (
     <motion.div
@@ -96,65 +39,25 @@ const SalesTable = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
     >
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-black dark:text-white">
-          Sales List
+          Product List
         </h2>
-        <div className="flex gap-3 flex-wrap items-center">
-          <select
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            className="p-2 rounded"
-          >
-            <option value="">All Years</option>
-            {renderOptions(["2023", "2024", "2025"])}
-          </select>
-          <select
-            value={month}
-            onChange={(e) => setMonth(e.target.value)}
-            className="p-2 rounded"
-          >
-            <option value="">All Months</option>
-            {renderOptions([
-              "jan",
-              "feb",
-              "march",
-              "april",
-              "may",
-              "june",
-              "july",
-              "aug",
-              "sep",
-              "oct",
-              "nov",
-              "dec",
-            ])}
-          </select>
-          <select
-            value={day}
-            onChange={(e) => setDay(e.target.value)}
-            className="p-2 rounded"
-          >
-            <option value="">All Days</option>
-            {renderOptions(
-              [...Array(31).keys()].map((d) =>
-                (d + 1).toString().padStart(2, "0")
-              )
-            )}
-          </select>
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search"
-              className="bg-blue-400 dark:bg-gray-400 text-white placeholder-white rounded-lg pl-10 pr-4 py-2 focus:outline-none"
-              onChange={(e) => setSearchTerm(e.target.value)}
-              value={searchTerm}
-            />
-            <Search
-              className="absolute left-3 top-2.5 text-black dark:text-white"
-              size={18}
-            />
-          </div>
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search"
+            className="bg-red-400 dark:bg-gray-400 text-white placeholder-white rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1); // Reset page on search
+            }}
+            value={searchTerm}
+          />
+          <Search
+            className="absolute left-3 top-2.5 text-black dark:text-white"
+            size={18}
+          />
         </div>
       </div>
 
@@ -162,88 +65,73 @@ const SalesTable = () => {
         <table className="min-w-full divide-y divide-gray-700">
           <thead>
             <tr>
-              {[
-                "Name",
-                "Category",
-                "Price",
-                "Quantity",
-                "Total",
-                "Code",
-                "Sold At",
-                "Seller",
-                "Shop",
-              ].map((h) => (
-                <th
-                  key={h}
-                  className="px-6 py-3 text-left text-xs font-medium text-black dark:text-white uppercase"
-                >
-                  {h}
-                </th>
-              ))}
+              {["Name", "Category", "Price", "Stock", "Sales", "Actions"].map(
+                (h) => (
+                  <th
+                    key={h}
+                    className="px-6 py-3 text-left text-xs font-medium text-black dark:text-white uppercase tracking-wider"
+                  >
+                    {h}
+                  </th>
+                )
+              )}
             </tr>
           </thead>
+
           <tbody className="divide-y divide-gray-700">
-            {isLoading ? (
+            {paginatedProducts.length === 0 ? (
               <tr>
-                <td colSpan={9} className="text-center py-8 text-gray-500">
-                  Loading...
-                </td>
-              </tr>
-            ) : error ? (
-              <tr>
-                <td colSpan={9} className="text-center py-8 text-red-500">
-                  Error loading sales
-                </td>
-              </tr>
-            ) : currentSales.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="text-center py-8 text-gray-500">
-                  No sales records available.
-                  <div className="mt-4">
-                    <Link to="/dashboard/product-add">
-                      <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-                        Add Product
-                      </button>
-                    </Link>
-                  </div>
+                <td
+                  colSpan={6}
+                  className="text-center text-gray-500 dark:text-gray-400 py-8"
+                >
+                  No products available. Add some products.
                 </td>
               </tr>
             ) : (
-              currentSales.map((sale) => (
+              paginatedProducts.map((product) => (
                 <motion.tr
-                  key={sale.id}
+                  key={product.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    {sale.name}
+                  <td className="px-6 py-4 text-sm font-medium text-black dark:text-white flex gap-2 items-center">
+                    <img
+                      src={
+                        product.imageUrl
+                          ? `${import.meta.env.VITE_BASE_URL}/products/${product.imageUrl}`
+                          : "/default-image.jpg"
+                      }
+                      alt="Product img"
+                      className="size-10 rounded-full"
+                    />
+                    {product.name}
                   </td>
+
                   <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    {sale.itemCategory || "-"}
+                    {product.itemCategory || "No category"}
                   </td>
+
                   <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    ৳ {sale.salesPrice?.toFixed(2)}
+                    ৳ {product.salesPrice ? product.salesPrice.toFixed(2) : "N/A"}
                   </td>
+
                   <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    {sale.quantity}
+                    {product.initialStock}
                   </td>
+
                   <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    ৳ {sale.totalPrice?.toFixed(2)}
+                    {product.sales?.length || 0}
                   </td>
+
                   <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    {sale.code}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    {sale.soldAt
-                      ? new Date(sale.soldAt).toLocaleString()
-                      : "-"}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    {sale.seller?.name || "-"}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    {sale.shop?.name || "-"}
+                    <button className="text-indigo-400 hover:text-indigo-300 mr-2">
+                      <Edit size={18} />
+                    </button>
+                    <button className="text-red-400 hover:text-red-300">
+                      <Trash2 size={18} />
+                    </button>
                   </td>
                 </motion.tr>
               ))
@@ -252,36 +140,30 @@ const SalesTable = () => {
         </table>
       </div>
 
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-6 gap-2 flex-wrap">
+      {filteredProducts.length > itemsPerPage && (
+        <div className="flex justify-center mt-6 gap-4 items-center">
           <button
-            onClick={() => goToPage(currentPage - 1)}
+            onClick={handlePrev}
             disabled={currentPage === 1}
-            className="px-3 py-1 bg-gray-300 dark:bg-gray-700 text-black dark:text-white rounded disabled:opacity-50"
+            className={`px-4 py-2 rounded-md transition-all ${
+              currentPage === 1
+                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            }`}
           >
-            Prev
+            Previous
           </button>
-          {[...Array(totalPages)].map((_, i) => {
-            const page = i + 1;
-            return (
-              <button
-                key={page}
-                onClick={() => goToPage(page)}
-                className={`px-3 py-1 rounded ${
-                  page === currentPage
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
-                }`}
-              >
-                {page}
-              </button>
-            );
-          })}
+          <span className="text-black dark:text-white font-medium">
+            Page {currentPage} of {totalPages}
+          </span>
           <button
-            onClick={() => goToPage(currentPage + 1)}
+            onClick={handleNext}
             disabled={currentPage === totalPages}
-            className="px-3 py-1 bg-gray-300 dark:bg-gray-700 text-black dark:text-white rounded disabled:opacity-50"
+            className={`px-4 py-2 rounded-md transition-all ${
+              currentPage === totalPages
+                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            }`}
           >
             Next
           </button>
@@ -291,4 +173,4 @@ const SalesTable = () => {
   );
 };
 
-export default SalesTable;
+export default ProductsTable;

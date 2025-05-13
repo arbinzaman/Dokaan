@@ -4,6 +4,8 @@ import { useState } from "react";
 
 const ProductsTable = ({ products }) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const filteredProducts = products
     ? products.filter(
@@ -15,6 +17,20 @@ const ProductsTable = ({ products }) => {
               .includes(searchTerm.toLowerCase()))
       )
     : [];
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePrev = () => {
+    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+  };
 
   return (
     <motion.div
@@ -32,7 +48,10 @@ const ProductsTable = ({ products }) => {
             type="text"
             placeholder="Search"
             className="bg-red-400 dark:bg-gray-400 text-white placeholder-white rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1); // Reset to first page on search
+            }}
             value={searchTerm}
           />
           <Search
@@ -46,29 +65,19 @@ const ProductsTable = ({ products }) => {
         <table className="min-w-full divide-y divide-gray-700">
           <thead>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black dark:text-white uppercase tracking-wider">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black dark:text-white uppercase tracking-wider">
-                Category
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black dark:text-white uppercase tracking-wider">
-                Price
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black dark:text-white uppercase tracking-wider">
-                Stock
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black dark:text-white uppercase tracking-wider">
-                Sales
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black dark:text-white uppercase tracking-wider">
-                Actions
-              </th>
+              {["Name", "Category", "Price", "Stock", "Sales", "Actions"].map((h) => (
+                <th
+                  key={h}
+                  className="px-6 py-3 text-left text-xs font-medium text-black dark:text-white uppercase tracking-wider"
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
 
           <tbody className="divide-y divide-gray-700">
-            {filteredProducts.length === 0 ? (
+            {paginatedProducts.length === 0 ? (
               <tr>
                 <td
                   colSpan={6}
@@ -78,14 +87,14 @@ const ProductsTable = ({ products }) => {
                 </td>
               </tr>
             ) : (
-              filteredProducts.map((product) => (
+              paginatedProducts.map((product) => (
                 <motion.tr
                   key={product.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black dark:text-white flex gap-2 items-center">
+                  <td className="px-6 py-4 text-sm font-medium text-black dark:text-white flex gap-2 items-center">
                     <img
                       src={
                         product.imageUrl
@@ -98,23 +107,23 @@ const ProductsTable = ({ products }) => {
                     {product.name}
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
+                  <td className="px-6 py-4 text-sm text-black dark:text-white">
                     {product.itemCategory || "No category"}
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
+                  <td className="px-6 py-4 text-sm text-black dark:text-white">
                     ৳ {product.salesPrice ? product.salesPrice.toFixed(2) : "N/A"}
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
+                  <td className="px-6 py-4 text-sm text-black dark:text-white">
                     {product.initialStock}
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
+                  <td className="px-6 py-4 text-sm text-black dark:text-white">
                     {product.sales?.length || 0}
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-black dark:text-white">
+                  <td className="px-6 py-4 text-sm text-black dark:text-white">
                     <button className="text-indigo-400 hover:text-indigo-300 mr-2">
                       <Edit size={18} />
                     </button>
@@ -128,6 +137,36 @@ const ProductsTable = ({ products }) => {
           </tbody>
         </table>
       </div>
+
+      {filteredProducts.length > itemsPerPage && (
+        <div className="flex justify-center mt-6 gap-4">
+          <button
+            onClick={handlePrev}
+            disabled={currentPage === 1}
+            className={`px-2 rounded-md ${
+              currentPage === 1
+                ? "bg-gray-300 text-gray-600"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            }`}
+          >
+            Previous
+          </button>
+          <span className="text-black dark:text-white items-center justify-center flex gap-2 font-medium">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={handleNext}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-md ${
+              currentPage === totalPages
+                ? "bg-gray-300 text-gray-600"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            }`}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 };
