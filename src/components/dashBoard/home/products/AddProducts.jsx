@@ -9,6 +9,7 @@ const AddProducts = () => {
   const [productData, setProductData] = useState({
     name: "",
     code: "",
+    category: "",
     purchasePrice: "",
     salesPrice: "",
     initialStock: "",
@@ -62,6 +63,7 @@ const AddProducts = () => {
             setProductData({
               name: "",
               code: "",
+              category: "",
               purchasePrice: "",
               salesPrice: "",
               initialStock: "",
@@ -85,106 +87,99 @@ const AddProducts = () => {
   };
 
   return (
-    <div>
-      <section className="dark:text-gray-50">
-        <form noValidate className="container">
-          <fieldset className="grid grid-cols-4 gap-6 p-6 rounded-md shadow-sm bg-white dark:bg-gray-900">
-            <div className="col-span-full">
-              <h3 className="text-xl">Name and Code</h3>
-              <hr className="my-2 border-dashed bg-black dark:border-gray-300" />
-            </div>
-            <div className="grid grid-cols-2 gap-4 col-span-full lg:col-span-3">
-              <div className="col-span-full sm:col-span-1 relative">
-                <label htmlFor="name" className="text-sm">
-                  Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={productData.name}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
-                />
-              </div>
+    <div className="px-4 py-6 max-w-2xl mx-auto dark:text-gray-50">
+      <form noValidate className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium">
+              Product Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={productData.name}
+              onChange={handleInputChange}
+              className="mt-1 w-full border rounded-md px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            />
+          </div>
 
-              {/* Barcode Scanner Component */}
-              <BarcodeScanner onScan={handleScan} handleInputChange={handleInputChange} />
+          <div>
+            <label htmlFor="category" className="block text-sm font-medium">
+              Category
+            </label>
+            <input
+              id="category"
+              type="text"
+              value={productData.category}
+              onChange={handleInputChange}
+              placeholder="e.g., Beverage"
+              className="mt-1 w-full border rounded-md px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            />
+          </div>
 
-            </div>
-          </fieldset>
+          <div>
+            <label htmlFor="code" className="block text-sm font-medium">
+              {/* Barcode (Scan or Type) */}
+            </label>
+            <BarcodeScanner
+              onScan={handleScan}
+              handleInputChange={handleInputChange}
+            />
+          </div>
 
-          <hr className="my-6 border-black dark:border-gray-300" />
+          <div>
+            <label htmlFor="purchasePrice" className="block text-sm font-medium">
+              Purchase Price
+            </label>
+            <input
+              id="purchasePrice"
+              type="number"
+              value={productData.purchasePrice}
+              onChange={handleInputChange}
+              className="mt-1 w-full border rounded-md px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            />
+          </div>
 
-          <fieldset className="grid grid-cols-4 gap-6 p-6 rounded-md shadow-sm bg-white dark:bg-gray-900">
-            <div className="col-span-full">
-              <h3 className="text-xl">Pricing</h3>
-              <hr className="my-2 border-dashed bg-black dark:border-gray-300" />
-            </div>
-            <div className="grid grid-cols-2 gap-4 col-span-full lg:col-span-3">
-              <div className="col-span-full sm:col-span-1 relative">
-                <label htmlFor="purchasePrice" className="text-sm">
-                  Purchase Price
-                </label>
-                <input
-                  id="purchasePrice"
-                  type="text"
-                  value={productData.purchasePrice}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
-                />
-              </div>
-              <div className="col-span-full sm:col-span-1 relative">
-                <label htmlFor="salesPrice" className="text-sm">
-                  Sales Price
-                </label>
-                <input
-                  id="salesPrice"
-                  type="text"
-                  value={productData.salesPrice}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
-                />
-              </div>
-            </div>
-          </fieldset>
+          <div>
+            <label htmlFor="salesPrice" className="block text-sm font-medium">
+              Sales Price
+            </label>
+            <input
+              id="salesPrice"
+              type="number"
+              value={productData.salesPrice}
+              onChange={handleInputChange}
+              className="mt-1 w-full border rounded-md px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            />
+          </div>
 
-          <hr className="my-6 border-black dark:border-gray-300" />
+          <div>
+            <label htmlFor="initialStock" className="block text-sm font-medium">
+              Initial Stock
+            </label>
+            <input
+              id="initialStock"
+              type="number"
+              value={productData.initialStock}
+              onChange={handleInputChange}
+              className="mt-1 w-full border rounded-md px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            />
+          </div>
+        </div>
 
-          <fieldset className="grid grid-cols-4 gap-6 p-6 rounded-md shadow-sm bg-white dark:bg-gray-900">
-            <div className="col-span-full">
-              <h3 className="text-xl">Stock</h3>
-              <hr className="my-2 border-dashed bg-black dark:border-gray-300" />
-            </div>
-            <div className="col-span-full sm:col-span-2 relative">
-              <label htmlFor="initialStock" className="text-sm">
-                Initial Stock
-              </label>
-              <input
-                id="initialStock"
-                type="text"
-                value={productData.initialStock}
-                onChange={handleInputChange}
-                className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
-              />
-            </div>
-          </fieldset>
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          disabled={loading}
+          variant="contained"
+          color="primary"
+          className="w-full !mt-4"
+        >
+          {loading ? "Adding..." : "Save Product"}
+        </Button>
 
-          <hr className="my-6 border-black dark:border-gray-300" />
-
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={loading}
-            variant="contained"
-            color="primary"
-            className="w-full"
-          >
-            {loading ? "Adding..." : "Save Product"}
-          </Button>
-
-          {message && <p className="mt-4 text-center">{message}</p>}
-        </form>
-      </section>
+        {message && <p className="text-center text-sm mt-2">{message}</p>}
+      </form>
     </div>
   );
 };

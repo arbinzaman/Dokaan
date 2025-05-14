@@ -5,31 +5,36 @@ import { toast } from "react-hot-toast";
 import { useUser } from "@/contexts/AuthContext";
 import { Button } from "@mui/material";
 import SaleBarcodeScanner from "../../../components/dashBoard/home/sales/saleScanner/SaleBarcodeScanner";
-
+import { MagnifyingGlass } from "react-loader-spinner";
 
 const AddSaleProduct = () => {
-  const [scannedProduct, setScannedProduct] = useState(null);
-  const [sellingPrice, setSellingPrice] = useState(); // Default to 0
-  const [quantity, setQuantity] = useState(1);
-  const [discount, setDiscount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const { user, dokaan } = useUser();
+  const [scannedProducts, setScannedProducts] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
-console.log(scannedProduct?.matchedProduct?.salesPrice);
-  useEffect(() => {
-    // Recalculate total price whenever sellingPrice, quantity, or discount change
-    const totalBeforeDiscount = quantity * sellingPrice;
-    const discountAmount = (discount / 100) * totalBeforeDiscount;
-    const finalTotalPrice = totalBeforeDiscount - discountAmount;
+  const [scanning, setScanning] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-    setTotalPrice(finalTotalPrice); // Update the total price
-  }, [sellingPrice, quantity, discount]); // Trigger on changes
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
+
+  const { user, dokaan } = useUser();
+
+  useEffect(() => {
+    const total = scannedProducts.reduce((sum, product) => {
+      const price = product.salesPrice * product.quantity;
+      const discountAmount = (product.discount / 100) * price;
+      return sum + (price - discountAmount);
+    }, 0);
+    setTotalPrice(total);
+  }, [scannedProducts]);
 
   const handleScan = async (barcodeObject) => {
+    setScanning(true);
     try {
       const token = Cookies.get("XTOKEN");
       const response = await axios.post(
-       `${import.meta.env.VITE_BASE_URL}/products/scan`,
+        `${import.meta.env.VITE_BASE_URL}/products/scan`,
         barcodeObject,
         {
           headers: { Authorization: `${token}` },
@@ -37,40 +42,76 @@ console.log(scannedProduct?.matchedProduct?.salesPrice);
       );
 
       if (response.status === 200) {
-        setScannedProduct(response.data);
-        setSellingPrice(response.data.matchedProduct.salesPrice); // Set the selling price from the scanned product
-        toast.success("Product fetched successfully!");
+        const newProduct = response.data.matchedProduct;
+        const alreadyExists = scannedProducts.some(
+          (p) => p.productCode === newProduct.productCode
+        );
+
+        if (alreadyExists) {
+          toast.error("Product already added!");
+        } else {
+          setScannedProducts((prev) => [
+            ...prev,
+            {
+              ...newProduct,
+              salesPrice: newProduct.salesPrice,
+              quantity: 1,
+              discount: 0,
+            },
+          ]);
+          toast.success("Product added!");
+        }
       } else {
         toast.error("Product not found!");
       }
-    } catch (error) {
+    } catch {
       toast.error("Error fetching product.");
+    } finally {
+      setScanning(false);
     }
+  };
+
+  const updateProductField = (index, field, value) => {
+    const updated = [...scannedProducts];
+    updated[index][field] = value;
+    setScannedProducts(updated);
   };
 
   const handleSubmit = async () => {
     const token = Cookies.get("XTOKEN");
 
-    if (!user || !dokaan || !scannedProduct) {
+    if (!user || !dokaan || scannedProducts.length === 0) {
       toast.error("Missing user/shop/product information.");
       return;
     }
 
     const payload = {
-      productCode: scannedProduct.matchedProduct.code,
-      code: scannedProduct.matchedProduct.productCode,
-      productName: scannedProduct.matchedProduct.productName,
-      brand: scannedProduct.brand || "Unknown",
-      salesPrice: parseFloat(sellingPrice),
-      quantity: quantity,
-      discount: discount,
-      totalPrice: totalPrice, // Use the calculated total price
+      products: scannedProducts.map((product) => ({
+        productCode: product.code,
+        code: product.productCode,
+        productName: product.productName,
+        itemCategory: product.itemCategory,
+        brand: product.brand || "Unknown",
+        salesPrice: parseFloat(product.salesPrice),
+        quantity: product.quantity,
+        discount: product.discount,
+        totalPrice:
+          product.salesPrice * product.quantity -
+          (product.discount / 100) * (product.salesPrice * product.quantity),
+      })),
+      // totalPrice,
       shopAddress: dokaan.address || "N/A",
       ownerName: dokaan.ownerName || user.name,
       sellerId: user.id,
       shopId: dokaan.id,
       branch: dokaan.branch || "Main",
       soldAt: new Date().toISOString(),
+      customer: {
+        name: customerName,
+        phone: customerPhone,
+        email: customerEmail,
+        address: customerAddress,
+      },
     };
 
     try {
@@ -80,11 +121,12 @@ console.log(scannedProduct?.matchedProduct?.salesPrice);
       });
 
       toast.success("Sale recorded successfully!");
-      setScannedProduct(null);
-      setSellingPrice(0);
-      setQuantity(1);
-      setDiscount(0);
-    } catch (error) {
+      setScannedProducts([]);
+      setCustomerName("");
+      setCustomerPhone("");
+      setCustomerEmail("");
+      setCustomerAddress("");
+    } catch {
       toast.error("Failed to record sale.");
     } finally {
       setLoading(false);
@@ -92,94 +134,111 @@ console.log(scannedProduct?.matchedProduct?.salesPrice);
   };
 
   return (
-    <div>
+    <div className="max-w-4xl mx-auto p-6 mb-10">
       <section className="dark:text-gray-50">
-        <form noValidate className="container">
-          <fieldset className="grid grid-cols-4 gap-6 p-6 rounded-md shadow-sm bg-white dark:bg-gray-900">
-            <div className="col-span-full">
-              <h3 className="text-xl">Scan Product</h3>
-              <hr className="my-2 border-dashed bg-black dark:border-gray-300" />
-            </div>
-            <div className="grid grid-cols-2 gap-4 col-span-full lg:col-span-3">
-              <div className="col-span-full sm:col-span-1">
-                <SaleBarcodeScanner onScan={handleScan} />
+        <form noValidate className="space-y-8">
+          {/* Scanner */}
+          <div className="rounded-2xl shadow-lg bg-white dark:bg-gray-900 p-6">
+            <h3 className="text-2xl font-semibold mb-4">Scan Product</h3>
+            {scanning ? (
+              <div className="flex justify-center items-center h-40">
+                <MagnifyingGlass
+                  visible={true}
+                  height="80"
+                  width="80"
+                  ariaLabel="magnifying-glass-loading"
+                  wrapperStyle={{}}
+                  wrapperClass="magnifying-glass-wrapper"
+                  glassColor="#c0efff"
+                  color="#e15b64"
+                />
               </div>
+            ) : (
+              <SaleBarcodeScanner onScan={handleScan} />
+            )}
+          </div>
+
+          {/* Customer Info */}
+          <div className="rounded-2xl shadow-lg bg-white dark:bg-gray-900 p-6">
+            <h3 className="text-2xl font-semibold mb-4">Customer Information</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Customer Name"
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+              />
+              <Input
+                label="Phone"
+                type="tel"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+              />
+              <Input
+                label="Email"
+                type="email"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
+              />
+              <Input
+                label="Address"
+                type="text"
+                value={customerAddress}
+                onChange={(e) => setCustomerAddress(e.target.value)}
+              />
             </div>
-          </fieldset>
+          </div>
 
-          {scannedProduct && (
-            <>
-              <hr className="my-6 border-black dark:border-gray-300" />
-              <fieldset className="grid grid-cols-4 gap-6 p-6 rounded-md shadow-sm bg-white dark:bg-gray-900">
-                <div className="col-span-full">
-                  <h3 className="text-xl">Product Details</h3>
-                  <hr className="my-2 border-dashed bg-black dark:border-gray-300" />
-                </div>
-                <div className="grid grid-cols-2 gap-4 col-span-full lg:col-span-3">
-                  <div className="col-span-full sm:col-span-1">
-                    <label className="text-sm">Product Name</label>
-                    <input
-                      type="text"
-                      value={scannedProduct.matchedProduct.productName}
-                      readOnly
-                      className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
-                    />
-                  </div>
-
-                  <div className="col-span-full sm:col-span-1">
-                    <label className="text-sm">Product Code</label>
-                    <input
-                      type="text"
-                      value={scannedProduct.matchedProduct.productCode}
-                      readOnly
-                      className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
-                    />
-                  </div>
-
-                  <div className="col-span-full sm:col-span-1">
-                    <label className="text-sm">Selling Price</label>
-                    <input
+          {/* Product List */}
+          {scannedProducts.length > 0 && (
+            <div className="rounded-2xl shadow-lg bg-white dark:bg-gray-900 p-6">
+              <h3 className="text-2xl font-semibold mb-4">Scanned Products</h3>
+              {scannedProducts.map((product, index) => (
+                <div key={product.productCode} className="mb-4 border-b pb-4">
+                  <h4 className="font-semibold text-lg mb-2">{product.productName}</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Input label="Product Code" value={product.productCode} readOnly />
+                    <Input label="Category" value={product.itemCategory} readOnly />
+                    <Input
+                      label="Selling Price"
                       type="number"
-                      value={sellingPrice}
-                      onChange={(e) => setSellingPrice(Number(e.target.value))}
-                      className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
+                      value={product.salesPrice}
+                      onChange={(e) =>
+                        updateProductField(index, "salesPrice", Number(e.target.value))
+                      }
                     />
-                  </div>
-
-                  <div className="col-span-full sm:col-span-1">
-                    <label className="text-sm">Quantity</label>
-                    <input
+                    <Input
+                      label="Quantity"
                       type="number"
-                      min="1"
-                      value={quantity}
-                      onChange={(e) => setQuantity(Number(e.target.value))}
-                      className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
+                      value={product.quantity}
+                      onChange={(e) =>
+                        updateProductField(index, "quantity", Number(e.target.value))
+                      }
                     />
-                  </div>
-
-                  <div className="col-span-full sm:col-span-1">
-                    <label className="text-sm">Discount (%)</label>
-                    <input
+                    <Input
+                      label="Discount (%)"
                       type="number"
-                      min="0"
-                      max="100"
-                      value={discount}
-                      onChange={(e) => setDiscount(Number(e.target.value))}
-                      className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
+                      value={product.discount}
+                      onChange={(e) =>
+                        updateProductField(index, "discount", Number(e.target.value))
+                      }
                     />
-                  </div>
-
-                  <div className="col-span-full sm:col-span-1">
-                    <label className="text-sm">Total Price (After Discount)</label>
-                    <input
-                      type="text"
+                    <Input
+                      label="Total (After Discount)"
+                      value={(
+                        product.salesPrice * product.quantity -
+                        (product.discount / 100) *
+                          (product.salesPrice * product.quantity)
+                      ).toFixed(2)}
                       readOnly
-                      value={totalPrice.toFixed(2)}
-                      className="w-full rounded-md border dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
                     />
                   </div>
                 </div>
-              </fieldset>
+              ))}
+
+              <div className="text-xl font-bold mt-6">
+                Grand Total: ৳{totalPrice.toFixed(2)}
+              </div>
 
               <Button
                 type="button"
@@ -187,16 +246,29 @@ console.log(scannedProduct?.matchedProduct?.salesPrice);
                 disabled={loading}
                 variant="contained"
                 color="primary"
-                className="w-full mt-4"
+                className="w-full mt-6"
               >
                 {loading ? "Saving..." : "Submit Sale"}
               </Button>
-            </>
+            </div>
           )}
         </form>
       </section>
     </div>
   );
 };
+
+// Reusable Input Component
+const Input = ({ label, ...props }) => (
+  <div>
+    <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 block">
+      {label}
+    </label>
+    <input
+      {...props}
+      className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+    />
+  </div>
+);
 
 export default AddSaleProduct;
