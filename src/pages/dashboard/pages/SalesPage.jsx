@@ -41,14 +41,14 @@ const SalesPage = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_BASE_URL
-        }/sales/total-revenue/?shopId=${shopId}`,
+        }/sales/total-revenue?shopId=${shopId}`,
         {
           headers: {
             Authorization: `${token}`,
             Accept: "application/json",
             "Content-Type": "application/json",
           },
-          params: { shopId },
+          // params: { shopId },
         }
       );
 
