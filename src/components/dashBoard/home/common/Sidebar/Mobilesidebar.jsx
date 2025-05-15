@@ -100,7 +100,11 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                 className="flex items-center p-4 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
                 onClick={handleItemClick}
               >
-                <Users size={24} style={{ color: "#EC4899" }} className="min-w-[24px]" />
+                <Users
+                  size={24}
+                  style={{ color: "#EC4899" }}
+                  className="min-w-[24px]"
+                />
                 <span className="ml-4">Users</span>
               </Link>
 
@@ -109,16 +113,37 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                 className="flex items-center p-4 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
                 onClick={handleItemClick}
               >
-                <ShoppingBag size={24} style={{ color: "#8B5CF6" }} className="min-w-[24px]" />
+                <ShoppingBag
+                  size={24}
+                  style={{ color: "#8B5CF6" }}
+                  className="min-w-[24px]"
+                />
                 <span className="ml-4">Products</span>
               </Link>
+              <Link
+                to="/dashboard/customers"
+                className="flex items-center p-4 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                onClick={handleItemClick}
+              >
+                <Users
+                  size={24}
+                  style={{ color: "#8B5CF6" }}
+                  className="min-w-[24px]"
+                />
+                <span className="ml-4">Customers</span>
+              </Link>
+
 
               <Link
                 to="/dashboard/sales"
                 className="flex items-center p-4 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
                 onClick={handleItemClick}
               >
-                <DollarSign size={24} style={{ color: "#10B981" }} className="min-w-[24px]" />
+                <DollarSign
+                  size={24}
+                  style={{ color: "#10B981" }}
+                  className="min-w-[24px]"
+                />
                 <span className="ml-4">Sales</span>
               </Link>
 
@@ -127,7 +152,11 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                 className="flex items-center p-4 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
                 onClick={handleItemClick}
               >
-                <ShoppingCart size={24} style={{ color: "#F59E0B" }} className="min-w-[24px]" />
+                <ShoppingCart
+                  size={24}
+                  style={{ color: "#F59E0B" }}
+                  className="min-w-[24px]"
+                />
                 <span className="ml-4">Orders</span>
               </Link>
             </nav>

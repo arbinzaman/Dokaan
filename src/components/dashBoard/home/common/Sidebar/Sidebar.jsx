@@ -24,9 +24,9 @@ const SIDEBAR_ITEMS = [
   {
     id: "inventory",
     name: "Inventory",
-    href: "/dashboard/inventory", // Link to the inventory page
-    icon: Box, // Using the Box icon from lucide-react
-    color: "#FF9900", // You can customize the color as needed
+    href: "/dashboard/inventory",
+    icon: Box,
+    color: "#FF9900",
   },
   {
     id: "products",
@@ -36,10 +36,17 @@ const SIDEBAR_ITEMS = [
     href: "/dashboard/products",
   },
   {
+    id: "customers",
+    name: "Customers",
+    icon: Users, // You can use another icon if needed
+    color: "#EC4899",
+    href: "/dashboard/customers",
+  },
+  {
     id: "users",
     name: "Users",
     icon: Users,
-    color: "#EC4899",
+    color: "#C084FC",
     href: "/dashboard/users",
   },
   {
@@ -70,8 +77,8 @@ const SIDEBAR_ITEMS = [
     color: "#6EE7B7",
     href: "/dashboard/settings",
   },
- 
 ];
+
 
 const Sidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
