@@ -1,13 +1,16 @@
 import {
   BarChart2,
-  DollarSign,
   Settings,
   ShoppingBag,
-  ShoppingCart,
+  // ShoppingCart,
   TrendingUp,
-  Users,
   Box,
+  FileText,
+  UserCheck,
+  UserCog,
+  User,
 } from "lucide-react";
+import { FaBangladeshiTakaSign } from "react-icons/fa6";
 import { useState } from "react";
 import { useUser } from "../../../../../contexts/AuthContext";
 import MobileSidebar from "./Mobilesidebar";
@@ -38,37 +41,58 @@ const SIDEBAR_ITEMS = [
   {
     id: "customers",
     name: "Customers",
-    icon: Users, // You can use another icon if needed
+    icon: UserCheck,
     color: "#EC4899",
     href: "/dashboard/customers",
   },
   {
     id: "users",
     name: "Users",
-    icon: Users,
+    icon: UserCog,
     color: "#C084FC",
     href: "/dashboard/users",
   },
   {
     id: "sales",
     name: "Sales",
-    icon: DollarSign,
+    icon: FaBangladeshiTakaSign,
     color: "#10B981",
     href: "/dashboard/sales",
   },
-  {
-    id: "orders",
-    name: "Orders",
-    icon: ShoppingCart,
-    color: "#F59E0B",
-    href: "/dashboard/orders",
-  },
+  // {
+  //   id: "orders",
+  //   name: "Orders",
+  //   icon: ShoppingCart,
+  //   color: "#F59E0B",
+  //   href: "/dashboard/orders",
+  // },
   {
     id: "analytics",
     name: "Analytics",
     icon: TrendingUp,
     color: "#3B82F6",
     href: "/dashboard/analytics",
+  },
+  {
+    id: "expenses",
+    name: "Expenses",
+    icon: FaBangladeshiTakaSign,
+    color: "#EF4444",
+    href: "/dashboard/expenses",
+  },
+  {
+    id: "employees",
+    name: "Employees",
+    icon: User,
+    color: "#3B82F6",
+    href: "/dashboard/employees",
+  },
+  {
+    id: "memos",
+    name: "Receipts / Memos",
+    icon: FileText,
+    color: "#F97316",
+    href: "/dashboard/memos",
   },
   {
     id: "settings",
@@ -78,7 +102,6 @@ const SIDEBAR_ITEMS = [
     href: "/dashboard/settings",
   },
 ];
-
 
 const Sidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);

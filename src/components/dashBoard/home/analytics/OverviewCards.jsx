@@ -1,52 +1,132 @@
 import { motion } from "framer-motion";
-import { DollarSign, Users, ShoppingBag, Eye, ArrowDownRight, ArrowUpRight } from "lucide-react";
-
-const overviewData = [
-	{ name: "Revenue", value: "$1,234,567", change: 12.5, icon: DollarSign },
-	{ name: "Users", value: "45,678", change: 8.3, icon: Users },
-	{ name: "Orders", value: "9,876", change: -3.2, icon: ShoppingBag },
-	{ name: "Page Views", value: "1,234,567", change: 15.7, icon: Eye },
-];
+import StatCard from "../../../../components/dashBoard/home/common/StatCard";
+import { ShoppingCart, UserCheck, BarChart3 } from "lucide-react";
+import { FaBangladeshiTakaSign } from "react-icons/fa6";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { useQuery } from "@tanstack/react-query";
+import { useUser } from "../../../../contexts/AuthContext";
 
 const OverviewCards = () => {
-	return (
-		<div className='grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8'>
-			{overviewData.map((item, index) => (
-				<motion.div
-					key={item.name}
-					className='bg-white dark:bg-black bg-opacity-50 backdrop-filter backdrop-blur-lg shadow-lg
-            rounded-xl p-6 
-          '
-					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ delay: index * 0.1 }}
-				>
-					<div className='flex items-center justify-between'>
-						<div>
-							<h3 className='text-sm font-medium text-black dark:text-white'>{item.name}</h3>
-							<p className='mt-1 text-xl font-semibold text-black dark:text-white'>{item.value}</p>
-						</div>
+  const { user, dokaan } = useUser();
 
-						<div
-							className={`
-              p-3 rounded-full bg-opacity-20 ${item.change >= 0 ? "bg-green-500" : "bg-red-500"}
-              `}
-						>
-							<item.icon className={`size-6  ${item.change >= 0 ? "text-green-500" : "text-red-500"}`} />
-						</div>
-					</div>
-					<div
-						className={`
-              mt-4 flex items-center ${item.change >= 0 ? "text-green-500" : "text-red-500"}
-            `}
-					>
-						{item.change >= 0 ? <ArrowUpRight size='20' /> : <ArrowDownRight size='20' />}
-						<span className='ml-1 text-sm font-medium'>{Math.abs(item.change)}%</span>
-						<span className='ml-2 text-sm text-black dark:text-white'>vs last period</span>
-					</div>
-				</motion.div>
-			))}
-		</div>
-	);
+  // Fetch total products
+  const { data: productData = [], isLoading: productLoading } = useQuery({
+    queryKey: ["products", user?.email],
+    queryFn: async () => {
+      const token = Cookies.get("XTOKEN");
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/products/${user?.email}`,
+        {
+          headers: {
+            Authorization: `${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data.data;
+    },
+    enabled: !!user?.email,
+  });
+
+  // Fetch total customers
+  const { data: customerData = [], isLoading: customerLoading } = useQuery({
+    queryKey: ["customers", dokaan?.id],
+    queryFn: async () => {
+      const token = Cookies.get("XTOKEN");
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/customers?shopId=${dokaan?.id}`,
+        {
+          headers: {
+            Authorization: `${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data.data;
+    },
+    enabled: !!dokaan?.id,
+  });
+
+  // Fetch total sales amount
+  const { data: salesData, isLoading: salesLoading } = useQuery({
+    queryKey: ["totalSales", dokaan?.id],
+    queryFn: async () => {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/sales/total?shopId=${dokaan?.id}`
+      );
+      return response.data;
+    },
+    enabled: !!dokaan?.id,
+  });
+
+  const totalSalesAmount = salesData?.totalSales ?? 0;
+
+  // Fetch total revenue (profit)
+  const { data: profitData = {}, isLoading: profitLoading } = useQuery({
+    queryKey: ["totalProfit", dokaan?.id],
+    queryFn: async () => {
+      const token = Cookies.get("XTOKEN");
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/sales/total-revenue?shopId=${
+          dokaan?.id
+        }`,
+        {
+          headers: {
+            Authorization: `${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data;
+    },
+    enabled: !!dokaan?.id,
+  });
+
+  const totalProfit = profitData?.totalRevenue ?? 0;
+
+  return (
+    <div className="flex-1 overflow-auto relative z-10">
+      <main className="max-w-7xl mx-auto py-6 px-4 lg:px-8">
+        <motion.div
+          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+        >
+          <StatCard
+            name="Total Profit"
+            icon={FaBangladeshiTakaSign}
+            value={profitLoading ? "..." : `৳${totalProfit.toLocaleString()}`}
+            color="#22C55E"
+          />
+          <StatCard
+            name="Total Products"
+            icon={ShoppingCart}
+            value={productLoading ? "..." : productData.length}
+            color="#6366F1"
+          />
+          <StatCard
+            name="Total Customers"
+            icon={UserCheck}
+            value={customerLoading ? "..." : customerData.length}
+            color="#0EA5E9"
+          />
+          <StatCard
+            name="Total Sales"
+            icon={BarChart3}
+            value={
+              salesLoading ? "..." : `৳${totalSalesAmount.toLocaleString()}`
+            }
+            color="#F97316"
+          />
+        </motion.div>
+      </main>
+    </div>
+  );
 };
+
 export default OverviewCards;

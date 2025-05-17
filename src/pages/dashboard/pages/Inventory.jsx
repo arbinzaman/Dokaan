@@ -19,10 +19,7 @@ const Inventory = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [page, setPage] = useState(1);
 
-  const {
-    data: inventory = [],
-    isLoading,
-  } = useQuery({
+  const { data: inventory = [], isLoading } = useQuery({
     queryKey: ["inventory", user?.id, selectedCategory],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
@@ -48,7 +45,9 @@ const Inventory = () => {
 
   const totalItems = inventory.length;
   const inStockCount = inventory.filter((item) => item.initialStock > 0).length;
-  const outOfStockCount = inventory.filter((item) => item.initialStock <= 0).length;
+  const outOfStockCount = inventory.filter(
+    (item) => item.initialStock <= 0
+  ).length;
 
   // Filter and paginate
   const filteredInventory = inventory.filter((item) =>
@@ -71,7 +70,7 @@ const Inventory = () => {
   const totalPages = Math.ceil(filteredInventory.length / ITEMS_PER_PAGE);
 
   return (
-    <div className="flex-1 overflow-auto relative z-10">
+    <div className="flex-1 overflow-auto relative z-10 mb-10">
       <main className="max-w-7xl mx-auto py-6 px-4 lg:px-8">
         {/* STATS */}
         <motion.div
@@ -86,7 +85,9 @@ const Inventory = () => {
             value={totalItems}
             color="#6366F1"
             onClick={() =>
-              navigate("/dashboard/total-products", { state: { items: inventory } })
+              navigate("/dashboard/total-products", {
+                state: { items: inventory },
+              })
             }
           />
           <StatCard
@@ -95,7 +96,9 @@ const Inventory = () => {
             value={inStockCount}
             color="#10B981"
             onClick={() =>
-              navigate("/dashboard/products/in-stock", { state: { items: inventory } })
+              navigate("/dashboard/products/in-stock", {
+                state: { items: inventory },
+              })
             }
           />
           <StatCard
