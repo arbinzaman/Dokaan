@@ -8,6 +8,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  Cell,
 } from "recharts";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -63,8 +64,32 @@ const ProductPerformance = () => {
               itemStyle={{ color: "#E5E7EB" }}
             />
             <Legend />
-            <Bar dataKey='totalSold' fill='#8B5CF6' name='Total Sold' />
-            <Bar dataKey='initialStock' fill='#10B981' name='Initial Stock' />
+
+            {/* Neon purple for Total Sold */}
+            <Bar dataKey='totalSold' name='Total Sold'>
+              {chartData.map((_, index) => (
+                <Cell
+                  key={`sold-${index}`}
+                  fill='#8B5CF6'
+                  style={{
+                    filter: "drop-shadow(0 0 6px #8B5CF6)",
+                  }}
+                />
+              ))}
+            </Bar>
+
+            {/* Neon green for Initial Stock */}
+            <Bar dataKey='initialStock' name='Initial Stock'>
+              {chartData.map((_, index) => (
+                <Cell
+                  key={`stock-${index}`}
+                  fill='#10B981'
+                  style={{
+                    filter: "drop-shadow(0 0 6px #10B981)",
+                  }}
+                />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>

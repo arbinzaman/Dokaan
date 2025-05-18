@@ -10,8 +10,6 @@ import SalesChannelChart from "../../../components/dashBoard/home/overview/Sales
 import { useUser } from "../../../contexts/AuthContext";
 import SalesTrendChart from "../../../components/dashBoard/home/products/SalesTrendChart";
 
-const ACCENT_COLOR = "rgb(204, 51, 51)";
-
 const OverviewPage = () => {
   const { dokaan } = useUser(); // Get user details from context
 
@@ -26,9 +24,6 @@ const OverviewPage = () => {
     },
   });
 
-  // console.log(data, "total sales data");
-
-  // Check if dokaan is defined before accessing its properties
   const matchedShopSales =
     data && String(data.shopId) === String(dokaan?.id) ? data : null;
 
@@ -42,17 +37,14 @@ const OverviewPage = () => {
       return response.data;
     },
   });
-  // console.log(productData, "total products data");
 
   const formattedSales = isError
     ? "Error"
     : `৳${(matchedShopSales?.totalSales ?? 0).toLocaleString()}`;
 
-  // Check if dokaan is defined before accessing its properties
   const matchedShopProduct = productData?.data?.find(
     (item) => String(item.shopId) === String(dokaan?.id)
   );
-  // console.log(matchedShopProduct, "matchedShopProduct");
 
   const formattedProducts = isError
     ? "Error"
@@ -89,9 +81,9 @@ const OverviewPage = () => {
     },
     enabled: !!dokaan?.id,
   });
+
   const totalRevenue = revenueData?.totalRevenue || 0;
-  // console.log(revenueData, "total revenue data");
-  // console.log(dokaan.id, "shop id");
+
   return (
     <div className="flex-1 overflow-auto relative z-10">
       <main className="max-w-7xl mx-auto py-6 px-4 lg:px-8">
@@ -106,27 +98,27 @@ const OverviewPage = () => {
             name="Total Sales"
             icon={Zap}
             value={formattedSales}
-            color={ACCENT_COLOR}
+            color="#00FFFF" // Vibrant Cyan
           />
           <StatCard
             name="Total Products"
             icon={ShoppingBag}
             value={formattedProducts}
-            color={ACCENT_COLOR}
+            color="#FF00FF" // Neon Pink
           />
           <StatCard
             name="Total Profit"
-            icon={FaBangladeshiTakaSign} // Swap to Rupee or Taka-looking icon
+            icon={FaBangladeshiTakaSign}
             value={revenueLoading ? "..." : `৳${totalRevenue.toLocaleString()}`}
-            color="#EF4444"
+            color="#39FF14" // Neon Green
           />
         </motion.div>
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <SalesTrendChart accentColor={ACCENT_COLOR} />
-          <CategoryDistributionChart accentColor={ACCENT_COLOR} />
-          <SalesChannelChart accentColor={ACCENT_COLOR} />
+          <SalesTrendChart accentColor="#00FFFF" />
+          <CategoryDistributionChart accentColor="#FF00FF" />
+          <SalesChannelChart accentColor="#39FF14" />
         </div>
       </main>
     </div>

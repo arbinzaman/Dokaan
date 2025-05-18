@@ -11,11 +11,12 @@ import {
 } from "recharts";
 import { useUser } from "../../../../contexts/AuthContext";
 
-const COLORS = ["#6366F1", "#8B5CF6", "#EC4899", "#10B981", "#F59E0B"];
+// Vibrant Neon Colors
+const COLORS = ["#FF6B6B", "#6BCB77", "#4D96FF", "#FFD93D", "#C74B50"];
 
 const CategoryDistributionChart = () => {
+  const { dokaan } = useUser();
 
-const { dokaan } = useUser(); // Get user details from context
   const fetchCategoryDistribution = async () => {
     const { data } = await axios.get(
       `${import.meta.env.VITE_BASE_URL}/sales/category-wise?shopId=${dokaan.id}`
@@ -38,12 +39,12 @@ const { dokaan } = useUser(); // Get user details from context
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
     >
-      <h2 className="text-lg font-medium mb-4 dark:text-white">
+      <h2 className="text-lg font-medium mb-4 text-white">
         Category Distribution
       </h2>
 
       {isLoading ? (
-        <p className="text-gray-500 dark:text-gray-400">Loading chart...</p>
+        <p className="text-white">Loading chart...</p>
       ) : isError ? (
         <p className="text-sm text-red-500">Failed to load data.</p>
       ) : data?.length > 0 ? (
@@ -62,7 +63,7 @@ const { dokaan } = useUser(); // Get user details from context
                   `${name} ${(percent * 100).toFixed(0)}%`
                 }
               >
-                {data.map((entry, index) => (
+                {data.map((_, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={COLORS[index % COLORS.length]}
@@ -71,19 +72,23 @@ const { dokaan } = useUser(); // Get user details from context
               </Pie>
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "rgba(31, 41, 55, 0.8)",
-                  borderColor: "#4B5563",
+                  backgroundColor: "rgba(0, 0, 0, 0.85)",
+                  borderColor: "#00FFFF",
                 }}
-                itemStyle={{ color: "#E5E7EB" }}
+                itemStyle={{ color: "#FFFFFF", fontWeight: 500 }}
+                labelStyle={{ color: "#00FFFF" }}
               />
-              <Legend />
+              <Legend
+                wrapperStyle={{
+                  color: "#FFFFFF",
+                  fontWeight: 500,
+                }}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
       ) : (
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          No data available
-        </p>
+        <p className="text-sm text-white">No data available</p>
       )}
     </motion.div>
   );
