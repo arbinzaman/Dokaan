@@ -1,17 +1,18 @@
 import { useState } from "react";
+import { X, UserCircle2, Mail, ImagePlus, CheckCircle, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { useUser } from "../../../contexts/AuthContext";
 
-const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
-  const { user ,setUser } = useUser(); // Use setUser from AuthContext
-  // console.log(user.user); // Debugging: Check the user context
+const ProfileUpdateModal = ({ isOpen, onClose }) => {
+  const { user, setUser } = useUser();
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
     profileImage: null,
   });
   const [previewImage, setPreviewImage] = useState(user?.profileImageUrl);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -26,117 +27,128 @@ const ProfileUpdateModal = ({ isOpen, onClose,  }) => {
 
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
-        setPreviewImage(reader.result);
-      };
+      reader.onload = () => setPreviewImage(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+    setIsSubmitting(true);
+
     const formDataToSend = new FormData();
-    if (formData?.name) formDataToSend.append("name", formData.name);
-    if (formData?.email) formDataToSend.append("email", formData.email);
-    if (formData?.profileImage) formDataToSend.append("profileImageUrl", formData.profileImage);
-  
+    formDataToSend.append("name", formData.name);
+    formDataToSend.append("email", formData.email);
+    if (formData.profileImage) {
+      formDataToSend.append("profileImageUrl", formData.profileImage);
+    }
+
     const token = Cookies.get("XTOKEN");
-  
-    await toast.promise(
-      (async () => {
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/profile/${user?.id}`, {
-          method: "PUT",
-          headers: {
-            Authorization: `${token}`,
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/profile/${user?.id}`, {
+        method: "PUT",
+        headers: { Authorization: token },
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+
+      if (response.status === 200) {
+        setUser(data.data);
+        localStorage.setItem("user", JSON.stringify(data.data));
+        toast("Profile Updated!", {
+          icon: "🎉",
+          style: {
+            background: "#1f1f1f",
+            color: "#fff",
+            borderRadius: "10px",
           },
-          body: formDataToSend,
         });
-  
-        const data = await response.json();
-  
-        if (response?.status === 200) {
-          setUser(data.data); // Update AuthContext
-          localStorage.setItem("user", JSON.stringify(data.data)); // Update localStorage
-          onClose(); // Close the modal after successful update
-          return data; // Resolve promise to trigger success toast
-        } else {
-          throw new Error(data.message || "Something went wrong.");
-        }
-      })(),
-      {
-        loading: "Updating profile...",
-        success: <b>Profile updated successfully!</b>,
-        error: <b>Could not update profile. Please try again.</b>,
+        setTimeout(() => {
+          onClose();
+        }, 1000);
+      } else {
+        throw new Error(data.message || "Update failed.");
       }
-    ).catch((error) => {
-      console.error("Error updating profile:", error);
-    });
+    } catch (err) {
+      toast.error("❌ " + err.message, {
+        style: {
+          background: "#1f1f1f",
+          color: "#fff",
+          borderRadius: "10px",
+        },
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div className="bg-gray-800 p-6 rounded-lg max-w-md mx-auto shadow-lg w-full">
-        <h2 className="text-lg font-semibold text-gray-100 mb-4">Edit Profile</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-          <div>
-            <label className="block text-gray-400 mb-1">Name</label>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="relative bg-[#1f1f1f] w-[90%] sm:max-w-md p-6 rounded-xl shadow-lg animate-fadeIn">
+        <button
+          className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition"
+          onClick={onClose}
+        >
+          <X className="w-5 h-5" />
+        </button>
+        <h2 className="text-xl font-bold text-red-400 mb-6 text-center">Edit Profile</h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="flex items-center gap-2">
+            <UserCircle2 className="text-red-500" />
             <input
               type="text"
               name="name"
+              placeholder="Your name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full p-2 rounded bg-gray-700 text-white focus:ring-2 focus:ring-indigo-600 outline-none"
-              placeholder="Enter your name"
+              className="w-full bg-gray-800 text-white p-2 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
-          <div>
-            <label className="block text-gray-400 mb-1">Email</label>
+          <div className="flex items-center gap-2">
+            <Mail className="text-red-500" />
             <input
               type="email"
               name="email"
+              placeholder="Your email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full p-2 rounded bg-gray-700 text-white focus:ring-2 focus:ring-indigo-600 outline-none"
-              placeholder="Enter your email"
+              className="w-full bg-gray-800 text-white p-2 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
-          <div>
-            <label className="block text-gray-400 mb-1">Profile Image</label>
+          <div className="flex items-center gap-3">
+            <label htmlFor="profileImage" className="cursor-pointer">
+              <ImagePlus className="text-red-500 hover:scale-110 transition-transform" />
+            </label>
             <input
+              id="profileImage"
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700"
+              className="hidden"
             />
-          </div>
-          {previewImage && (
-            <div className="mt-4">
+            {previewImage && (
               <img
                 src={previewImage}
                 alt="Preview"
-                className="w-20 h-20 rounded-full object-cover"
+                className="w-10 h-10 rounded-full object-cover border border-red-400"
               />
-            </div>
-          )}
-          <div className="flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-600"
-            >
-              Cancel
-            </button>
+            )}
+          </div>
+
+          <div className="flex justify-end">
             <button
               type="submit"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded"
+              className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-full transition flex items-center justify-center"
+              disabled={isSubmitting}
+              title="Update Profile"
             >
-              Update
+              {isSubmitting ? (
+                <Loader2 className="animate-spin w-5 h-5" />
+              ) : (
+                <CheckCircle className="w-5 h-5" />
+              )}
             </button>
           </div>
         </form>

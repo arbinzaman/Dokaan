@@ -1,56 +1,66 @@
 import { useState } from "react";
-import { User } from "lucide-react";
+import { User, Settings } from "lucide-react";
 import SettingSection from "./SettingSection";
 import { useUser } from "../../../../contexts/AuthContext";
 import ProfileUpdateModal from "../../Profile/ProfileUpdateModal";
+import { Tooltip } from "@mui/material";
+import { motion } from "framer-motion";
 
 const Profile = () => {
-	const { user } = useUser();
-	// console.log(user);
-	const [isModalOpen, setModalOpen] = useState(false);
+  const { user } = useUser();
+  const [isModalOpen, setModalOpen] = useState(false);
 
-	// Function to open the modal
-	const handleEditProfile = () => {
-		setModalOpen(true);
-	};
+  const handleEditProfile = () => {
+    setModalOpen(true);
+  };
 
-	// Function to close the modal
-	const handleCloseModal = () => {
-		setModalOpen(false);
-	};
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
 
-	return (
-		<>
-			<SettingSection icon={User} title={"Profile"}>
-				<div className='flex flex-col sm:flex-row items-center mb-6'>
-					<img
-						src={user?.profileImageUrl}
-						alt='Profile Picture'
-						className='rounded-full w-20 h-20 object-cover mr-4'
-					/>
-					<div>
-						<h3 className='text-lg font-semibold text-black dark:text-white'>{user?.name}</h3>
-						<p className='text-black dark:text-white'>{user?.email}</p>
-					</div>
-				</div>
-				<button
-					className='bg-red-400 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-200 w-full sm:w-auto'
-					onClick={handleEditProfile} // Open the modal
-				>
-					Edit Profile
-				</button>
-			</SettingSection>
+  return (
+    <>
+      <SettingSection icon={User} title="Profile">
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4 w-full">
+          <div className="flex items-center gap-4 w-full">
+            <img
+              src={user?.profileImageUrl}
+              alt="Profile Picture"
+              className="rounded-full w-20 h-20 object-cover border-4 border-red-500 shadow-lg"
+            />
+            <div>
+              <h3 className="text-lg font-semibold text-black dark:text-white transition-colors">
+                {user?.name}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 transition-colors">
+                {user?.email}
+              </p>
+            </div>
+          </div>
 
-			{/* Profile Update Modal */}
-			{isModalOpen && (
-				<ProfileUpdateModal
-					isOpen={isModalOpen}
-					onClose={handleCloseModal} // Pass the close function here
-					user={user?.user}
-				/>
-			)}
-		</>
-	);
+          {/* Responsive button on the right for mobile and desktop */}
+          <Tooltip title="Edit Profile" arrow>
+            <motion.button
+              onClick={handleEditProfile}
+              whileHover={{ rotate: 360 }}
+              transition={{ duration: 0.6 }}
+              className="self-end sm:self-auto p-2 rounded-full bg-gray-200 dark:bg-gray-800 text-black dark:text-white shadow transition-colors"
+            >
+              <Settings className="w-5 h-5" />
+            </motion.button>
+          </Tooltip>
+        </div>
+      </SettingSection>
+
+      {isModalOpen && (
+        <ProfileUpdateModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          user={user?.user}
+        />
+      )}
+    </>
+  );
 };
 
 export default Profile;
