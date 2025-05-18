@@ -29,8 +29,8 @@ const OverviewPage = () => {
   // console.log(data, "total sales data");
 
   // Check if dokaan is defined before accessing its properties
-  const matchedShopSales = data && String(data.shopId) === String(dokaan?.id) ? data : null;
-
+  const matchedShopSales =
+    data && String(data.shopId) === String(dokaan?.id) ? data : null;
 
   // Fetch total products
   const { data: productData } = useQuery({
@@ -74,9 +74,7 @@ const OverviewPage = () => {
       }
 
       const response = await axios.get(
-        `${
-          import.meta.env.VITE_BASE_URL
-        }/sales/total-revenue?${shopId}`,
+        `${import.meta.env.VITE_BASE_URL}/sales/total-revenue?${shopId}`,
         {
           headers: {
             Authorization: `${token}`,

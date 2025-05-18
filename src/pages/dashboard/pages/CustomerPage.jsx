@@ -7,12 +7,17 @@ import Cookies from "js-cookie";
 import CustomersTable from "../../../components/dashBoard/home/customers/CustomersTable";
 import { useUser } from "../../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import CustomerGrowth from "../../../components/dashBoard/home/customers/CustomerGrowth";
 
 const CustomersPage = () => {
   const { dokaan } = useUser();
   const navigate = useNavigate();
 
-  const { data = {}, isLoading, isError } = useQuery({
+  const {
+    data = {},
+    // isLoading,
+    //  isError
+  } = useQuery({
     queryKey: ["customers", dokaan?.id],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
@@ -32,7 +37,7 @@ const CustomersPage = () => {
     },
     enabled: !!dokaan?.id,
   });
-console.log(data);
+  console.log(data);
   const {
     totalCustomers = 0,
     favoriteCustomers = 0,
@@ -50,14 +55,14 @@ console.log(data);
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
         >
-            <StatCard
+          <StatCard
             name="Total Customers"
             icon={Users}
             value={totalCustomers}
             color="#4F46E5"
             onClick={() => navigate("/dashboard/customers-list")}
           />
-           <StatCard
+          <StatCard
             name="Favorite Customers"
             icon={Star}
             value={favoriteCustomers}
@@ -73,10 +78,11 @@ console.log(data);
         </motion.div>
 
         {/* TABLE */}
+        <CustomerGrowth/>
         <CustomersTable customers={customers} />
-
+        {/* 
         {isLoading && <div>Loading customer data...</div>}
-        {isError && <div>Error loading data.</div>}
+        {isError && <div>Error loading data.</div>} */}
       </main>
     </div>
   );

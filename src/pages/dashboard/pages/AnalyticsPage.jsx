@@ -2,10 +2,10 @@
 
 import OverviewCards from "../../../components/dashBoard/home/analytics/OverviewCards";
 import RevenueChart from "../../../components/dashBoard/home/analytics/RevenueChart";
-import ChannelPerformance from "../../../components/dashBoard/home/analytics/ChannelPerformance";
+// import ChannelPerformance from "../../../components/dashBoard/home/analytics/ChannelPerformance";
 import ProductPerformance from "../../../components/dashBoard/home/analytics/ProductPerformance";
 // import UserRetention from "../../../components/dashBoard/home/analytics/UserRetention";
-import CustomerSegmentation from "../../../components/dashBoard/home/analytics/CustomerSegmentation";
+// import CustomerSegmentation from "../../../components/dashBoard/home/analytics/CustomerSegmentation";
 import CustomerGrowth from "../../../components/dashBoard/home/customers/CustomerGrowth";
 // import AIPoweredInsights from "../../../components/dashBoard/home/analytics/AIPoweredInsights";
 
@@ -20,10 +20,10 @@ const AnalyticsPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <CustomerGrowth />
-          <ChannelPerformance />
+          {/* <ChannelPerformance /> */}
           <ProductPerformance />
           {/* <UserRetention /> */}
-          <CustomerSegmentation />
+          {/* <CustomerSegmentation /> */}
         </div>
 
         {/* <AIPoweredInsights /> */}

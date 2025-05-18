@@ -9,6 +9,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useQuery } from "@tanstack/react-query";
 import { useUser } from "../../../contexts/AuthContext";
+import ProductPerformance from "../../../components/dashBoard/home/analytics/ProductPerformance";
 
 const ProductsPage = () => {
   const { user, dokaan } = useUser(); // Get user details from context
@@ -188,7 +189,7 @@ const ProductsPage = () => {
             color="#EF4444"
           />
         </motion.div>
-
+        <ProductPerformance />
         {/* Products Table */}
         <ProductsTable
           products={products} // Pass the products as a prop here
