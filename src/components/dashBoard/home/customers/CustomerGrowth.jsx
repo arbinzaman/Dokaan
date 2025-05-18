@@ -13,20 +13,18 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useUser } from "../../../../contexts/AuthContext";
 
-const fetchCustomerGrowth = async (shopId) => {
-  const response = await axios.get(
-    `${import.meta.env.VITE_BASE_URL}/customers/growth?shopId=${shopId}`
-);
-  return response.data;
-};
-
 const CustomerGrowth = () => {
-  const dokaan = useUser(); // get dokaan from context
+  const { dokaan } = useUser();
   const shopId = dokaan?.id;
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["customerGrowth", shopId],
-    queryFn: () => fetchCustomerGrowth(shopId),
+    queryFn: async () => {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/customers/growth?shopId=${shopId}`
+      );
+      return response.data;
+    },
     enabled: !!shopId,
   });
 
@@ -57,7 +55,7 @@ const CustomerGrowth = () => {
       transition={{ delay: 0.5 }}
     >
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-black dark:text-white">
+        <h2 className="text-xl font-semibold text-[#10B981] drop-shadow-[0_0_6px_#10B981]">
           Customer Growth
         </h2>
         <span className="text-sm text-gray-500">
@@ -84,6 +82,8 @@ const CustomerGrowth = () => {
               stroke="#10B981"
               strokeWidth={2}
               name="New Customers"
+              dot={{ r: 4 }}
+              activeDot={{ r: 6 }}
             />
           </LineChart>
         </ResponsiveContainer>
