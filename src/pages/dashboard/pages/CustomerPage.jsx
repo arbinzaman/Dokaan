@@ -78,8 +78,8 @@ const CustomersPage = () => {
         </motion.div>
 
         {/* TABLE */}
-        <CustomerGrowth/>
-        <CustomersTable customers={customers} />
+        <CustomerGrowth className=""/>
+        <CustomersTable customers={customers}  />
         {/* 
         {isLoading && <div>Loading customer data...</div>}
         {isError && <div>Error loading data.</div>} */}

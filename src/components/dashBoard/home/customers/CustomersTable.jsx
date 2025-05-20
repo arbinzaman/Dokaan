@@ -34,19 +34,19 @@ const CustomersTable = () => {
       if (year) params.year = year;
       if (month) params.month = month;
       if (day) params.day = day;
-  
+
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/customers`,
         { params }
       );
-  
+
       const transformed = response.data.data.map((c) => {
         const totalPurchases = c.purchases?.reduce(
           (sum, p) => sum + p.purchaseCount,
           0
         );
         const shopCount = new Set(c.purchases?.map((p) => p.dokaanName)).size;
-  
+
         return {
           ...c,
           totalPurchases,
@@ -54,13 +54,12 @@ const CustomersTable = () => {
           isFavorite: c.favorite,
         };
       });
-  
+
       setCustomers(transformed);
     } catch (error) {
       console.error("Error fetching customers:", error);
     }
   };
-  
 
   useEffect(() => {
     fetchCustomers();
@@ -87,10 +86,10 @@ const CustomersTable = () => {
     );
     return Array.from(years).sort();
   };
-console.log(customers);
+  console.log(customers);
   return (
     <motion.div
-      className="bg-white dark:bg-black bg-opacity-50 backdrop-blur-md shadow-lg rounded-xl p-6 mb-10"
+      className="bg-white dark:bg-black bg-opacity-50 backdrop-blur-md shadow-lg rounded-xl p-6 mb-10 mt-10"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
