@@ -30,6 +30,7 @@ import CustomersPage from "../pages/dashboard/pages/CustomerPage";
 import CustomersListPage from "../components/dashBoard/home/customers/CustomerListPage";
 import EmployeePage from "../pages/dashboard/pages/EmployeePage";
 import AddAEmployee from "../pages/dashboard/pages/AddAEmployee";
+import DokaanSelection from "../pages/dashboard/pages/DokaanSelection";
 // import MobileSidebar from "../components/dashBoard/home/common/MobileSidebar";
 const router = createBrowserRouter(
   [
@@ -53,6 +54,10 @@ const router = createBrowserRouter(
           path: "/verify-otp",
           element: <OtpVerification />,
         },
+        // {
+        //   path: "/select-shop",
+        //   element: <DokaanSelection />,
+        // },
       ],
     },
     {
@@ -67,6 +72,10 @@ const router = createBrowserRouter(
           path: "/dashboard",
           element: <OverviewPage />,
         },
+        // {
+        //   path: "/dashboard/select-shop",
+        //   element: <DokaanSelection />,
+        // },
         {
           path: "/dashboard/products",
           element: <ProductsPage />,
@@ -161,6 +170,10 @@ const router = createBrowserRouter(
         // }
       ],
     },
+    {
+      path: "/select-shop",
+      element: <DokaanSelection />,
+    }
   ],
   {
     future: {

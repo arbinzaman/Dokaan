@@ -2,7 +2,6 @@ import {
   BarChart2,
   Settings,
   ShoppingBag,
-  // ShoppingCart,
   TrendingUp,
   Box,
   FileText,

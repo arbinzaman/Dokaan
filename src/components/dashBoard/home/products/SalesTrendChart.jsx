@@ -14,11 +14,11 @@ import axios from "axios";
 import { useUser } from "../../../../contexts/AuthContext";
 
 const SalesTrendChart = () => {
-  const { dokaan } = useUser(); // Get user details from context
+  const { savedShop } = useUser(); // Get user details from context
 
   const fetchSalesData = async () => {
     const response = await axios.get(
-      `${import.meta.env.VITE_BASE_URL}/sales/stats-by-month?shopId=${dokaan.id}`
+      `${import.meta.env.VITE_BASE_URL}/sales/stats-by-month?shopId=${savedShop.id}`
     );
     return response.data.map((item) => ({
       month: item.month,

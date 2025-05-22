@@ -20,12 +20,12 @@ import SalesChannelChart from "../../../components/dashBoard/home/overview/Sales
 const ACCENT_COLOR = "rgb(204, 51, 51)";
 
 const SalesPage = () => {
-  const { dokaan } = useUser();
+  const { savedShop } = useUser();
 
   const fetchSalesData = async () => {
     const token = Cookies.get("XTOKEN");
     if (!token) throw new Error("No token found");
-    const shopId = Number(dokaan?.id);
+    const shopId = Number(savedShop?.id);
     if (isNaN(shopId)) throw new Error("Invalid shop ID");
 
     const response = await axios.get(
@@ -45,7 +45,7 @@ const SalesPage = () => {
   const fetchTotalSalesCount = async () => {
     const token = Cookies.get("XTOKEN");
     if (!token) throw new Error("No token found");
-    const shopId = Number(dokaan?.id);
+    const shopId = Number(savedShop?.id);
     if (isNaN(shopId)) throw new Error("Invalid shop ID");
 
     const response = await axios.get(
@@ -70,9 +70,9 @@ const SalesPage = () => {
     isError: salesDataError,
     error: salesDataErrorObj,
   } = useQuery({
-    queryKey: ["salesData", dokaan?.id],
+    queryKey: ["salesData", savedShop?.id],
     queryFn: fetchSalesData,
-    enabled: !!dokaan?.id,
+    enabled: !!savedShop?.id,
   });
 
   const {
@@ -81,9 +81,9 @@ const SalesPage = () => {
     isError: totalSalesError,
     error: totalSalesErrorObj,
   } = useQuery({
-    queryKey: ["totalSalesCount", dokaan?.id],
+    queryKey: ["totalSalesCount", savedShop?.id],
     queryFn: fetchTotalSalesCount,
-    enabled: !!dokaan?.id,
+    enabled: !!savedShop?.id,
   });
 
   if (salesDataError)

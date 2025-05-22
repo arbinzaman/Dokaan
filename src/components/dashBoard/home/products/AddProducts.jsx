@@ -17,7 +17,7 @@ const AddProducts = () => {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const { user, dokaan } = useUser();
+  const { user, savedShop } = useUser();
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -31,7 +31,7 @@ const AddProducts = () => {
   const handleSubmit = async () => {
     const payload = {
       ...productData,
-      shopId: dokaan.id,
+      shopId: savedShop.id,
       ownerId: user.id,
     };
 

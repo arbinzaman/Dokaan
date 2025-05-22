@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useUser } from "../../../../contexts/AuthContext";
 
 const OverviewCards = () => {
-  const { user, dokaan } = useUser();
+  const { user, savedShop } = useUser();
 
   // Fetch total products
   const { data: productData = [], isLoading: productLoading } = useQuery({
@@ -16,7 +16,7 @@ const OverviewCards = () => {
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/products/${user?.email}`,
+        `${import.meta.env.VITE_BASE_URL}/products?shopId=${savedShop?.id}`,
         {
           headers: {
             Authorization: `${token}`,
@@ -32,11 +32,11 @@ const OverviewCards = () => {
 
   // Fetch total customers
   const { data: customerData = [], isLoading: customerLoading } = useQuery({
-    queryKey: ["customers", dokaan?.id],
+    queryKey: ["customers", savedShop?.id],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/customers?shopId=${dokaan?.id}`,
+        `${import.meta.env.VITE_BASE_URL}/customers?shopId=${savedShop?.id}`,
         {
           headers: {
             Authorization: `${token}`,
@@ -47,31 +47,31 @@ const OverviewCards = () => {
       );
       return response.data.data;
     },
-    enabled: !!dokaan?.id,
+    enabled: !!savedShop?.id,
   });
 
   // Fetch total sales amount
   const { data: salesData, isLoading: salesLoading } = useQuery({
-    queryKey: ["totalSales", dokaan?.id],
+    queryKey: ["totalSales", savedShop?.id],
     queryFn: async () => {
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/sales/total?shopId=${dokaan?.id}`
+        `${import.meta.env.VITE_BASE_URL}/sales/total?shopId=${savedShop?.id}`
       );
       return response.data;
     },
-    enabled: !!dokaan?.id,
+    enabled: !!savedShop?.id,
   });
 
   const totalSalesAmount = salesData?.totalSales ?? 0;
 
   // Fetch total revenue (profit)
   const { data: profitData = {}, isLoading: profitLoading } = useQuery({
-    queryKey: ["totalProfit", dokaan?.id],
+    queryKey: ["totalProfit", savedShop?.id],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/sales/total-revenue?shopId=${
-          dokaan?.id
+          savedShop?.id
         }`,
         {
           headers: {
@@ -83,7 +83,7 @@ const OverviewCards = () => {
       );
       return response.data;
     },
-    enabled: !!dokaan?.id,
+    enabled: !!savedShop?.id,
   });
 
   const totalProfit = profitData?.totalRevenue ?? 0;

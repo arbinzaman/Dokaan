@@ -23,10 +23,10 @@ const neonColors = [
 ];
 
 const SalesChannelChart = ({ title = "Sales by Category" }) => {
-  const { dokaan } = useUser();
+  const { savedShop } = useUser();
   const fetchSalesCategoryWise = async () => {
     const { data } = await axios.get(
-      `${import.meta.env.VITE_BASE_URL}/sales/category-wise?shopId=${dokaan.id}`
+      `${import.meta.env.VITE_BASE_URL}/sales/category-wise?shopId=${savedShop.id}`
     );
     return data.map((item) => ({
       name: item.category,

@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import CustomerGrowth from "../../../components/dashBoard/home/customers/CustomerGrowth";
 
 const CustomersPage = () => {
-  const { dokaan } = useUser();
+  const { savedShop } = useUser();
   const navigate = useNavigate();
 
   const {
@@ -18,10 +18,10 @@ const CustomersPage = () => {
     // isLoading,
     //  isError
   } = useQuery({
-    queryKey: ["customers", dokaan?.id],
+    queryKey: ["customers", savedShop?.id],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
-      const shopId = Number(dokaan?.id);
+      const shopId = Number(savedShop?.id);
 
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/customers/stats`,
@@ -35,7 +35,7 @@ const CustomersPage = () => {
       );
       return response.data.data;
     },
-    enabled: !!dokaan?.id,
+    enabled: !!savedShop?.id,
   });
   console.log(data);
   const {

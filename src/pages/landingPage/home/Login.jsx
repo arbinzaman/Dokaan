@@ -58,7 +58,7 @@ const Login = () => {
           }
         } else {
           // toast.success("Login successful! 🎉");
-          navigate("/dashboard");
+          navigate("/select-shop");
         }
       } else {
         setError("Invalid email or password! ❌");

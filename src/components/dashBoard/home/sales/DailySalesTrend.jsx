@@ -33,8 +33,8 @@ const fetchDailySalesData = async (shopId) => {
 };
 
 const DailySalesTrend = () => {
-  const { dokaan } = useUser();
-  const shopId = dokaan?.id;
+  const { savedShop } = useUser();
+  const shopId = savedShop?.id;
 
   const {
     data,

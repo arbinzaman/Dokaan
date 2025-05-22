@@ -16,13 +16,13 @@ import { useUser } from "../../../../contexts/AuthContext";
 
 const ProductPerformance = () => {
   const [chartData, setChartData] = useState([]);
-  const { dokaan } = useUser(); // Get user details from context
+  const { savedShop } = useUser(); // Get user details from context
 
   useEffect(() => {
     const fetchTopSellingProducts = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/sales/top-selling?shopId=${dokaan?.id}`
+          `${import.meta.env.VITE_BASE_URL}/sales/top-selling?shopId=${savedShop?.id}`
         );
 
         const backendProducts = response.data["1"]?.products || [];
@@ -40,7 +40,7 @@ const ProductPerformance = () => {
     };
 
     fetchTopSellingProducts();
-  }, [dokaan?.id]);
+  }, [savedShop?.id]);
 
   return (
     <motion.div

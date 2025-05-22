@@ -19,22 +19,29 @@ export const AuthProvider = ({ children }) => {
     return storedDokaan ? JSON.parse(storedDokaan) : null;
   });
 
+  const [savedShop, setSavedShop] = useState(() => {
+    const storedShop = localStorage.getItem("savedShop");
+    return storedShop ? JSON.parse(storedShop) : null;
+  });
+
   // Sync user and dokaan states with localStorage
   useEffect(() => {
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-    } else {
-      localStorage.removeItem("user");
-    }
+    user
+      ? localStorage.setItem("user", JSON.stringify(user))
+      : localStorage.removeItem("user");
   }, [user]);
 
   useEffect(() => {
-    if (dokaan) {
-      localStorage.setItem("dokaan", JSON.stringify(dokaan));
-    } else {
-      localStorage.removeItem("dokaan");
-    }
+    dokaan
+      ? localStorage.setItem("dokaan", JSON.stringify(dokaan))
+      : localStorage.removeItem("dokaan");
   }, [dokaan]);
+
+  useEffect(() => {
+    savedShop
+      ? localStorage.setItem("savedShop", JSON.stringify(savedShop))
+      : localStorage.removeItem("savedShop");
+  }, [savedShop]);
 
   // Logout if token is missing
   useEffect(() => {
@@ -46,7 +53,6 @@ export const AuthProvider = ({ children }) => {
 
   // Login function
   const login = async (email, password) => {
- 
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/auth/login`,
@@ -58,11 +64,9 @@ export const AuthProvider = ({ children }) => {
 
         setUser(userData);
         setDokaan(dokaanData);
-
-        // Save token in cookie
         Cookies.set("XTOKEN", access_token, { expires: 1, path: "/" });
 
-        return res; // ✅ success
+        return res;
       } else {
         throw new Error("Invalid response from server.");
       }
@@ -76,9 +80,11 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setDokaan(null);
+    setSavedShop(null);
 
     localStorage.removeItem("user");
     localStorage.removeItem("dokaan");
+    localStorage.removeItem("savedShop");
     Cookies.remove("XTOKEN");
 
     toast.success("Logged out!", {
@@ -100,7 +106,16 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, dokaan, login, logout, setUser, setDokaan }}
+      value={{
+        user,
+        dokaan,
+        login,
+        logout,
+        setUser,
+        setDokaan,
+        savedShop,
+        setSavedShop,
+      }}
     >
       {children}
     </AuthContext.Provider>

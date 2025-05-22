@@ -6,15 +6,15 @@ import { useSearchParams } from "react-router-dom";
 import { useUser } from "../../../../contexts/AuthContext";
 
 const CustomersListPage = () => {
-  const { dokaan } = useUser();
+  const { savedShop } = useUser();
   const [searchParams] = useSearchParams();
   const isFavoriteFilter = searchParams.get("favorite") === "true";
 
   const { data = {}, isLoading, isError } = useQuery({
-    queryKey: ["customers", dokaan?.id],
+    queryKey: ["customers", savedShop?.id],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
-      const shopId = Number(dokaan?.id);
+      const shopId = Number(savedShop?.id);
 
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/customers/stats`,
@@ -28,7 +28,7 @@ const CustomersListPage = () => {
       );
       return response.data.data;
     },
-    enabled: !!dokaan?.id,
+    enabled: !!savedShop?.id,
   });
 
   const { customers = [] } = data;

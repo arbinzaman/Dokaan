@@ -18,7 +18,7 @@ const AddSaleProduct = () => {
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
 
-  const { user, dokaan } = useUser();
+  const { user, savedShop } = useUser();
 
   useEffect(() => {
     const total = scannedProducts.reduce((sum, product) => {
@@ -80,7 +80,7 @@ const AddSaleProduct = () => {
   const handleSubmit = async () => {
     const token = Cookies.get("XTOKEN");
 
-    if (!user || !dokaan || scannedProducts.length === 0) {
+    if (!user || !savedShop || scannedProducts.length === 0) {
       toast.error("Missing user/shop/product information.");
       return;
     }
@@ -100,11 +100,11 @@ const AddSaleProduct = () => {
           (product.discount / 100) * (product.salesPrice * product.quantity),
       })),
       // totalPrice,
-      shopAddress: dokaan.address || "N/A",
-      ownerName: dokaan.ownerName || user.name,
+      shopAddress: savedShop.address || "N/A",
+      ownerName: savedShop.ownerName || user.name,
       sellerId: user.id,
-      shopId: dokaan.id,
-      branch: dokaan.branch || "Main",
+      shopId: savedShop.id,
+      branch: savedShop.branch || "Main",
       soldAt: new Date().toISOString(),
       customer: {
         name: customerName,

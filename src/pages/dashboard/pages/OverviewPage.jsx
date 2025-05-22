@@ -11,21 +11,21 @@ import { useUser } from "../../../contexts/AuthContext";
 import SalesTrendChart from "../../../components/dashBoard/home/products/SalesTrendChart";
 
 const OverviewPage = () => {
-  const { dokaan } = useUser(); // Get user details from context
-
+  const { savedShop} = useUser(); // Get user details from context
+console.log(savedShop);
   // Fetch total sales
   const { data, isError } = useQuery({
     queryKey: ["totalSales"],
     queryFn: async () => {
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/sales/total?shopId=${dokaan.id}`
+        `${import.meta.env.VITE_BASE_URL}/sales/total?shopId=${savedShop.id}`
       );
       return response.data;
     },
   });
 
   const matchedShopSales =
-    data && String(data.shopId) === String(dokaan?.id) ? data : null;
+    data && String(data.shopId) === String(savedShop?.id) ? data : null;
 
   // Fetch total products
   const { data: productData } = useQuery({
@@ -43,7 +43,7 @@ const OverviewPage = () => {
     : `৳${(matchedShopSales?.totalSales ?? 0).toLocaleString()}`;
 
   const matchedShopProduct = productData?.data?.find(
-    (item) => String(item.shopId) === String(dokaan?.id)
+    (item) => String(item.shopId) === String(savedShop?.id)
   );
 
   const formattedProducts = isError
@@ -52,7 +52,7 @@ const OverviewPage = () => {
 
   // Fetch total revenue
   const { data: revenueData = {}, isLoading: revenueLoading } = useQuery({
-    queryKey: ["totalRevenue", dokaan?.id],
+    queryKey: ["totalRevenue", savedShop?.id],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
 
@@ -60,7 +60,7 @@ const OverviewPage = () => {
         throw new Error("No token found in cookies");
       }
 
-      const shopId = Number(dokaan?.id);
+      const shopId = Number(savedShop?.id);
       if (isNaN(shopId)) {
         throw new Error("Invalid shop ID");
       }
@@ -79,7 +79,7 @@ const OverviewPage = () => {
 
       return response.data;
     },
-    enabled: !!dokaan?.id,
+    enabled: !!savedShop?.id,
   });
 
   const totalRevenue = revenueData?.totalRevenue || 0;

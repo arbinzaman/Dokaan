@@ -12,10 +12,10 @@ import { useUser } from "../../../contexts/AuthContext";
 import ProductPerformance from "../../../components/dashBoard/home/analytics/ProductPerformance";
 
 const ProductsPage = () => {
-  const { user, dokaan } = useUser(); // Get user details from context
+  const { user, savedShop } = useUser(); // Get user details from context
   // const token = Cookies.get("XTOKEN");
   // console.log(token);
-  // console.log(typeof(dokaan.id));
+  // console.log(typeof(savedShop.id));
 
   // Fetch all products
   const {
@@ -33,7 +33,7 @@ const ProductsPage = () => {
       }
 
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/products/${user?.email}`,
+        `${import.meta.env.VITE_BASE_URL}/products?shopId=${savedShop?.id}`,
         {
           headers: {
             Authorization: `${token}`,
@@ -52,7 +52,7 @@ const ProductsPage = () => {
 
   // Fetch top selling products
   const { data: topSellingData = {}, isLoading: topSellingLoading } = useQuery({
-    queryKey: ["topSellingProducts", dokaan?.id], // Ensure dokaan has shopId
+    queryKey: ["topSellingProducts", savedShop?.id], // Ensure savedShop has shopId
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
 
@@ -61,7 +61,7 @@ const ProductsPage = () => {
       }
 
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/sales/top-selling?shopId=1`, // Use dokaan?.id
+        `${import.meta.env.VITE_BASE_URL}/sales/top-selling?shopId=${savedShop.id}`, // Use savedShop?.id
         {
           headers: {
             Authorization: `${token}`,
@@ -73,12 +73,12 @@ const ProductsPage = () => {
 
       return response.data;
     },
-    enabled: !!dokaan?.id, // Ensure dokaan has id before making the request
+    enabled: !!savedShop?.id, // Ensure savedShop has id before making the request
   });
 
   // Fetch low stock products
   const { data: lowStockData = {}, isLoading: lowStockLoading } = useQuery({
-    queryKey: ["lowStockProducts", dokaan?.id],
+    queryKey: ["lowStockProducts", savedShop?.id],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
 
@@ -86,7 +86,7 @@ const ProductsPage = () => {
         throw new Error("No token found in cookies");
       }
 
-      const shopId = Number(dokaan?.id);
+      const shopId = Number(savedShop?.id);
 
       if (isNaN(shopId)) {
         throw new Error("Invalid shop ID");
@@ -108,12 +108,12 @@ const ProductsPage = () => {
 
       return response.data;
     },
-    enabled: !!dokaan?.id,
+    enabled: !!savedShop?.id,
   });
 
   // Fetch total revenue
   const { data: revenueData = {}, isLoading: revenueLoading } = useQuery({
-    queryKey: ["totalRevenue", dokaan?.id],
+    queryKey: ["totalRevenue", savedShop?.id],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
 
@@ -121,7 +121,7 @@ const ProductsPage = () => {
         throw new Error("No token found in cookies");
       }
 
-      const shopId = Number(dokaan?.id);
+      const shopId = Number(savedShop?.id);
       if (isNaN(shopId)) {
         throw new Error("Invalid shop ID");
       }
@@ -140,14 +140,14 @@ const ProductsPage = () => {
 
       return response.data;
     },
-    enabled: !!dokaan?.id,
+    enabled: !!savedShop?.id,
   });
 
   const totalRevenue = revenueData?.totalRevenue || 0;
 
-  // const shopId = Number(dokaan?.id);
+  // const shopId = Number(savedShop?.id);
   // console.log("Token:", token);
-  // console.log("Dokaan ID:", dokaan?.id);
+  // console.log("savedShop ID:", savedShop?.id);
   // console.log("Shop ID (converted):", shopId);
 
   const topSellingCount = topSellingData?.totalTopSellingProducts || 0;

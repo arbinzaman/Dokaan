@@ -15,11 +15,11 @@ import { useUser } from "../../../../contexts/AuthContext";
 const COLORS = ["#FF6B6B", "#6BCB77", "#4D96FF", "#FFD93D", "#C74B50"];
 
 const CategoryDistributionChart = () => {
-  const { dokaan } = useUser();
+  const { savedShop } = useUser();
 
   const fetchCategoryDistribution = async () => {
     const { data } = await axios.get(
-      `${import.meta.env.VITE_BASE_URL}/sales/category-wise?shopId=${dokaan.id}`
+      `${import.meta.env.VITE_BASE_URL}/sales/category-wise?shopId=${savedShop.id}`
     );
     return data.map((item) => ({
       name: item.category,

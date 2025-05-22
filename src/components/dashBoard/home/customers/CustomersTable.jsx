@@ -26,7 +26,7 @@ const CustomersTable = () => {
   const [year, setYear] = useState("");
   const [month, setMonth] = useState("");
   const [day, setDay] = useState("");
-  const {dokaan} = useUser();
+  const {savedShop} = useUser();
   
 
   const itemsPerPage = 5;
@@ -39,7 +39,7 @@ const CustomersTable = () => {
       if (day) params.day = day;
 
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/customers?shopId=${dokaan.id}`,
+        `${import.meta.env.VITE_BASE_URL}/customers?shopId=${savedShop.id}`,
         { params }
       );
 
@@ -48,7 +48,7 @@ const CustomersTable = () => {
           (sum, p) => sum + p.purchaseCount,
           0
         );
-        const shopCount = new Set(c.purchases?.map((p) => p.dokaanName)).size;
+        const shopCount = new Set(c.purchases?.map((p) => p.savedShopName)).size;
 
         return {
           ...c,

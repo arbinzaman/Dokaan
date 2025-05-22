@@ -1,9 +1,9 @@
+// --- MobileSidebar.jsx ---
 import {
   BarChart2,
   Menu,
   ShoppingBag,
   TrendingUp,
-  // ShoppingCart,
   ScanLine,
   User,
   Box,
@@ -15,74 +15,84 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import ThemeToggleButton from "../../../../shared/Theme/ThemeToggleButton";
+import { useUser } from "../../../../../contexts/AuthContext";
 
 const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
+  const { savedShop, dokaan, setSavedShop } = useUser();
   const handleItemClick = () => setIsMobileMenuOpen(false);
+  const otherDokaans = dokaan?.filter((d) => d.id !== savedShop?.id);
 
   return (
     <>
-      {/* Bottom Nav */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-red-400 dark:bg-gray-900 text-white flex justify-around items-center px-4 py-1 z-50 h-14">
-        <Link
-          to="/dashboard"
-          className="p-2 rounded-full hover:bg-gray-700 transition-colors"
-        >
+        <Link to="/dashboard" className="p-2 rounded-full hover:bg-gray-700">
           <BarChart2 size={26} style={{ color: "#6366f1" }} />
         </Link>
         <Link
           to="/dashboard/inventory"
-          className="p-2 rounded-full hover:bg-gray-700 transition-colors"
+          className="p-2 rounded-full hover:bg-gray-700"
         >
           <Box size={26} style={{ color: "#FF9900" }} />
         </Link>
         <Link to="/dashboard/product-sell">
-          <button className="p-4 mb-3 bg-gray-300 dark:bg-gray-500 rounded-full shadow-lg hover:bg-blue-600 dark:hover:bg-blue-800 transition-colors">
+          <button className="p-4 mb-3 bg-gray-300 dark:bg-gray-500 rounded-full shadow-lg">
             <ScanLine size={32} className="text-white" />
           </button>
         </Link>
         <Link
           to="/dashboard/analytics"
-          className="p-2 rounded-full hover:bg-gray-700 transition-colors"
+          className="p-2 rounded-full hover:bg-gray-700"
         >
           <TrendingUp size={26} style={{ color: "#3B82F6" }} />
         </Link>
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 rounded-full hover:bg-gray-700 transition-colors"
+          className="p-2 rounded-full hover:bg-gray-700"
         >
           <Menu size={26} style={{ color: "#6EE7B7" }} />
         </button>
       </div>
 
-      {/* Drawer */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
-            transition={{ duration: 0.3 }}
-            className="fixed top-0 left-0 w-64 h-full bg-red-400 dark:bg-gray-900 text-white z-50 flex flex-col p-4 shadow-lg overflow-y-auto"
+            className="fixed top-0 left-0 w-64 h-full bg-red-400 dark:bg-gray-900 text-white z-50 p-4 overflow-y-auto"
           >
             <button
               onClick={handleItemClick}
-              className="self-end p-2 text-gray-400 hover:text-white transition-colors"
+              className="self-end p-2 text-white"
             >
               ✕
             </button>
 
-            <div className="flex items-center space-x-4 p-4 border-b border-gray-700">
-              <User size={28} className="text-white" />
-              <Link
-                to="/dashboard/settings"
-                className="text-white text-sm font-medium hover:underline"
-                onClick={handleItemClick}
-              >
-                Profile
-              </Link>
+            <div className="mb-4">
+              <h4 className="font-semibold text-white mb-2">Switch Shop</h4>
+              {otherDokaans.map((shop) => (
+                <button
+                  key={shop.id}
+                  onClick={() => {
+                    setSavedShop(shop);
+                    setIsMobileMenuOpen(false);
+                    window.location.reload(); // reload page after setting shop
+                  }}
+                  className="w-full text-left p-2 mb-2 bg-white/10 hover:bg-white/20 rounded"
+                >
+                  <div className="text-left">
+                    <div className="font-semibold text-sm">
+                      {shop.dokaan_name}
+                    </div>
+                    <div className="text-xs text-white/70">
+                      {shop.dokaan_location}
+                    </div>
+                  </div>
+                </button>
+              ))}
             </div>
 
-            <nav className="mt-4 flex-1">
+            <nav className="space-y-2">
               <SidebarLink
                 to="/dashboard/users"
                 icon={UserCog}
@@ -111,13 +121,6 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                 color="#10B981"
                 onClick={handleItemClick}
               />
-              {/* <SidebarLink
-                to="/dashboard/orders"
-                icon={ShoppingCart}
-                label="Orders"
-                color="#F59E0B"
-                onClick={handleItemClick}
-              /> */}
               <SidebarLink
                 to="/dashboard/expenses"
                 icon={FileText}
@@ -141,7 +144,9 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
               />
             </nav>
 
-            <ThemeToggleButton />
+            <div className="mt-4">
+              <ThemeToggleButton />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -153,10 +158,10 @@ const SidebarLink = ({ to, icon: Icon, label, color, onClick }) => (
   <Link
     to={to}
     onClick={onClick}
-    className="flex items-center p-4 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
+    className="flex items-center p-2 rounded-lg hover:bg-gray-700"
   >
-    <Icon size={24} style={{ color }} className="min-w-[24px]" />
-    <span className="ml-4">{label}</span>
+    <Icon size={24} style={{ color }} />
+    <span className="ml-3">{label}</span>
   </Link>
 );
 

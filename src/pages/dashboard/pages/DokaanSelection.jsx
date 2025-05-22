@@ -12,23 +12,22 @@ const DokaanSelection = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-black via-[#2a0000] to-[#3f0000]">
-      <h2 className="text-3xl font-bold text-white mb-8 text-center">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-black via-[#1c0c0c] to-[#2e0f0f]">
+      <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8 text-center">
         🛍️ Select Your Shop
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 w-full max-w-3xl mx-auto">
+      <div className="grid w-full max-w-3xl mx-auto grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 place-items-center">
         {dokaan?.map((shop) => (
           <div
             key={shop.id}
             onClick={() => handleSelect(shop)}
-            className={`relative cursor-pointer backdrop-blur-md rounded-xl overflow-hidden border p-3 transition-all duration-300 ${
+            className={`relative cursor-pointer backdrop-blur-md rounded-xl overflow-hidden border p-3 w-64 transition-all duration-300 ${
               savedShop?.id === shop.id
                 ? "border-red-500 bg-gradient-to-tr from-red-600/70 to-black/40 scale-105 shadow-lg"
                 : "border-white/20 bg-black/30 hover:scale-105 hover:border-red-400"
             }`}
           >
-            {/* Dokaan Image or Placeholder */}
             <div className="w-full h-28 bg-black/20 rounded-lg flex items-center justify-center mb-3 overflow-hidden">
               {shop.dokaan_imageUrl ? (
                 <img

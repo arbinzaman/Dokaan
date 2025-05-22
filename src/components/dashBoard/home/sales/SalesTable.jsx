@@ -32,7 +32,7 @@ const fetchSalesData = async ({ queryKey }) => {
 };
 
 const SalesTable = () => {
-  const { dokaan } = useUser();
+  const { savedShop } = useUser();
   const [searchTerm, setSearchTerm] = useState("");
   const [year, setYear] = useState("");
   const [month, setMonth] = useState("");
@@ -46,9 +46,9 @@ const SalesTable = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["sales", dokaan?.id, year, month, day],
+    queryKey: ["sales", savedShop?.id, year, month, day],
     queryFn: fetchSalesData,
-    enabled: !!dokaan?.id,
+    enabled: !!savedShop?.id,
   });
 
   // Filter logic

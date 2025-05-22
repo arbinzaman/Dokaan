@@ -14,8 +14,8 @@ import axios from "axios";
 import { useUser } from "../../../../contexts/AuthContext";
 
 const CustomerGrowth = () => {
-  const { dokaan } = useUser();
-  const shopId = dokaan?.id;
+  const { savedShop } = useUser();
+  const shopId = savedShop?.id;
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["customerGrowth", shopId],

@@ -1,4 +1,4 @@
-import { useState,  } from "react";
+import { useState } from "react";
 import {
   User,
   Mail,
@@ -8,14 +8,18 @@ import {
   Calendar,
   Briefcase,
 } from "lucide-react";
+import { useUser } from "../../../contexts/AuthContext";
 
 const defaultTimetable = {
   workDays: "Mon-Fri",
   workStartTime: "09:00",
-  workEndTime: "17:00",
+  workEndTime: "20:00",
 };
 
-const AddEmployee = ({ shops = [], onSubmit }) => {
+const AddEmployee = ({ onSubmit }) => {
+  const { dokaan } = useUser();
+  console.log(dokaan);
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -24,7 +28,7 @@ const AddEmployee = ({ shops = [], onSubmit }) => {
     workDays: defaultTimetable.workDays,
     workStartTime: defaultTimetable.workStartTime,
     workEndTime: defaultTimetable.workEndTime,
-    dokaanId: "", // shop id
+    dokaanId: "",
   });
 
   const handleChange = (e) => {
@@ -38,149 +42,168 @@ const AddEmployee = ({ shops = [], onSubmit }) => {
   };
 
   return (
-    <div className="max-w-lg mx-auto bg-white dark:bg-gray-900 p-8 rounded-lg shadow-md">
-      <h2 className="text-2xl font-semibold mb-6 text-gray-900 dark:text-white">
-        Add New Employee
-      </h2>
+    <div className="max-w-xl mx-auto px-4 sm:px-6 py-10 mb-10">
+      <div className="backdrop-blur-md bg-white/10 dark:bg-gray-800/30 border border-white/20 rounded-2xl shadow-lg p-8 transition-all duration-300">
+        <h2 className="text-3xl font-bold text-center text-white mb-6 tracking-tight">
+          ✨ Add New Employee
+        </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Name */}
-        <label className="block">
-          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-1">
-            <User size={18} /> Name
-          </span>
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            required
-            placeholder="Employee name"
-            className="w-full rounded-md border border-gray-300 dark:border-gray-700 p-2 focus:outline-none focus:ring-2 focus:ring-red-400 dark:bg-gray-800 dark:text-white"
-          />
-        </label>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Name */}
+          <label className="block">
+            <span className="flex items-center gap-2 mb-1 text-sm font-medium text-white">
+              <User size={20} className="text-pink-400 animate-pulse" />
+              Name
+            </span>
+            <input
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="John Doe"
+              required
+              className="w-full rounded-lg border border-white/30 bg-white/10 dark:bg-gray-700 text-white p-2 focus:outline-none focus:ring-2 focus:ring-pink-400 placeholder-gray-300"
+            />
+          </label>
 
-        {/* Email */}
-        <label className="block">
-          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-1">
-            <Mail size={18} /> Email
-          </span>
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-            placeholder="Email address"
-            className="w-full rounded-md border border-gray-300 dark:border-gray-700 p-2 focus:outline-none focus:ring-2 focus:ring-red-400 dark:bg-gray-800 dark:text-white"
-          />
-        </label>
+          {/* Email & Salary */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <label className="w-full sm:w-1/2 block">
+              <span className="flex items-center gap-2 mb-1 text-sm font-medium text-white">
+                <Mail size={20} className="text-blue-400 animate-pulse" />
+                Email
+              </span>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="john@example.com"
+                required
+                className="w-full rounded-lg border border-white/30 bg-white/10 dark:bg-gray-700 text-white p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-gray-300"
+              />
+            </label>
 
-        {/* Salary */}
-        <label className="block">
-          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-1">
-            <DollarSign size={18} /> Salary (monthly)
-          </span>
-          <input
-            type="number"
-            name="salary"
-            value={form.salary}
-            onChange={handleChange}
-            min="0"
-            step="0.01"
-            placeholder="Salary in ৳"
-            className="w-full rounded-md border border-gray-300 dark:border-gray-700 p-2 focus:outline-none focus:ring-2 focus:ring-red-400 dark:bg-gray-800 dark:text-white"
-          />
-        </label>
+            <label className="w-full sm:w-1/2 block">
+              <span className="flex items-center gap-2 mb-1 text-sm font-medium text-white">
+                <DollarSign
+                  size={20}
+                  className="text-green-400 animate-pulse"
+                />
+                Salary
+              </span>
+              <div className="flex items-center rounded-lg border border-white/30 bg-white/10 dark:bg-gray-700 text-white">
+                <span className="px-3 text-lg text-green-300">৳</span>
+                <input
+                  type="number"
+                  name="salary"
+                  value={form.salary}
+                  onChange={handleChange}
+                  placeholder="Amount"
+                  required
+                  className="w-full bg-transparent p-2 focus:outline-none focus:ring-2 focus:ring-green-400 placeholder-gray-300"
+                />
+              </div>
+            </label>
+          </div>
 
-        {/* Work Location */}
-        <label className="block">
-          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-1">
-            <MapPin size={18} /> Work Location
-          </span>
-          <input
-            type="text"
-            name="workLocation"
-            value={form.workLocation}
-            onChange={handleChange}
-            placeholder="Workplace address"
-            className="w-full rounded-md border border-gray-300 dark:border-gray-700 p-2 focus:outline-none focus:ring-2 focus:ring-red-400 dark:bg-gray-800 dark:text-white"
-          />
-        </label>
+          {/* Work Days & Location */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <label className="w-full sm:w-1/2 block">
+              <span className="flex items-center gap-2 mb-1 text-sm font-medium text-white">
+                <Calendar size={20} className="text-purple-400 animate-pulse" />
+                Work Days
+              </span>
+              <input
+                type="text"
+                name="workDays"
+                value={form.workDays}
+                onChange={handleChange}
+                required
+                className="w-full rounded-lg border border-white/30 bg-white/10 dark:bg-gray-700 text-white p-2 focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-gray-300"
+              />
+            </label>
 
-        {/* Work Days (default suggestion) */}
-        <label className="block">
-          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-1">
-            <Calendar size={18} /> Work Days
-          </span>
-          <input
-            type="text"
-            name="workDays"
-            value={form.workDays}
-            onChange={handleChange}
-            placeholder="E.g. Mon-Fri"
-            className="w-full rounded-md border border-gray-300 dark:border-gray-700 p-2 focus:outline-none focus:ring-2 focus:ring-red-400 dark:bg-gray-800 dark:text-white"
-          />
-        </label>
+            <label className="w-full sm:w-1/2 block">
+              <span className="flex items-center gap-2 mb-1 text-sm font-medium text-white">
+                <MapPin size={20} className="text-yellow-400 animate-pulse" />
+                Work Location
+              </span>
+              <input
+                type="text"
+                name="workLocation"
+                value={form.workLocation}
+                onChange={handleChange}
+                required
+                className="w-full rounded-lg border border-white/30 bg-white/10 dark:bg-gray-700 text-white p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 placeholder-gray-300"
+              />
+            </label>
+          </div>
 
-        {/* Work Start Time */}
-        <label className="block">
-          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-1">
-            <Clock size={18} /> Work Start Time
-          </span>
-          <input
-            type="time"
-            name="workStartTime"
-            value={form.workStartTime}
-            onChange={handleChange}
-            className="w-full rounded-md border border-gray-300 dark:border-gray-700 p-2 focus:outline-none focus:ring-2 focus:ring-red-400 dark:bg-gray-800 dark:text-white"
-          />
-        </label>
+          {/* Times */}
+          <label className="block">
+            <span className="flex items-center gap-2 mb-1 text-sm font-medium text-white">
+              <Clock size={20} className="text-cyan-400 animate-pulse" />
+              Work Start Time
+            </span>
+            <input
+              type="time"
+              name="workStartTime"
+              value={form.workStartTime}
+              onChange={handleChange}
+              required
+              className="w-full rounded-lg border border-white/30 bg-white/10 dark:bg-gray-700 text-white p-2 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+            />
+          </label>
 
-        {/* Work End Time */}
-        <label className="block">
-          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-1">
-            <Clock size={18} /> Work End Time
-          </span>
-          <input
-            type="time"
-            name="workEndTime"
-            value={form.workEndTime}
-            onChange={handleChange}
-            className="w-full rounded-md border border-gray-300 dark:border-gray-700 p-2 focus:outline-none focus:ring-2 focus:ring-red-400 dark:bg-gray-800 dark:text-white"
-          />
-        </label>
+          <label className="block">
+            <span className="flex items-center gap-2 mb-1 text-sm font-medium text-white">
+              <Clock size={20} className="text-cyan-400 animate-pulse" />
+              Work End Time
+            </span>
+            <input
+              type="time"
+              name="workEndTime"
+              value={form.workEndTime}
+              onChange={handleChange}
+              required
+              className="w-full rounded-lg border border-white/30 bg-white/10 dark:bg-gray-700 text-white p-2 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+            />
+          </label>
 
-        {/* Shop Selection Dropdown */}
-        <label className="block">
-          <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-1">
-            <Briefcase size={18} /> Select Shop
-          </span>
-          <select
-            name="dokaanId"
-            value={form.dokaanId}
-            onChange={handleChange}
-            required
-            className="w-full rounded-md border border-gray-300 dark:border-gray-700 p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-400"
-          >
-            <option value="" disabled>
-              Select a shop
-            </option>
-            {shops.map((shop) => (
-              <option key={shop.id} value={shop.id}>
-                {shop.name}
+          {/* Shop Selection */}
+          <label className="block">
+            <span className="flex items-center gap-2 mb-1 text-sm font-medium text-white">
+              <Briefcase size={20} className="text-orange-400 animate-pulse" />
+              Select Shop
+            </span>
+            <select
+              name="dokaanId"
+              value={form.dokaanId}
+              onChange={handleChange}
+              required
+              className="w-full rounded-lg border border-white/30 bg-white/10 dark:bg-gray-700 text-white p-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            >
+              <option value="" disabled>
+                Choose a shop
               </option>
-            ))}
-          </select>
-        </label>
+              {dokaan.map((shop) => (
+                <option key={shop.id} value={shop.id}>
+                  {shop.dokaan_name} ({shop.dokaan_location})
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <button
-          type="submit"
-          className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-md transition"
-        >
-          Add Employee
-        </button>
-      </form>
+          {/* Submit */}
+          <button
+            type="submit"
+            className="w-full mt-4 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 hover:from-yellow-500 hover:to-pink-500 text-white font-semibold py-2 rounded-xl transition-all shadow-lg hover:scale-105"
+          >
+            🚀 Add Employee
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

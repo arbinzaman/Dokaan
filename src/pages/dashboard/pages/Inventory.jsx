@@ -12,7 +12,7 @@ import InventoryTable from "../../../components/dashBoard/home/products/inventor
 const ITEMS_PER_PAGE = 10;
 
 const Inventory = () => {
-  const { user, dokaan } = useUser();
+  const { user, savedShop } = useUser();
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -27,8 +27,8 @@ const Inventory = () => {
 
       const baseUrl = import.meta.env.VITE_BASE_URL;
       const endpoint = selectedCategory
-        ? `${baseUrl}/products/category?shopId=${dokaan.id}&categories=${selectedCategory}`
-        : `${baseUrl}/products/${user?.email}`;
+        ? `${baseUrl}/products/category?shopId=${savedShop.id}&categories=${selectedCategory}`
+        : `${baseUrl}/products?shopId=${savedShop.id}`;
 
       const response = await axios.get(endpoint, {
         headers: {
@@ -42,7 +42,7 @@ const Inventory = () => {
     },
     enabled: !!user?.id,
   });
-
+// console.log(inventory);
   const totalItems = inventory.length;
   const inStockCount = inventory.filter((item) => item.initialStock > 0).length;
   const outOfStockCount = inventory.filter(
