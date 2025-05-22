@@ -12,9 +12,12 @@ import {
   KeyRound,
 } from "lucide-react";
 import { useUser } from "../../../contexts/AuthContext";
+import toast, { Toaster } from "react-hot-toast";           // 1. Import toast
+import { useNavigate } from "react-router-dom";              // 2. Import navigate
 
 const AddAEmployee = () => {
   const { dokaan } = useUser();
+  const navigate = useNavigate();                            // 3. Get navigate function
 
   const [form, setForm] = useState({
     name: "",
@@ -41,7 +44,7 @@ const AddAEmployee = () => {
         const end = name === "workEndTime" ? value : prev.workEndTime;
 
         const formatTime = (t) => {
-          let [h, m] = t.split(":");
+          let [h] = t.split(":");
           h = Number(h);
           const ampm = h >= 12 ? "pm" : "am";
           h = h % 12 || 12;
@@ -78,10 +81,8 @@ const AddAEmployee = () => {
       workStatus: form.workStatus,
     };
 
-    console.log("Payload to send:", payload);
-
     try {
-      const response = await axios.post(
+      await axios.post(
         `${import.meta.env.VITE_BASE_URL}/employee`,
         payload,
         {
@@ -90,21 +91,42 @@ const AddAEmployee = () => {
           },
         }
       );
-      alert("Employee added successfully!");
+      // Show success toast
+      toast.success("Employee added successfully!", {
+        position: "bottom-center",
+        duration: 3000,
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+          padding: "12px 24px",
+          fontWeight: "600",
+        },
+      });
+
+      // Navigate after short delay (to let toast show)
+      setTimeout(() => {
+        navigate("/dashboard/employee");
+      }, 1500);
     } catch (error) {
       console.error("Error adding employee:", error);
-      alert("Failed to add employee.");
+      toast.error("Failed to add employee.", {
+        position: "bottom-center",
+        duration: 3000,
+      });
     }
   };
 
   return (
     <div className="max-w-xl mx-auto px-4 sm:px-6 py-10 mb-10">
+      <Toaster /> {/* 4. Add toaster container */}
       <div className="backdrop-blur-md bg-white/10 dark:bg-gray-800/30 border border-white/20 rounded-2xl shadow-lg p-8 transition-all duration-300">
         <h2 className="text-3xl font-bold text-center text-white mb-6 tracking-tight">
           ✨ Add New Employee
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* ... your existing form fields unchanged ... */}
           {/* Name */}
           <label className="block">
             <span className="flex items-center gap-2 mb-1 text-sm font-medium text-white">
