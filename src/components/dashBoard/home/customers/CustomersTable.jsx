@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 import axios from "axios";
+import { useUser } from "../../../../contexts/AuthContext";
 
 const monthOptions = [
   "jan",
@@ -25,6 +26,8 @@ const CustomersTable = () => {
   const [year, setYear] = useState("");
   const [month, setMonth] = useState("");
   const [day, setDay] = useState("");
+  const {dokaan} = useUser();
+  
 
   const itemsPerPage = 5;
 
@@ -36,7 +39,7 @@ const CustomersTable = () => {
       if (day) params.day = day;
 
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/customers`,
+        `${import.meta.env.VITE_BASE_URL}/customers?shopId=${dokaan.id}`,
         { params }
       );
 
