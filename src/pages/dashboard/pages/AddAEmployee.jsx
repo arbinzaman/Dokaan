@@ -16,7 +16,7 @@ const defaultTimetable = {
   workEndTime: "20:00",
 };
 
-const AddEmployee = ({ onSubmit }) => {
+const AddAEmployee = ({ onSubmit }) => {
   const { dokaan } = useUser();
   console.log(dokaan);
 
@@ -208,4 +208,4 @@ const AddEmployee = ({ onSubmit }) => {
   );
 };
 
-export default AddEmployee;
+export default AddAEmployee;
