@@ -1,4 +1,6 @@
 import { useState } from "react";
+import axios from "axios";
+import Cookies from "js-cookie";
 import {
   User,
   Mail,
@@ -7,38 +9,92 @@ import {
   MapPin,
   Calendar,
   Briefcase,
+  KeyRound,
 } from "lucide-react";
 import { useUser } from "../../../contexts/AuthContext";
 
-const defaultTimetable = {
-  workDays: "Mon-Fri",
-  workStartTime: "09:00",
-  workEndTime: "20:00",
-};
-
-const AddAEmployee = ({ onSubmit }) => {
+const AddAEmployee = () => {
   const { dokaan } = useUser();
-  console.log(dokaan);
 
   const [form, setForm] = useState({
     name: "",
     email: "",
-    salary: "",
+    password: "",
+    salary: 0,
     workLocation: "",
-    workDays: defaultTimetable.workDays,
-    workStartTime: defaultTimetable.workStartTime,
-    workEndTime: defaultTimetable.workEndTime,
+    workDays: "Mon,Tue,Wed,Thu,Fri",
+    workStartTime: "09:00",
+    workEndTime: "17:00",
+    workHours: "9am - 5pm",
+    workStatus: "active",
     dokaanId: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+
+    setForm((prev) => {
+      let updated = { ...prev, [name]: name === "salary" ? Number(value) : value };
+
+      if (name === "workStartTime" || name === "workEndTime") {
+        const start = name === "workStartTime" ? value : prev.workStartTime;
+        const end = name === "workEndTime" ? value : prev.workEndTime;
+
+        const formatTime = (t) => {
+          let [h, m] = t.split(":");
+          h = Number(h);
+          const ampm = h >= 12 ? "pm" : "am";
+          h = h % 12 || 12;
+          return `${h}${ampm}`;
+        };
+
+        updated.workHours = `${formatTime(start)} - ${formatTime(end)}`;
+      }
+
+      return updated;
+    });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(form);
+    const token = Cookies.get("XTOKEN");
+
+    const nowDate = new Date().toISOString().slice(0, 10);
+
+    const workStartISO = new Date(`${nowDate}T${form.workStartTime}:00Z`).toISOString();
+    const workEndISO = new Date(`${nowDate}T${form.workEndTime}:00Z`).toISOString();
+
+    const payload = {
+      name: form.name,
+      email: form.email,
+      password: form.password,
+      dokaanId: Number(form.dokaanId),
+      salary: Number(form.salary),
+      workLocation: form.workLocation,
+      workDays: form.workDays,
+      workStartTime: workStartISO,
+      workEndTime: workEndISO,
+      workHours: form.workHours,
+      workStatus: form.workStatus,
+    };
+
+    console.log("Payload to send:", payload);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/employee`,
+        payload,
+        {
+          headers: {
+            Authorization: `${token}`,
+          },
+        }
+      );
+      alert("Employee added successfully!");
+    } catch (error) {
+      console.error("Error adding employee:", error);
+      alert("Failed to add employee.");
+    }
   };
 
   return (
@@ -66,7 +122,7 @@ const AddAEmployee = ({ onSubmit }) => {
             />
           </label>
 
-          {/* Email & Salary */}
+          {/* Email & Password */}
           <div className="flex flex-col sm:flex-row gap-4">
             <label className="w-full sm:w-1/2 block">
               <span className="flex items-center gap-2 mb-1 text-sm font-medium text-white">
@@ -86,26 +142,41 @@ const AddAEmployee = ({ onSubmit }) => {
 
             <label className="w-full sm:w-1/2 block">
               <span className="flex items-center gap-2 mb-1 text-sm font-medium text-white">
-                <DollarSign
-                  size={20}
-                  className="text-green-400 animate-pulse"
-                />
-                Salary
+                <KeyRound size={20} className="text-yellow-400 animate-pulse" />
+                Password
               </span>
-              <div className="flex items-center rounded-lg border border-white/30 bg-white/10 dark:bg-gray-700 text-white">
-                <span className="px-3 text-lg text-green-300">৳</span>
-                <input
-                  type="number"
-                  name="salary"
-                  value={form.salary}
-                  onChange={handleChange}
-                  placeholder="Amount"
-                  required
-                  className="w-full bg-transparent p-2 focus:outline-none focus:ring-2 focus:ring-green-400 placeholder-gray-300"
-                />
-              </div>
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                required
+                className="w-full rounded-lg border border-white/30 bg-white/10 dark:bg-gray-700 text-white p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 placeholder-gray-300"
+              />
             </label>
           </div>
+
+          {/* Salary */}
+          <label className="block">
+            <span className="flex items-center gap-2 mb-1 text-sm font-medium text-white">
+              <DollarSign size={20} className="text-green-400 animate-pulse" />
+              Salary
+            </span>
+            <div className="flex items-center rounded-lg border border-white/30 bg-white/10 dark:bg-gray-700 text-white">
+              <span className="px-3 text-lg text-green-300">৳</span>
+              <input
+                type="number"
+                name="salary"
+                value={form.salary}
+                onChange={handleChange}
+                placeholder="Amount"
+                required
+                className="w-full bg-transparent p-2 focus:outline-none focus:ring-2 focus:ring-green-400 placeholder-gray-300"
+                min={0}
+              />
+            </div>
+          </label>
 
           {/* Work Days & Location */}
           <div className="flex flex-col sm:flex-row gap-4">
@@ -121,6 +192,7 @@ const AddAEmployee = ({ onSubmit }) => {
                 onChange={handleChange}
                 required
                 className="w-full rounded-lg border border-white/30 bg-white/10 dark:bg-gray-700 text-white p-2 focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-gray-300"
+                placeholder="Mon,Tue,Wed,Thu,Fri"
               />
             </label>
 
@@ -136,6 +208,7 @@ const AddAEmployee = ({ onSubmit }) => {
                 onChange={handleChange}
                 required
                 className="w-full rounded-lg border border-white/30 bg-white/10 dark:bg-gray-700 text-white p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 placeholder-gray-300"
+                placeholder="Main Shop"
               />
             </label>
           </div>
