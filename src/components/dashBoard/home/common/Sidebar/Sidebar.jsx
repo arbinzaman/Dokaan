@@ -85,7 +85,7 @@ const SIDEBAR_ITEMS = [
     name: "Employees",
     icon: User,
     color: "#3B82F6",
-    href: "/dashboard/employees",
+    href: "/dashboard/employee",
   },
   {
     id: "memos",

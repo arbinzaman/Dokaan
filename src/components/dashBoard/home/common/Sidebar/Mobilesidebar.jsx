@@ -126,7 +126,7 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                 onClick={handleItemClick}
               />
               <SidebarLink
-                to="/dashboard/employees"
+                to="/dashboard/employee"
                 icon={User}
                 label="Employees"
                 color="#3B82F6"

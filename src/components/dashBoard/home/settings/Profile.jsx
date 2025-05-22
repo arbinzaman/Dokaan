@@ -35,6 +35,9 @@ const Profile = () => {
               <p className="text-sm text-gray-600 dark:text-gray-300 transition-colors">
                 {user?.email}
               </p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 transition-colors">
+                {user?.role}
+              </p>
             </div>
           </div>
 

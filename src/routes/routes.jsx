@@ -28,6 +28,8 @@ import PrivateRoute from "./PrivateRoutes";
 import SalesTable from "../components/dashBoard/home/sales/SalesTable";
 import CustomersPage from "../pages/dashboard/pages/CustomerPage";
 import CustomersListPage from "../components/dashBoard/home/customers/CustomerListPage";
+import EmployeePage from "../pages/dashboard/pages/EmployeePage";
+import AddAEmployee from "../pages/dashboard/pages/AddAEmployee";
 // import MobileSidebar from "../components/dashBoard/home/common/MobileSidebar";
 const router = createBrowserRouter(
   [
@@ -144,6 +146,14 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/sales-table",
           element: <SalesTable />,
+        },
+        {
+          path: "/dashboard/employee",
+          element: <EmployeePage />,
+        },
+        {
+          path: "/dashboard/add-a-employee",
+          element: <AddAEmployee />,
         },
         // {
         //   path: "/dashboard/mobile-nav",
