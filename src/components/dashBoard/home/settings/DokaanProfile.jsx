@@ -8,8 +8,10 @@ import { Tooltip } from "@mui/material";
 import { motion } from "framer-motion";
 
 const DokaanProfile = () => {
-  const { savedShop } = useUser();
+  const { savedShop, user } = useUser(); // include user
   const [isModalOpen, setModalOpen] = useState(false);
+  // console.log("User Role:", user?.role);
+  // console.log("Condition:", user?.role === "shop-owner");
 
   const handleEditProfile = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
@@ -41,16 +43,20 @@ const DokaanProfile = () => {
                 Location: {savedShop?.dokaan_location}
               </p>
             </div>
-            <Tooltip title="Edit Dokaan Profile" arrow>
-              <motion.button
-                whileHover={{ scale: 1.15, rotate: 10 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleEditProfile}
-                className="p-3 rounded-full bg-gray-200 dark:bg-gray-800 text-black dark:text-white shadow transition-all duration-200"
-              >
-                <FiEdit className="w-5 h-5" />
-              </motion.button>
-            </Tooltip>
+
+            {/* Only show edit button if user is not an employee */}
+            {user?.role === "shop-owner" && (
+              <Tooltip title="Edit Dokaan Profile" arrow>
+                <motion.button
+                  whileHover={{ scale: 1.15, rotate: 10 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleEditProfile}
+                  className="inline-flex sm:inline-flex p-3 rounded-full bg-gray-200 dark:bg-gray-800 text-black dark:text-white shadow transition-all duration-200"
+                >
+                  <FiEdit className="w-5 h-5" />
+                </motion.button>
+              </Tooltip>
+            )}
           </div>
         </div>
       </SettingSection>
@@ -59,7 +65,7 @@ const DokaanProfile = () => {
         <DokaanUpdateModal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          dokaan={savedShop} // <-- use dokaan directly, not dokaan.user
+          dokaan={savedShop}
         />
       )}
     </>
