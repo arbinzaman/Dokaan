@@ -14,41 +14,44 @@ const Login = () => {
 
   const handleLogin = async (event) => {
     event.preventDefault();
-  
+
     setIsLoading(true);
     setError("");
-  
+
     const form = event.target;
     const email = form.email.value;
     const password = form.password.value;
-  
+
     if (!email || !password) {
       setError("Email and password are required! ❌");
       setIsLoading(false);
       return;
     }
-  
+
     try {
       // Call login and await response
       const res = await login(email, password);
-  
+
       if (res && res.data && res.data.status === 200) {
         const { data } = res;
-  
+
         if (data.user.twoFactorEnabled) {
           toast.loading("Sending OTP...");
-  
+
           try {
-            const otpRes = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/send-otp`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `${data.access_token}`,
-              },
-            });
-  
+            const otpRes = await fetch(
+              `${import.meta.env.VITE_BASE_URL}/auth/send-otp`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `${data.access_token}`,
+                },
+              }
+            );
+
             if (!otpRes.ok) throw new Error();
-  
+
             toast.dismiss(); // remove loading
             toast.success("OTP sent successfully! 📩");
             navigate("/verify-otp");
@@ -57,8 +60,14 @@ const Login = () => {
             setError("Failed to send OTP.");
           }
         } else {
-          // toast.success("Login successful! 🎉");
-          navigate("/select-shop");
+          const userRole = data.user.role; // Assuming 'role' field exists
+          if (userRole === "employee") {
+            navigate("/dashboard");
+          } else if (userRole === "shop-owner") {
+            navigate("/select-shop");
+          } else {
+            navigate("/dashboard");
+          }
         }
       } else {
         setError("Invalid email or password! ❌");
@@ -69,7 +78,6 @@ const Login = () => {
       setIsLoading(false);
     }
   };
-  
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4">
@@ -77,7 +85,9 @@ const Login = () => {
         <h1 className="text-2xl font-bold text-center text-white">Login</h1>
         <form onSubmit={handleLogin} noValidate className="space-y-6">
           <div className="space-y-1 text-sm">
-            <label htmlFor="email" className="block text-white">Email</label>
+            <label htmlFor="email" className="block text-white">
+              Email
+            </label>
             <input
               type="email"
               name="email"
@@ -87,7 +97,9 @@ const Login = () => {
             />
           </div>
           <div className="relative space-y-1 text-sm">
-            <label htmlFor="password" className="block text-white">Password</label>
+            <label htmlFor="password" className="block text-white">
+              Password
+            </label>
             <input
               type={showPassword ? "text" : "password"}
               name="password"
@@ -99,12 +111,20 @@ const Login = () => {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-9 cursor-pointer"
             >
-              {showPassword ? <FaEyeSlash className="text-gray-500" /> : <FaEye className="text-gray-500" />}
+              {showPassword ? (
+                <FaEyeSlash className="text-gray-500" />
+              ) : (
+                <FaEye className="text-gray-500" />
+              )}
             </p>
-            {error && <p className="text-red-500 text-xs mt-1">{error}</p>} {/* Show error below password */}
+            {error && <p className="text-red-500 text-xs mt-1">{error}</p>}{" "}
+            {/* Show error below password */}
           </div>
           {!isLoading ? (
-            <button type="submit" className="w-full p-3 text-center rounded-sm text-black bg-white hover:bg-gray-300">
+            <button
+              type="submit"
+              className="w-full p-3 text-center rounded-sm text-black bg-white hover:bg-gray-300"
+            >
               Sign In
             </button>
           ) : (
@@ -115,7 +135,7 @@ const Login = () => {
         </form>
         <p className="text-center text-white text-sm mt-4">
           Don’t have an account?{" "}
-          <Link to='/signup' className="text-blue-400 ">
+          <Link to="/signup" className="text-blue-400 ">
             Register at Dokaan
           </Link>
         </p>

@@ -63,9 +63,15 @@ export const AuthProvider = ({ children }) => {
         const { user: userData, dokaan: dokaanData, access_token } = res.data;
 
         setUser(userData);
-        setDokaan(dokaanData);
+        setDokaan(dokaanData); // dokaanData is now an array
         Cookies.set("XTOKEN", access_token, { expires: 1, path: "/" });
 
+        // ✅ Save the first dokaan as savedShop if user is employee
+        if (userData?.role === "employee" && Array.isArray(dokaanData)) {
+          setSavedShop(dokaanData[0]);
+        }
+
+        // console.log(res, dokaanData, access_token);
         return res;
       } else {
         throw new Error("Invalid response from server.");
