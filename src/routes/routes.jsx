@@ -31,6 +31,7 @@ import CustomersListPage from "../components/dashBoard/home/customers/CustomerLi
 import EmployeePage from "../pages/dashboard/pages/EmployeePage";
 import AddAEmployee from "../pages/dashboard/pages/AddAEmployee";
 import DokaanSelection from "../pages/dashboard/pages/DokaanSelection";
+import NotFound from "../components/shared/Notfound";
 // import MobileSidebar from "../components/dashBoard/home/common/MobileSidebar";
 const router = createBrowserRouter(
   [
@@ -53,6 +54,10 @@ const router = createBrowserRouter(
         {
           path: "/verify-otp",
           element: <OtpVerification />,
+        },
+        {
+          path: "/*",
+          element: <NotFound />,
         },
         // {
         //   path: "/select-shop",
@@ -163,6 +168,10 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/add-a-employee",
           element: <AddAEmployee />,
+        },
+        {
+          path: "/dashboard/*",
+          element: <NotFound />,
         },
         // {
         //   path: "/dashboard/mobile-nav",

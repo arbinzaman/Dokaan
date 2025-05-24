@@ -28,7 +28,10 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
         <Link to="/dashboard" className="p-2 rounded-full hover:bg-gray-700">
           <BarChart2 size={26} style={{ color: "#6366f1" }} />
         </Link>
-        <Link to="/dashboard/inventory" className="p-2 rounded-full hover:bg-gray-700">
+        <Link
+          to="/dashboard/inventory"
+          className="p-2 rounded-full hover:bg-gray-700"
+        >
           <Box size={26} style={{ color: "#FF9900" }} />
         </Link>
         <Link to="/dashboard/product-sell">
@@ -36,7 +39,10 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
             <ScanLine size={32} className="text-white" />
           </button>
         </Link>
-        <Link to="/dashboard/analytics" className="p-2 rounded-full hover:bg-gray-700">
+        <Link
+          to="/dashboard/analytics"
+          className="p-2 rounded-full hover:bg-gray-700"
+        >
           <TrendingUp size={26} style={{ color: "#3B82F6" }} />
         </Link>
         <button
@@ -66,9 +72,13 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
             {/* Current Shop Display */}
             {savedShop && (
               <div className="mb-4 bg-white/20 p-3 rounded-lg">
-                <p className="text-xs uppercase text-white/70 mb-1">Current Shop</p>
+                <p className="text-xs uppercase text-white/70 mb-1">
+                  Current Shop
+                </p>
                 <p className="text-base font-bold">{savedShop.dokaan_name}</p>
-                <p className="text-sm text-white/70">{savedShop.dokaan_location}</p>
+                <p className="text-sm text-white/70">
+                  {savedShop.dokaan_location}
+                </p>
               </div>
             )}
 
@@ -87,7 +97,9 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                     className="w-full text-left p-2 mb-2 text-sm bg-white/10 hover:bg-white/20 rounded"
                   >
                     <div className="font-semibold">{shop.dokaan_name}</div>
-                    <div className="text-xs text-white/70 truncate">{shop.dokaan_location}</div>
+                    <div className="text-xs text-white/70 truncate">
+                      {shop.dokaan_location}
+                    </div>
                   </button>
                 ))
               ) : (
@@ -97,13 +109,62 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
 
             {/* Navigation */}
             <nav className="space-y-2">
-              <SidebarLink to="/dashboard/users" icon={UserCog} label="Users" color="#C084FC" onClick={handleItemClick} />
-              <SidebarLink to="/dashboard/products" icon={ShoppingBag} label="Products" color="#8B5CF6" onClick={handleItemClick} />
-              <SidebarLink to="/dashboard/customers" icon={UserCheck} label="Customers" color="#EC4899" onClick={handleItemClick} />
-              <SidebarLink to="/dashboard/sales" icon={Receipt} label="Sales" color="#10B981" onClick={handleItemClick} />
-              <SidebarLink to="/dashboard/expenses" icon={FileText} label="Expenses" color="#EF4444" onClick={handleItemClick} />
-              <SidebarLink to="/dashboard/employee" icon={User} label="Employees" color="#3B82F6" onClick={handleItemClick} />
-              <SidebarLink to="/dashboard/memos" icon={FileText} label="Memos" color="#F97316" onClick={handleItemClick} />
+              <SidebarLink
+                to="/dashboard/users"
+                icon={UserCog}
+                label="Users"
+                color="#C084FC"
+                onClick={handleItemClick}
+              />
+              <SidebarLink
+                to="/dashboard/products"
+                icon={ShoppingBag}
+                label="Products"
+                color="#8B5CF6"
+                onClick={handleItemClick}
+              />
+              <SidebarLink
+                to="/dashboard/customers"
+                icon={UserCheck}
+                label="Customers"
+                color="#EC4899"
+                onClick={handleItemClick}
+              />
+              <SidebarLink
+                to="/dashboard/sales"
+                icon={Receipt}
+                label="Sales"
+                color="#10B981"
+                onClick={handleItemClick}
+              />
+              <SidebarLink
+                to="/dashboard/expenses"
+                icon={FileText}
+                label="Expenses"
+                color="#EF4444"
+                onClick={handleItemClick}
+              />
+              <SidebarLink
+                to="/dashboard/employee"
+                icon={User}
+                label="Employees"
+                color="#3B82F6"
+                onClick={handleItemClick}
+              />
+              <SidebarLink
+                to="/dashboard/memos"
+                icon={FileText}
+                label="Memos"
+                color="#F97316"
+                onClick={handleItemClick}
+              />
+              <SidebarLink
+                to="/dashboard/settings"
+                icon={UserCog}
+                label="Settings"
+                color="#FACC15"
+                onClick={handleItemClick}
+              />
             </nav>
 
             {/* Theme Toggle */}
