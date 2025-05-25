@@ -26,9 +26,9 @@ const SIDEBAR_ITEMS = [
   {
     id: "inventory",
     name: "Inventory",
-    href: "/dashboard/inventory",
     icon: Box,
     color: "#FF9900",
+    href: "/dashboard/inventory",
   },
   {
     id: "products",
@@ -58,13 +58,6 @@ const SIDEBAR_ITEMS = [
     color: "#10B981",
     href: "/dashboard/sales",
   },
-  // {
-  //   id: "orders",
-  //   name: "Orders",
-  //   icon: ShoppingCart,
-  //   color: "#F59E0B",
-  //   href: "/dashboard/orders",
-  // },
   {
     id: "analytics",
     name: "Analytics",
@@ -105,20 +98,38 @@ const SIDEBAR_ITEMS = [
 const Sidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { dokaan } = useUser();
+  const { dokaan, user } = useUser();
+
+  const role = user?.role;
+
+  const roleBasedAllowedIds = {
+    admin: ["users"],
+    "shop-owner": SIDEBAR_ITEMS.map((item) => item.id).filter(
+      (id) => id !== "users"
+    ),
+    employee: ["inventory", "customers", "sales", "memos", "settings"],
+  };
+
+  const allowedIds = role ? roleBasedAllowedIds[role] || [] : [];
+
+  const filteredSidebarItems = SIDEBAR_ITEMS.filter((item) =>
+    allowedIds.includes(item.id)
+  );
+
+  const dokaanToPass = role === "employee" ? null : dokaan;
 
   return (
     <>
       <MobileSidebar
-        sidebarItems={SIDEBAR_ITEMS}
+        sidebarItems={filteredSidebarItems}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
       <DesktopSidebar
-        sidebarItems={SIDEBAR_ITEMS}
+        sidebarItems={filteredSidebarItems}
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
-        dokaan={dokaan}
+        dokaan={dokaanToPass}
       />
     </>
   );

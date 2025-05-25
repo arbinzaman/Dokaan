@@ -42,7 +42,7 @@ const Inventory = () => {
     },
     enabled: !!user?.id,
   });
-// console.log(inventory);
+  // console.log(inventory);
   const totalItems = inventory.length;
   const inStockCount = inventory.filter((item) => item.initialStock > 0).length;
   const outOfStockCount = inventory.filter(
@@ -144,12 +144,27 @@ const Inventory = () => {
             </select>
           </div>
 
-          <button
-            onClick={() => navigate("/dashboard/product-add")}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
-          >
-            <Plus size={18} /> Add Product
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/dashboard/product-add")}
+              className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md hover:shadow-lg transition duration-300"
+            >
+              <Plus size={18} />
+              <span className="font-medium">Add Product</span>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/dashboard/product-sell")}
+              className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md hover:shadow-lg transition duration-300"
+            >
+              <PackageCheck size={18} />
+              <span className="font-medium">Sell Product</span>
+            </motion.button>
+          </div>
         </div>
 
         {/* Inventory Table */}

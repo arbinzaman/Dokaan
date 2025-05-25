@@ -4,28 +4,116 @@ import Cookies from "js-cookie";
 import { useUser } from "../../../../contexts/AuthContext";
 import { Button } from "@mui/material";
 import BarcodeScanner from "./Scanner/BarcodeScanner";
+import CreatableSelect from "react-select/creatable";
+
+const toastStyle = {
+  borderRadius: "12px",
+  background: "#1e293b",
+  color: "#fff",
+  padding: "14px 20px",
+  fontSize: "16px",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+};
+
+const toastIconTheme = {
+  primary: "#60a5fa",
+  secondary: "#fff",
+};
 
 const AddProducts = () => {
   const [productData, setProductData] = useState({
     name: "",
     code: "",
-    category: "",
-    purchasePrice: "",
-    salesPrice: "",
-    initialStock: "",
+    itemCategory: "",
+    purchasePrice: null,
+    salesPrice: null,
+    initialStock: null,
   });
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [isUpdateMode, setIsUpdateMode] = useState(false);
+
   const { user, savedShop } = useUser();
+
+  const categoryOptions = [
+    { value: "Groceries", label: "Groceries" },
+    { value: "Electronics", label: "Electronics" },
+    { value: "Mobile Shop", label: "Mobile Shop" },
+    { value: "Stationery", label: "Stationery" },
+    { value: "Clothing", label: "Clothing" },
+    { value: "Cosmetics", label: "Cosmetics" },
+    { value: "Pharmacy", label: "Pharmacy" },
+    { value: "Bakery", label: "Bakery" },
+  ];
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
-    setProductData((prev) => ({ ...prev, [id]: value }));
+    const numericFields = ["purchasePrice", "salesPrice", "initialStock"];
+
+    setProductData((prev) => ({
+      ...prev,
+      [id]: numericFields.includes(id)
+        ? value === ""
+          ? null
+          : Number(value)
+        : value,
+    }));
   };
 
-  const handleScan = (scannedCode) => {
+  const handleCategoryChange = (selectedOption) => {
+    setProductData((prev) => ({
+      ...prev,
+      itemCategory: selectedOption?.value || "",
+    }));
+  };
+
+  const handleScan = async (scannedCode) => {
     setProductData((prev) => ({ ...prev, code: scannedCode }));
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/products/scan`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ barcode: scannedCode }),
+        }
+      );
+
+      const data = await res.json();
+      if (res.ok && data?.matchedProduct) {
+        const found = data.matchedProduct;
+
+        setProductData({
+          name: found.productName || "",
+          code: found.code || scannedCode,
+          itemCategory: found.itemCategory || "",
+          purchasePrice: found.purchasePrice ?? null,
+          salesPrice: found.salesPrice ?? null,
+          initialStock: null,
+        });
+        setIsUpdateMode(true);
+        toast.success("Product found. You can update the stock.", {
+          style: { ...toastStyle, background: "#22c55e" }, // green bg for success
+          iconTheme: { primary: "#ffffff", secondary: "#22c55e" },
+        });
+      } else {
+        setIsUpdateMode(false);
+        toast("No product found. You can add it as a new product.", {
+          style: { ...toastStyle, background: "#3b82f6" }, // blue bg for info
+          iconTheme: { primary: "#ffffff", secondary: "#3b82f6" },
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error fetching product info", {
+        style: { ...toastStyle, background: "#ef4444" }, // red bg for error
+        iconTheme: { primary: "#ffffff", secondary: "#ef4444" },
+      });
+    }
   };
 
   const handleSubmit = async () => {
@@ -38,50 +126,64 @@ const AddProducts = () => {
     const token = Cookies.get("XTOKEN");
 
     if (!token) {
-      toast.error("Authentication token not found.");
+      toast.error("Authentication token not found.", {
+        style: { ...toastStyle, background: "#ef4444" },
+        iconTheme: { primary: "#fff", secondary: "#ef4444" },
+      });
       return;
     }
+
+    const url = isUpdateMode
+      ? `${import.meta.env.VITE_BASE_URL}/products/${productData.code}`
+      : `${import.meta.env.VITE_BASE_URL}/products`;
 
     toast.promise(
       (async () => {
         setLoading(true);
         try {
-          const response = await fetch(
-            `${import.meta.env.VITE_BASE_URL}/products`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `${token}`,
-              },
-              body: JSON.stringify(payload),
-            }
-          );
+          const response = await fetch(url, {
+            method: isUpdateMode ? "PUT" : "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${token}`,
+            },
+            body: JSON.stringify(payload),
+          });
 
-          if (response.status === 200) {
-            setMessage("Product added successfully!");
+          if (response.ok) {
+            setMessage(
+              isUpdateMode
+                ? "Stock updated successfully!"
+                : "Product added successfully!"
+            );
             setProductData({
               name: "",
               code: "",
-              category: "",
-              purchasePrice: "",
-              salesPrice: "",
-              initialStock: "",
+              itemCategory: "",
+              purchasePrice: null,
+              salesPrice: null,
+              initialStock: null,
             });
+            setIsUpdateMode(false);
           } else {
             const errorData = await response.json();
-            throw new Error(errorData.message || "Failed to add product");
+            throw new Error(errorData.message || "Failed to save product");
           }
         } catch (error) {
           setMessage(`Error: ${error.message}`);
+          throw error; // rethrow to trigger toast.promise error toast
         } finally {
           setLoading(false);
         }
       })(),
       {
-        loading: "Saving...",
-        success: <b>Product added successfully!</b>,
-        error: <b>Could not save product. Please try again.</b>,
+        loading: isUpdateMode ? "Updating stock..." : "Saving...",
+        success: isUpdateMode ? "Stock updated!" : "Product added!",
+        error: "Something went wrong!",
+      },
+      {
+        style: toastStyle,
+        iconTheme: toastIconTheme,
       }
     );
   };
@@ -104,23 +206,50 @@ const AddProducts = () => {
           </div>
 
           <div>
-            <label htmlFor="category" className="block text-sm font-medium">
+            <label
+              htmlFor="itemCategory"
+              className="block text-sm font-medium mb-1"
+            >
               Category
             </label>
-            <input
-              id="category"
-              type="text"
-              value={productData.category}
-              onChange={handleInputChange}
-              placeholder="e.g., Beverage"
-              className="mt-1 w-full border rounded-md px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            <CreatableSelect
+              isClearable
+              options={categoryOptions}
+              onChange={handleCategoryChange}
+              value={
+                productData.itemCategory
+                  ? {
+                      value: productData.itemCategory,
+                      label: productData.itemCategory,
+                    }
+                  : null
+              }
+              placeholder="Select or create category"
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  backgroundColor: "#1f2937",
+                  borderColor: "#4b5563",
+                  color: "#fff",
+                }),
+                singleValue: (base) => ({
+                  ...base,
+                  color: "#fff",
+                }),
+                input: (base) => ({
+                  ...base,
+                  color: "#fff",
+                }),
+                menu: (base) => ({
+                  ...base,
+                  backgroundColor: "#1f2937",
+                  color: "#fff",
+                }),
+              }}
             />
           </div>
 
           <div>
-            <label htmlFor="code" className="block text-sm font-medium">
-              {/* Barcode (Scan or Type) */}
-            </label>
             <BarcodeScanner
               onScan={handleScan}
               handleInputChange={handleInputChange}
@@ -128,13 +257,16 @@ const AddProducts = () => {
           </div>
 
           <div>
-            <label htmlFor="purchasePrice" className="block text-sm font-medium">
+            <label
+              htmlFor="purchasePrice"
+              className="block text-sm font-medium"
+            >
               Purchase Price
             </label>
             <input
               id="purchasePrice"
               type="number"
-              value={productData.purchasePrice}
+              value={productData.purchasePrice ?? ""}
               onChange={handleInputChange}
               className="mt-1 w-full border rounded-md px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
             />
@@ -147,7 +279,7 @@ const AddProducts = () => {
             <input
               id="salesPrice"
               type="number"
-              value={productData.salesPrice}
+              value={productData.salesPrice ?? ""}
               onChange={handleInputChange}
               className="mt-1 w-full border rounded-md px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
             />
@@ -160,7 +292,7 @@ const AddProducts = () => {
             <input
               id="initialStock"
               type="number"
-              value={productData.initialStock}
+              value={productData.initialStock ?? ""}
               onChange={handleInputChange}
               className="mt-1 w-full border rounded-md px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
             />
@@ -175,7 +307,11 @@ const AddProducts = () => {
           color="primary"
           className="w-full !mt-4"
         >
-          {loading ? "Adding..." : "Save Product"}
+          {loading
+            ? "Processing..."
+            : isUpdateMode
+            ? "Update Stock"
+            : "Save Product"}
         </Button>
 
         {message && <p className="text-center text-sm mt-2">{message}</p>}

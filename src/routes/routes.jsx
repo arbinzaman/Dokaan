@@ -32,6 +32,8 @@ import EmployeePage from "../pages/dashboard/pages/EmployeePage";
 import AddAEmployee from "../pages/dashboard/pages/AddAEmployee";
 import DokaanSelection from "../pages/dashboard/pages/DokaanSelection";
 import NotFound from "../components/shared/Notfound";
+import AddAShop from "../pages/dashboard/pages/AddAShop";
+import DokaanPage from "../pages/dashboard/pages/DokaanPage";
 // import MobileSidebar from "../components/dashBoard/home/common/MobileSidebar";
 const router = createBrowserRouter(
   [
@@ -168,6 +170,14 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/add-a-employee",
           element: <AddAEmployee />,
+        },
+        {
+          path: "/dashboard/add-shop",
+          element: <AddAShop />,
+        },
+        {
+          path: "/dashboard/shop",
+          element: <DokaanPage />,
         },
         {
           path: "/dashboard/*",

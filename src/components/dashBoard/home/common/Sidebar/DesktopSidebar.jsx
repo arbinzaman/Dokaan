@@ -4,9 +4,10 @@ import { Link } from "react-router-dom";
 import DokaanProfile from "../../../../dashBoard/Profile/DokaanProfile";
 import dokaanLogoDark from "../../../../../assets/Home/logos/DOKAAN.png";
 import dokaanLogoLight from "../../../../../assets/Home/logos/Dokaan_White.png";
+import { useUser } from "../../../../../contexts/AuthContext"; // 🔁 Make sure this path is correct
 
 const DesktopSidebar = ({ sidebarItems, isSidebarOpen, setIsSidebarOpen }) => {
-  // Set icon size based on sidebar open state
+  const { user } = useUser(); // 🧠 Get user info
   const iconSize = isSidebarOpen ? 20 : 28;
 
   return (
@@ -25,8 +26,8 @@ const DesktopSidebar = ({ sidebarItems, isSidebarOpen, setIsSidebarOpen }) => {
         <Menu size={iconSize} />
       </motion.button>
 
-      {/* Dokaan Profile (conditionally show only if open) */}
-      {isSidebarOpen && <DokaanProfile />}
+      {/* Dokaan Profile: only visible if sidebar is open and NOT employee */}
+      {isSidebarOpen && user?.role !== "employee" && <DokaanProfile />}
 
       {/* Navigation Links */}
       <nav className="mt-4 flex-grow">
@@ -43,7 +44,7 @@ const DesktopSidebar = ({ sidebarItems, isSidebarOpen, setIsSidebarOpen }) => {
         ))}
       </nav>
 
-      {/* Bottom section with logos */}
+      {/* Bottom Logos */}
       <div className="mt-4 mb-6 flex flex-col items-center">
         <img
           src={dokaanLogoLight}

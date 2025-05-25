@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { TextField, Button, Typography, Divider, Switch, Box, Stack } from "@mui/material";
+import {
+  TextField,
+  Button,
+  Typography,
+  Divider,
+  Switch,
+  Box,
+  Stack,
+} from "@mui/material";
 // import { useMediaQuery } from "@mui/material";
 
 const AddProducts = () => {
@@ -90,7 +98,12 @@ const AddProducts = () => {
           <Typography variant="body1">Enable:</Typography>
           <Switch
             checked={productData.isEnabled}
-            onChange={(e) => setProductData((prev) => ({ ...prev, isEnabled: e.target.checked }))}
+            onChange={(e) =>
+              setProductData((prev) => ({
+                ...prev,
+                isEnabled: e.target.checked,
+              }))
+            }
           />
         </Stack>
 
@@ -113,7 +126,9 @@ const AddProducts = () => {
           />
         </Stack>
 
-        <Divider sx={{ my: 2, bgcolor: themeStyles.dividerColor }}>Pricing</Divider>
+        <Divider sx={{ my: 2, bgcolor: themeStyles.dividerColor }}>
+          Pricing
+        </Divider>
         <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
           <TextField
             label="Purchase Price"
@@ -135,7 +150,9 @@ const AddProducts = () => {
           />
         </Stack>
 
-        <Divider sx={{ my: 2, bgcolor: themeStyles.dividerColor }}>Stock</Divider>
+        <Divider sx={{ my: 2, bgcolor: themeStyles.dividerColor }}>
+          Stock
+        </Divider>
         <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
           <TextField
             label="Initial Stock"
@@ -148,7 +165,9 @@ const AddProducts = () => {
           />
         </Stack>
 
-        <Divider sx={{ my: 2, bgcolor: themeStyles.dividerColor }}>Description</Divider>
+        <Divider sx={{ my: 2, bgcolor: themeStyles.dividerColor }}>
+          Description
+        </Divider>
         <TextField
           label="Product Description"
           name="description"
