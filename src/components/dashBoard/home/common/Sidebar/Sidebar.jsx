@@ -24,6 +24,13 @@ const SIDEBAR_ITEMS = [
     href: "/dashboard",
   },
   {
+    id: "shop",
+    name: "Shop",
+    icon: ShoppingBag,
+    color: "#22C55E", // you can customize this
+    href: "/dashboard/shop",
+  },
+  {
     id: "inventory",
     name: "Inventory",
     icon: Box,
@@ -94,6 +101,7 @@ const SIDEBAR_ITEMS = [
     href: "/dashboard/settings",
   },
 ];
+
 
 const Sidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);

@@ -1,33 +1,25 @@
-import { useQuery } from "@tanstack/react-query";
-import Cookies from "js-cookie";
-import axios from "axios";
 import { motion } from "framer-motion";
 import { Package } from "lucide-react";
 import { useUser } from "../../../contexts/AuthContext";
 import StatCard from "../../../components/dashBoard/home/common/StatCard";
 import DokaanTable from "../../../components/dashBoard/home/Shop/DokaanTable";
+import { Link } from "react-router-dom";
+import DokaanUpdateModal from "../../../components/dashBoard/Profile/DokaanUpdateModal";
+import { useState } from "react";
 
 const DokaanPage = () => {
-  const { user } = useUser();
+  const { dokaan } = useUser();
 
-  const { data = [], isLoading, isError } = useQuery({
-    queryKey: ["dokaans", user?.email],
-    queryFn: async () => {
-      const token = Cookies.get("XTOKEN");
-      const url = `${import.meta.env.VITE_BASE_URL}/dokaan/user/${user?.email}`;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDokaan, setSelectedDokaan] = useState(null);
 
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `${token}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      });
-console.log(data);
-      return response.data?.data || [];
-    },
-    enabled: !!user?.email,
-  });
+  const handleEditClick = (shop) => {
+    setSelectedDokaan(shop);
+    setIsModalOpen(true);
+  };
+
+  // Ensure dokaan is always an array
+  const shopData = Array.isArray(dokaan) ? dokaan : [];
 
   return (
     <div className="flex-1 overflow-auto relative z-10">
@@ -42,21 +34,31 @@ console.log(data);
           <StatCard
             name="Total Dokaans"
             icon={Package}
-            value={data?.length || 0}
+            value={shopData.length}
             color="#6366F1"
           />
         </motion.div>
 
         {/* Add Dokaan Button */}
         <div className="mb-4">
-          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            + Add Dokaan
-          </button>
+          <Link to="/dashboard/add-shop">
+            <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+              + Add Dokaan
+            </button>
+          </Link>
         </div>
 
         {/* Dokaan Table */}
-        <DokaanTable shops={data} loading={isLoading} />
-        {isError && <div className="text-red-500 mt-4">Failed to load dokaans.</div>}
+        <DokaanTable
+          shops={shopData}
+          // loading={loading}
+          onEdit={handleEditClick} // ✅ Corrected prop name
+        />
+        <DokaanUpdateModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          dokaan={selectedDokaan}
+        />
       </main>
     </div>
   );

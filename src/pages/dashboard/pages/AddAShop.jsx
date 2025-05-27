@@ -7,94 +7,119 @@ import { useNavigate } from "react-router-dom";
 import {
   Briefcase,
   MapPin,
-  Image,
+  ImagePlus,
   FileText,
   Mail,
   Phone,
   Tag,
 } from "lucide-react";
+import CreatableSelect from "react-select/creatable";
 
 const AddAShop = () => {
-  const { user } = useUser();
+  const [imageError, setImageError] = useState("");
+
+  const { user ,logout } = useUser();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
     dokaan_name: "",
     dokaan_location: "",
-    dokaan_imageUrl: null, // changed to file
+    dokaan_imageUrl: null,
     dokaan_Tin_Certificate: "",
     dokaan_email: "",
     dokaan_phone: "",
     dokaan_type: "",
   });
 
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
+  const [previewImage, setPreviewImage] = useState(null);
 
+  const categoryOptions = [
+    { value: "Groceries", label: "Groceries" },
+    { value: "Electronics", label: "Electronics" },
+    { value: "Mobile Shop", label: "Mobile Shop" },
+    { value: "Stationery", label: "Stationery" },
+    { value: "Clothing", label: "Clothing" },
+    { value: "Cosmetics", label: "Cosmetics" },
+    { value: "Pharmacy", label: "Pharmacy" },
+    { value: "Bakery", label: "Bakery" },
+  ];
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]:
-        name === "dokaan_imageUrl"
-          ? files[0] // handle file upload
-          : name === "dokaan_Tin_Certificate"
-          ? Number(value)
-          : value,
+      [name]: name === "dokaan_Tin_Certificate" ? Number(value) : value,
     }));
   };
 
-  const uploadToCloudinary = async (file) => {
-    const data = new FormData();
-    data.append("file", file);
-    data.append("upload_preset", "your_upload_preset"); // 🔁 Replace with your Cloudinary preset
-    data.append("cloud_name", "your_cloud_name"); // 🔁 Replace with your Cloudinary cloud name
-
-    const res = await axios.post("https://api.cloudinary.com/v1_1/your_cloud_name/image/upload", data);
-    return res.data.url;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const token = Cookies.get("XTOKEN");
-
-    try {
-      toast.loading("Uploading image...");
-      const imageUrl = await uploadToCloudinary(form.dokaan_imageUrl);
-
-      const payload = {
-        ...form,
-        dokaan_imageUrl: imageUrl,
-        ownerId: user?.id,
-      };
-
-      await axios.post(`${import.meta.env.VITE_BASE_URL}/dokaan`, payload, {
-        headers: { Authorization: token },
-      });
-
-      toast.dismiss();
-      toast.success("Shop added successfully!", {
-        position: "bottom-center",
-        duration: 3000,
-        style: {
-          background: "#333",
-          color: "#fff",
-          padding: "12px 24px",
-          fontWeight: "600",
-          borderRadius: "10px",
-        },
-      });
-
-      setTimeout(() => {
-        navigate("/dashboard/shops");
-      }, 1500);
-    } catch (error) {
-      console.error(error);
-      toast.dismiss();
-      toast.error("Failed to add shop.", {
-        position: "bottom-center",
-        duration: 3000,
-      });
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setForm((prev) => ({
+        ...prev,
+        dokaan_imageUrl: file,
+      }));
+      setPreviewImage(URL.createObjectURL(file));
     }
   };
+
+  const handleCategoryChange = (selectedOption) => {
+    setForm((prev) => ({
+      ...prev,
+      dokaan_type: selectedOption ? selectedOption.value : "",
+    }));
+  };
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setImageError(""); // Clear previous errors
+  const token = Cookies.get("XTOKEN");
+
+  try {
+    const formData = new FormData();
+    formData.append("dokaan_name", form.dokaan_name);
+    formData.append("dokaan_location", form.dokaan_location);
+    formData.append("dokaan_Tin_Certificate", form.dokaan_Tin_Certificate);
+    formData.append("dokaan_email", form.dokaan_email);
+    formData.append("dokaan_phone", form.dokaan_phone);
+    formData.append("dokaan_type", form.dokaan_type);
+    formData.append("ownerId", user?.id);
+
+    if (form.dokaan_imageUrl) {
+      formData.append("dokaan_imageUrl", form.dokaan_imageUrl);
+    }
+
+    const res = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/dokaan/${user?.email}`,
+      formData,
+      {
+        headers: {
+          Authorization: token,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    if (res.status === 200 || res.status === 201) {
+      toast.success("Shop added successfully!");
+
+      // ❗ Log out the user here
+      setTimeout(() => {
+        logout(); // from AuthContext
+        navigate("/login");
+      }, 1000);
+    }
+  } catch (error) {
+    console.error(error);
+
+    if (error.response?.data?.message?.toLowerCase().includes("image")) {
+      setImageError(error.response.data.message);
+    }
+
+    toast.error("Failed to add shop.");
+  }
+};
+
 
   return (
     <div className="max-w-xl mx-auto px-4 py-10">
@@ -139,21 +164,37 @@ const AddAShop = () => {
             />
           </label>
 
-          {/* Image File */}
-          <label className="block">
+          {/* Image Upload */}
+          <div className="block">
             <span className="flex items-center gap-2 mb-1 text-sm text-white font-medium">
-              <Image className="text-green-400 animate-pulse" size={20} />
+              <ImagePlus className="text-green-400 animate-pulse" size={20} />
               Shop Image
             </span>
-            <input
-              type="file"
-              name="dokaan_imageUrl"
-              accept="image/*"
-              onChange={handleChange}
-              required
-              className="w-full text-white"
-            />
-          </label>
+            <div className="flex items-center gap-3">
+              <label htmlFor="dokaan_image" className="cursor-pointer">
+                <ImagePlus className="text-red-500 hover:scale-110 transition-transform w-6 h-6" />
+              </label>
+              <input
+                id="dokaan_image"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              {previewImage && (
+                <div>
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    className="w-10 h-10 rounded-full object-cover border border-red-400"
+                  />
+                  {imageError && (
+                    <p className="text-sm text-red-400 mt-1">{imageError}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* TIN Certificate */}
           <label className="block">
@@ -205,21 +246,39 @@ const AddAShop = () => {
             </label>
           </div>
 
-          {/* Type */}
-          <label className="block">
-            <span className="flex items-center gap-2 mb-1 text-sm text-white font-medium">
-              <Tag className="text-red-400 animate-pulse" size={20} />
-              Shop Type
-            </span>
-            <input
-              type="text"
-              name="dokaan_type"
-              value={form.dokaan_type}
-              onChange={handleChange}
-              placeholder="e.g., Retail, Wholesale"
-              className="w-full p-2 rounded-lg border border-white/30 bg-white/10 text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+          {/* Type/Category */}
+          <div>
+            <label className="block text-sm font-medium text-white mb-1 flex items-center gap-2">
+              <Tag className="text-pink-400 animate-pulse" size={20} />
+              Category
+            </label>
+            <CreatableSelect
+              isClearable
+              options={categoryOptions}
+              onChange={handleCategoryChange}
+              value={
+                form.dokaan_type
+                  ? { value: form.dokaan_type, label: form.dokaan_type }
+                  : null
+              }
+              placeholder="Select or create category"
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  backgroundColor: "#1f2937",
+                  borderColor: "#4b5563",
+                  color: "#fff",
+                }),
+                singleValue: (base) => ({ ...base, color: "#fff" }),
+                input: (base) => ({ ...base, color: "#fff" }),
+                menu: (base) => ({
+                  ...base,
+                  backgroundColor: "#1f2937",
+                  color: "#fff",
+                }),
+              }}
             />
-          </label>
+          </div>
 
           {/* Submit */}
           <button
