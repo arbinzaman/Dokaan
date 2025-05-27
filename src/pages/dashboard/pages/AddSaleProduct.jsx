@@ -6,6 +6,7 @@ import { useUser } from "@/contexts/AuthContext";
 import { Button } from "@mui/material";
 import SaleBarcodeScanner from "../../../components/dashBoard/home/sales/saleScanner/SaleBarcodeScanner";
 import { MagnifyingGlass } from "react-loader-spinner";
+import { generateInvoicePDF } from "../../../utils/generateInvoicePDF";
 
 const AddSaleProduct = () => {
   const [scannedProducts, setScannedProducts] = useState([]);
@@ -77,62 +78,154 @@ const AddSaleProduct = () => {
     setScannedProducts(updated);
   };
 
+  // const handleSubmit = async () => {
+  //   const token = Cookies.get("XTOKEN");
+
+  //   if (!user || !savedShop || scannedProducts.length === 0) {
+  //     toast.error("Missing user/shop/product information.");
+  //     return;
+  //   }
+
+  //   const payload = {
+  //     products: scannedProducts.map((product) => ({
+  //       productCode: product.code,
+  //       code: product.productCode,
+  //       productName: product.productName,
+  //       itemCategory: product.itemCategory,
+  //       brand: product.brand || "Unknown",
+  //       salesPrice: parseFloat(product.salesPrice),
+  //       quantity: product.quantity,
+  //       discount: product.discount,
+  //       totalPrice:
+  //         product.salesPrice * product.quantity -
+  //         (product.discount / 100) * (product.salesPrice * product.quantity),
+  //     })),
+  //     // totalPrice,
+  //     shopAddress: savedShop.address || "N/A",
+  //     ownerName: savedShop.ownerName || user.name,
+  //     sellerId: user.id,
+  //     shopId: savedShop.id,
+  //     branch: savedShop.branch || "Main",
+  //     soldAt: new Date().toISOString(),
+  //     customer: {
+  //       name: customerName,
+  //       phone: customerPhone,
+  //       email: customerEmail,
+  //       address: customerAddress,
+  //     },
+  //   };
+
+  //   try {
+  //     setLoading(true);
+  //     await axios.post(`${import.meta.env.VITE_BASE_URL}/sales`, payload, {
+  //       headers: { Authorization: `${token}` },
+  //     });
+
+  //     toast.success("Sale recorded successfully!");
+  //     setScannedProducts([]);
+  //     setCustomerName("");
+  //     setCustomerPhone("");
+  //     setCustomerEmail("");
+  //     setCustomerAddress("");
+  //   } catch {
+  //     toast.error("Failed to record sale.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async () => {
-    const token = Cookies.get("XTOKEN");
+  if (scannedProducts.length === 0) {
+    toast.error("Please scan at least one product.");
+    return;
+  }
 
-    if (!user || !savedShop || scannedProducts.length === 0) {
-      toast.error("Missing user/shop/product information.");
-      return;
-    }
+  if (!customerName || !customerPhone) {
+    toast.error("Please enter customer name and phone.");
+    return;
+  }
 
-    const payload = {
-      products: scannedProducts.map((product) => ({
-        productCode: product.code,
-        code: product.productCode,
-        productName: product.productName,
-        itemCategory: product.itemCategory,
-        brand: product.brand || "Unknown",
-        salesPrice: parseFloat(product.salesPrice),
-        quantity: product.quantity,
-        discount: product.discount,
-        totalPrice:
-          product.salesPrice * product.quantity -
-          (product.discount / 100) * (product.salesPrice * product.quantity),
-      })),
-      // totalPrice,
-      shopAddress: savedShop.address || "N/A",
-      ownerName: savedShop.ownerName || user.name,
-      sellerId: user.id,
-      shopId: savedShop.id,
-      branch: savedShop.branch || "Main",
-      soldAt: new Date().toISOString(),
+  const token = Cookies.get("token");
+
+  const payload = {
+    products: scannedProducts.map((item) => ({
+      productId: item.id,
+      quantity: item.quantity,
+      salesPrice: item.salesPrice,
+      discount: item.discount,
+      totalPrice: item.totalPrice,
+    })),
+    totalPrice,
+    customerName,
+    customerPhone,
+    customerEmail,
+    customerAddress,
+    shopId: savedShop?.id,
+    userId: user?.id,
+  };
+
+  try {
+    setLoading(true);
+
+    // 1. Create the sale
+    const saleResponse = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/sales`,
+      payload,
+      {
+        headers: { Authorization: `${token}` },
+      }
+    );
+
+    const sale = saleResponse.data;
+    const saleId = sale?.id || new Date().getTime(); // fallback if no ID returned
+
+    toast.success("Sale recorded successfully!");
+
+    // 2. Generate invoice PDF
+    const pdfBlob = generateInvoicePDF({
+      products: payload.products,
+      totalPrice,
       customer: {
         name: customerName,
         phone: customerPhone,
         email: customerEmail,
         address: customerAddress,
       },
-    };
+      shop: savedShop,
+      user,
+      invoiceId: saleId,
+    });
 
-    try {
-      setLoading(true);
-      await axios.post(`${import.meta.env.VITE_BASE_URL}/sales`, payload, {
-        headers: { Authorization: `${token}` },
-      });
+    // 3. Upload invoice PDF
+    const formData = new FormData();
+    formData.append("invoice", pdfBlob, `invoice-${saleId}.pdf`);
+    formData.append("saleId", saleId);
 
-      toast.success("Sale recorded successfully!");
-      setScannedProducts([]);
-      setCustomerName("");
-      setCustomerPhone("");
-      setCustomerEmail("");
-      setCustomerAddress("");
-    } catch {
-      toast.error("Failed to record sale.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/sales`,
+      formData,
+      {
+        headers: {
+          Authorization: `${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
 
+    // 4. Reset form
+    setScannedProducts([]);
+    setCustomerName("");
+    setCustomerPhone("");
+    setCustomerEmail("");
+    setCustomerAddress("");
+    setTotalPrice(0);
+  } catch (error) {
+    console.error("Error submitting sale:", error);
+    toast.error("Failed to record sale.");
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="max-w-4xl mx-auto p-6 mb-10">
       <section className="dark:text-gray-50">
