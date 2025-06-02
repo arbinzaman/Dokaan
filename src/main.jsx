@@ -16,7 +16,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <ThemeModeProvider>
           <App />
         </ThemeModeProvider>
-          <Toaster />
+        <Toaster />
       </AuthProvider>
     </React.StrictMode>
   </QueryClientProvider>

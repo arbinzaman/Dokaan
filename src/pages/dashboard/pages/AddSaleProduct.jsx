@@ -78,154 +78,53 @@ const AddSaleProduct = () => {
     setScannedProducts(updated);
   };
 
-  // const handleSubmit = async () => {
-  //   const token = Cookies.get("XTOKEN");
-
-  //   if (!user || !savedShop || scannedProducts.length === 0) {
-  //     toast.error("Missing user/shop/product information.");
-  //     return;
-  //   }
-
-  //   const payload = {
-  //     products: scannedProducts.map((product) => ({
-  //       productCode: product.code,
-  //       code: product.productCode,
-  //       productName: product.productName,
-  //       itemCategory: product.itemCategory,
-  //       brand: product.brand || "Unknown",
-  //       salesPrice: parseFloat(product.salesPrice),
-  //       quantity: product.quantity,
-  //       discount: product.discount,
-  //       totalPrice:
-  //         product.salesPrice * product.quantity -
-  //         (product.discount / 100) * (product.salesPrice * product.quantity),
-  //     })),
-  //     // totalPrice,
-  //     shopAddress: savedShop.address || "N/A",
-  //     ownerName: savedShop.ownerName || user.name,
-  //     sellerId: user.id,
-  //     shopId: savedShop.id,
-  //     branch: savedShop.branch || "Main",
-  //     soldAt: new Date().toISOString(),
-  //     customer: {
-  //       name: customerName,
-  //       phone: customerPhone,
-  //       email: customerEmail,
-  //       address: customerAddress,
-  //     },
-  //   };
-
-  //   try {
-  //     setLoading(true);
-  //     await axios.post(`${import.meta.env.VITE_BASE_URL}/sales`, payload, {
-  //       headers: { Authorization: `${token}` },
-  //     });
-
-  //     toast.success("Sale recorded successfully!");
-  //     setScannedProducts([]);
-  //     setCustomerName("");
-  //     setCustomerPhone("");
-  //     setCustomerEmail("");
-  //     setCustomerAddress("");
-  //   } catch {
-  //     toast.error("Failed to record sale.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const handleSubmit = async () => {
-  if (scannedProducts.length === 0) {
-    toast.error("Please scan at least one product.");
-    return;
-  }
+    if (scannedProducts.length === 0) {
+      toast.error("Please scan at least one product.");
+      return;
+    }
 
-  if (!customerName || !customerPhone) {
-    toast.error("Please enter customer name and phone.");
-    return;
-  }
+    if (!customerName || !customerPhone) {
+      toast.error("Please enter customer name and phone.");
+      return;
+    }
 
-  const token = Cookies.get("token");
+    const fakeSaleId = `PREVIEW-${new Date().getTime()}`;
 
-  const payload = {
-    products: scannedProducts.map((item) => ({
-      productId: item.id,
-      quantity: item.quantity,
-      salesPrice: item.salesPrice,
-      discount: item.discount,
-      totalPrice: item.totalPrice,
-    })),
-    totalPrice,
-    customerName,
-    customerPhone,
-    customerEmail,
-    customerAddress,
-    shopId: savedShop?.id,
-    userId: user?.id,
+    try {
+      setLoading(true);
+
+      const pdfBlob = generateInvoicePDF({
+        products: scannedProducts.map((item) => ({
+          ...item,
+          totalPrice:
+            item.salesPrice * item.quantity -
+            (item.discount / 100) * item.salesPrice * item.quantity,
+        })),
+        totalPrice,
+        customer: {
+          name: customerName,
+          phone: customerPhone,
+          email: customerEmail,
+          address: customerAddress,
+        },
+        shop: savedShop,
+        user,
+        invoiceId: fakeSaleId,
+      });
+
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      window.open(blobUrl, "_blank");
+
+      toast.success("PDF preview opened.");
+    } catch (err) {
+      console.error("PDF generation error:", err);
+      toast.error("Failed to generate PDF.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  try {
-    setLoading(true);
-
-    // 1. Create the sale
-    const saleResponse = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/sales`,
-      payload,
-      {
-        headers: { Authorization: `${token}` },
-      }
-    );
-
-    const sale = saleResponse.data;
-    const saleId = sale?.id || new Date().getTime(); // fallback if no ID returned
-
-    toast.success("Sale recorded successfully!");
-
-    // 2. Generate invoice PDF
-    const pdfBlob = generateInvoicePDF({
-      products: payload.products,
-      totalPrice,
-      customer: {
-        name: customerName,
-        phone: customerPhone,
-        email: customerEmail,
-        address: customerAddress,
-      },
-      shop: savedShop,
-      user,
-      invoiceId: saleId,
-    });
-
-    // 3. Upload invoice PDF
-    const formData = new FormData();
-    formData.append("invoice", pdfBlob, `invoice-${saleId}.pdf`);
-    formData.append("saleId", saleId);
-
-    await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/sales`,
-      formData,
-      {
-        headers: {
-          Authorization: `${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-
-    // 4. Reset form
-    setScannedProducts([]);
-    setCustomerName("");
-    setCustomerPhone("");
-    setCustomerEmail("");
-    setCustomerAddress("");
-    setTotalPrice(0);
-  } catch (error) {
-    console.error("Error submitting sale:", error);
-    toast.error("Failed to record sale.");
-  } finally {
-    setLoading(false);
-  }
-};
   return (
     <div className="max-w-4xl mx-auto p-6 mb-10">
       <section className="dark:text-gray-50">
@@ -240,8 +139,6 @@ const AddSaleProduct = () => {
                   height="80"
                   width="80"
                   ariaLabel="magnifying-glass-loading"
-                  wrapperStyle={{}}
-                  wrapperClass="magnifying-glass-wrapper"
                   glassColor="#c0efff"
                   color="#e15b64"
                 />
@@ -341,7 +238,7 @@ const AddSaleProduct = () => {
                 color="primary"
                 className="w-full mt-6"
               >
-                {loading ? "Saving..." : "Submit Sale"}
+                {loading ? "Generating PDF..." : "Preview Invoice PDF"}
               </Button>
             </div>
           )}
@@ -359,7 +256,7 @@ const Input = ({ label, ...props }) => (
     </label>
     <input
       {...props}
-      className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+      className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
     />
   </div>
 );

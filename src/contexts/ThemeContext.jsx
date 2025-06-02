@@ -1,5 +1,5 @@
 import { createContext, useState, useMemo, useContext, useEffect } from "react";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
 
 const ThemeModeContext = createContext();
 
@@ -7,22 +7,17 @@ export const useThemeMode = () => useContext(ThemeModeContext);
 
 export const ThemeModeProvider = ({ children }) => {
   const [mode, setMode] = useState(
-    () => localStorage.getItem("theme") || "light"
+    () => localStorage.getItem("theme") || "dark"
   );
 
   useEffect(() => {
     const html = document.documentElement;
+    html.classList.remove("dark", "light");
+    html.classList.add(mode);
+
     const body = document.body;
-
-    html.classList.toggle("dark", mode === "dark");
-
-    if (mode === "dark") {
-      body.classList.remove("dashboard-light");
-      body.classList.add("dashboard-dark");
-    } else {
-      body.classList.remove("dashboard-dark");
-      body.classList.add("dashboard-light");
-    }
+    body.classList.remove("dashboard-light", "dashboard-dark");
+    body.classList.add(mode === "dark" ? "dashboard-dark" : "dashboard-light");
   }, [mode]);
 
   const toggleTheme = () => {
@@ -47,6 +42,14 @@ export const ThemeModeProvider = ({ children }) => {
               }),
         },
         components: {
+          MuiCssBaseline: {
+            styleOverrides: {
+              body: {
+                backgroundColor: mode === "dark" ? "#121212" : "#ffffff",
+                color: mode === "dark" ? "#ffffff" : "#000000",
+              },
+            },
+          },
           MuiTextField: {
             styleOverrides: {
               root: {
@@ -73,7 +76,10 @@ export const ThemeModeProvider = ({ children }) => {
 
   return (
     <ThemeModeContext.Provider value={{ mode, toggleTheme }}>
-      <ThemeProvider theme={theme}>{children}</ThemeProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        {children}
+      </ThemeProvider>
     </ThemeModeContext.Provider>
   );
 };
