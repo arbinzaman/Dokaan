@@ -19,7 +19,9 @@ import { useUser } from "../../../../../contexts/AuthContext";
 const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const { savedShop, dokaan, setSavedShop, user } = useUser();
   const handleItemClick = () => setIsMobileMenuOpen(false);
-  const otherDokaans = dokaan?.filter((d) => d.id !== savedShop?.id);
+  const otherDokaans = Array.isArray(dokaan)
+    ? dokaan.filter((d) => d.id !== savedShop?.id)
+    : [];
 
   const role = user?.role;
 
@@ -144,6 +146,7 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                     color="#A3E635"
                     onClick={handleItemClick}
                   />
+
                   <SidebarLink
                     to="/dashboard/customers"
                     icon={UserCheck}

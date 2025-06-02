@@ -64,7 +64,15 @@ const Login = () => {
           if (userRole === "employee") {
             navigate("/dashboard");
           } else if (userRole === "shop-owner") {
-            navigate("/select-shop");
+            const shops = data.user.shops || []; // Adjust according to your actual user object
+
+            if (shops.length === 1) {
+              // Only one shop, go directly to dashboard
+              navigate("/dashboard");
+            } else {
+              // Multiple shops, let user select
+              navigate("/select-shop");
+            }
           } else {
             navigate("/dashboard");
           }
