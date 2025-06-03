@@ -11,15 +11,12 @@ import {
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-
-const AddAExpense = () => {
+const AddAIncome = () => {
   const { user, dokaan } = useContext(AuthContext);
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [category, setCategory] = useState("Uncategorized");
   const [date, setDate] = useState(new Date());
-  // const [activeTab, setActiveTab] = useState("Expense");
-
   const location = useLocation();
   const activeTab = location.pathname.includes("income") ? "Income" : "Expense";
 
@@ -43,7 +40,7 @@ const AddAExpense = () => {
   const handleSubmit = async () => {
     if (!amount || parseFloat(amount) <= 0) return alert("Enter valid amount");
 
-    const expenseData = {
+    const incomeData = {
       title: note || "No Title",
       amount: parseFloat(amount),
       category,
@@ -53,30 +50,30 @@ const AddAExpense = () => {
     };
 
     try {
-      await fetch("http://localhost:8000/api/v1/expenses", {
+      await fetch("http://localhost:8000/api/v1/incomes", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(expenseData),
+        body: JSON.stringify(incomeData),
       });
 
       handleClear();
-      alert("Expense Added!");
+      alert("Income Added!");
     } catch (error) {
-      console.error("Failed to add expense:", error);
-      alert("Failed to add expense");
+      console.error("Failed to add income:", error);
+      alert("Failed to add income");
     }
   };
 
   const keypad = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0"];
 
   return (
-    <div className="w-full  bg-opacity-50 backdrop-blur-sm text-white flex items-center justify-center">
-      <div className="w-full max-w-md  bg-opacity-80 rounded-xl">
+    <div className="w-full bg-opacity-50 backdrop-blur-sm text-white flex items-center justify-center">
+      <div className="w-full max-w-md bg-opacity-80 rounded-xl">
         {/* Top Bar */}
         <div className="flex justify-between items-center mb-20">
-          <button>
+          <button onClick={() => navigate("/dashboard/expense-details")}>
             <FiX className="text-2xl" />
           </button>
           <div className="flex gap-2 bg-zinc-800 rounded-full p-1">
@@ -150,7 +147,7 @@ const AddAExpense = () => {
         </div>
 
         {/* Keypad */}
-        <div className="grid grid-cols-3 gap-3 ">
+        <div className="grid grid-cols-3 gap-3">
           {keypad.map((num, index) => (
             <button
               key={index}
@@ -172,4 +169,4 @@ const AddAExpense = () => {
   );
 };
 
-export default AddAExpense;
+export default AddAIncome;

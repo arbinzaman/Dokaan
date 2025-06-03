@@ -35,6 +35,7 @@ import NotFound from "../components/shared/Notfound";
 import AddAShop from "../pages/dashboard/pages/AddAShop";
 import DokaanPage from "../pages/dashboard/pages/DokaanPage";
 import AddAExpense from "../pages/dashboard/pages/AddAExpense";
+import AddAIncome from "../pages/dashboard/pages/AddAIncome";
 // import MobileSidebar from "../components/dashBoard/home/common/MobileSidebar";
 const router = createBrowserRouter(
   [
@@ -187,6 +188,10 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/expense",
           element: <AddAExpense />,
+        },
+        {
+          path: "/dashboard/income",
+          element: <AddAIncome />,
         },
         // {
         //   path: "/dashboard/mobile-nav",
