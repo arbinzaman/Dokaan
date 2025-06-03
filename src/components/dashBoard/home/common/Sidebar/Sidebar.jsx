@@ -77,7 +77,7 @@ const SIDEBAR_ITEMS = [
     name: "Expenses",
     icon: FaBangladeshiTakaSign,
     color: "#EF4444",
-    href: "/dashboard/expenses",
+    href: "/dashboard/expense",
   },
   {
     id: "employees",

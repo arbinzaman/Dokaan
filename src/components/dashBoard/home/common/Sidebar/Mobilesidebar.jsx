@@ -162,7 +162,7 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                     onClick={handleItemClick}
                   />
                   <SidebarLink
-                    to="/dashboard/expenses"
+                    to="/dashboard/expense"
                     icon={FileText}
                     label="Expenses"
                     color="#EF4444"
