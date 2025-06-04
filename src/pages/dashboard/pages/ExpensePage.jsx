@@ -1,4 +1,4 @@
-import ExpenseTable from "../../../components/dashBoard/home/expense/Expensetable";
+import ExpenseTable from "../../../components/dashBoard/home/expense/ExpenseTable";
 
 const ExpensePage = () => {
     return (
