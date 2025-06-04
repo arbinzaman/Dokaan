@@ -50,7 +50,7 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
             </button>
           </Link>
           <Link
-            to="/dashboard/expense"
+            to="/dashboard/add-expense"
             className="p-2 rounded-full hover:bg-gray-700"
           >
             <Diff size={26} style={{ color: "#EF4444" }} />
