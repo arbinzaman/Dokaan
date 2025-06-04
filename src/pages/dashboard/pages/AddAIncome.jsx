@@ -1,5 +1,5 @@
-import { useState, useContext } from "react";
-import { AuthContext } from "../../../contexts/AuthContext";
+import { useState,  } from "react";
+import { useUser } from "../../../contexts/AuthContext";
 import { format } from "date-fns";
 import {
   FiCheck,
@@ -12,7 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 const AddAIncome = () => {
-  const { user, dokaan } = useContext(AuthContext);
+  const { user, dokaan } = useUser();
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [category, setCategory] = useState("Uncategorized");
@@ -41,16 +41,17 @@ const AddAIncome = () => {
     if (!amount || parseFloat(amount) <= 0) return alert("Enter valid amount");
 
     const incomeData = {
-      title: note || "No Title",
+      title: note || category || "No Title",
+      note: note || category || "No Note",
       amount: parseFloat(amount),
       category,
       date: format(new Date(date), "yyyy-MM-dd HH:mm:ss"),
       user_id: user?.id,
       dokaanId: dokaan?.id,
     };
-
+    // console.log(incomeData);
     try {
-      await fetch("http://localhost:8000/api/v1/incomes", {
+      await fetch(`${import.meta.env.VITE_BASE_URL}/expense`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -59,10 +60,10 @@ const AddAIncome = () => {
       });
 
       handleClear();
-      alert("Income Added!");
+      alert("Expense Added!");
     } catch (error) {
-      console.error("Failed to add income:", error);
-      alert("Failed to add income");
+      console.error("Failed to add expense:", error);
+      alert("Failed to add expense");
     }
   };
 

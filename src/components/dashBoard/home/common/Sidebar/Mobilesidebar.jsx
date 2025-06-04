@@ -10,7 +10,7 @@ import {
   UserCheck,
   UserCog,
   Receipt,
-  Diff
+  Diff,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -44,7 +44,7 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
           >
             <Box size={26} style={{ color: "#FF9900" }} />
           </Link>
-            <Link to="/dashboard/product-sell">
+          <Link to="/dashboard/product-sell">
             <button className="p-4 mb-3 bg-gray-300 dark:bg-gray-500 rounded-full shadow-lg">
               <ScanLine size={32} className="text-white" />
             </button>
@@ -55,7 +55,7 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
           >
             <Diff size={26} style={{ color: "#EF4444" }} />
           </Link>
-        
+
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="p-2 rounded-full hover:bg-gray-700"
@@ -184,17 +184,17 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                     onClick={handleItemClick}
                   />
                   <SidebarLink
-                    to="/dashboard/settings"
-                    icon={UserCog}
-                    label="Settings"
-                    color="#FACC15"
-                    onClick={handleItemClick}
-                  />
-                  <SidebarLink
                     to="/dashboard/analytics"
                     icon={TrendingUp}
                     label="Analytics"
                     color="#3B82F6"
+                    onClick={handleItemClick}
+                  />
+                  <SidebarLink
+                    to="/dashboard/settings"
+                    icon={UserCog}
+                    label="Settings"
+                    color="#FACC15"
                     onClick={handleItemClick}
                   />
                 </>

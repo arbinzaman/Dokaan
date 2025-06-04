@@ -1,5 +1,5 @@
-import { useState, useContext } from "react";
-import { AuthContext } from "../../../contexts/AuthContext";
+import { useState,} from "react";
+import {  useUser } from "../../../contexts/AuthContext";
 import { format } from "date-fns";
 import {
   FiCheck,
@@ -13,13 +13,13 @@ import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 
 const AddAExpense = () => {
-  const { user, dokaan } = useContext(AuthContext);
+  const { user, dokaan } = useUser();
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [category, setCategory] = useState("Uncategorized");
   const [date, setDate] = useState(new Date());
   // const [activeTab, setActiveTab] = useState("Expense");
-
+// console.log(user, dokaan);
   const location = useLocation();
   const activeTab = location.pathname.includes("income") ? "Income" : "Expense";
 
@@ -44,16 +44,17 @@ const AddAExpense = () => {
     if (!amount || parseFloat(amount) <= 0) return alert("Enter valid amount");
 
     const expenseData = {
-      title: note || "No Title",
+      title: note || category || "No Title",
+      note: note || category || "No Note",
       amount: parseFloat(amount),
       category,
       date: format(new Date(date), "yyyy-MM-dd HH:mm:ss"),
       user_id: user?.id,
       dokaanId: dokaan?.id,
     };
-
+    // console.log(expenseData);
     try {
-      await fetch("http://localhost:8000/api/v1/expenses", {
+      await fetch(`${import.meta.env.VITE_BASE_URL}/expenses`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
