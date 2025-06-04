@@ -1,6 +1,7 @@
 import { useState,} from "react";
 import {  useUser } from "../../../contexts/AuthContext";
 import { format } from "date-fns";
+import toast from "react-hot-toast";
 import {
   FiCheck,
   FiCalendar,
@@ -13,7 +14,8 @@ import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 
 const AddAExpense = () => {
-  const { user, dokaan } = useUser();
+  const { user ,savedShop} = useUser();
+  // console.log(savedShop);
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [category, setCategory] = useState("Uncategorized");
@@ -41,34 +43,44 @@ const AddAExpense = () => {
   };
 
   const handleSubmit = async () => {
-    if (!amount || parseFloat(amount) <= 0) return alert("Enter valid amount");
+  if (!amount || parseFloat(amount) <= 0)
+    return toast.error("Enter a valid amount");
 
-    const expenseData = {
-      title: note || category || "No Title",
-      note: note || category || "No Note",
-      amount: parseFloat(amount),
-      category,
-      date: format(new Date(date), "yyyy-MM-dd HH:mm:ss"),
-      user_id: user?.id,
-      dokaanId: dokaan?.id,
-    };
-    // console.log(expenseData);
-    try {
-      await fetch(`${import.meta.env.VITE_BASE_URL}/expenses`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(expenseData),
-      });
-
-      handleClear();
-      alert("Expense Added!");
-    } catch (error) {
-      console.error("Failed to add expense:", error);
-      alert("Failed to add expense");
-    }
+  const expenseData = {
+    title: note || category || "No Title",
+    note: note || category || "No Note",
+    amount: parseFloat(amount),
+    category,
+    date: format(new Date(date), "yyyy-MM-dd HH:mm:ss"),
+    user_id: user?.id,
+    shopId: savedShop?.id,
   };
+
+  toast.promise(
+    fetch(`${import.meta.env.VITE_BASE_URL}/expenses?shopId=${savedShop.id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(expenseData),
+    }).then(async (res) => {
+      if (!res.ok) {
+        const errorText = await res.text(); // Optional: log or display error response
+        throw new Error(`Server error: ${res.status} - ${errorText}`);
+      }
+      return res.json(); // Only parse JSON if response is OK
+    }),
+    {
+      loading: "Saving...",
+      success: () => {
+        handleClear();
+        return "Expense added!";
+      },
+      error: (err) => `Failed to add expense: ${err.message}`,
+    }
+  );
+};
+
 
   const keypad = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0"];
 
