@@ -24,7 +24,7 @@ const fetchExpensesData = async ({ queryKey }) => {
       },
     }
   );
-
+console.log(res);
   if (!res.ok) throw new Error("Failed to fetch expenses");
 
   const response = await res.json();
@@ -50,7 +50,7 @@ const ExpenseTable = () => {
     queryFn: fetchExpensesData,
     enabled: !!savedShop?.id,
   });
-
+console.log(expenses);
   const filteredExpenses = expenses.filter((expense) => {
     const term = searchTerm.toLowerCase();
     const title = expense.title?.toLowerCase() || "";
