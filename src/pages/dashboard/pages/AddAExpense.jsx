@@ -1,11 +1,11 @@
-import { useState,} from "react";
-import {  useUser } from "../../../contexts/AuthContext";
+import { useState, useRef } from "react";
+import { useUser } from "../../../contexts/AuthContext";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import {
   FiCheck,
   FiCalendar,
-  FiGrid,
+
   FiX,
   FiRotateCcw,
   FiDelete,
@@ -13,17 +13,19 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 
+// Import CategorySelector here
+import CategorySelector from "../../../components/dashBoard/home/expense/CategorySelector";  // Adjust path as needed
+
 const AddAExpense = () => {
-  const { user ,savedShop} = useUser();
-  // console.log(savedShop);
+  const { user, savedShop } = useUser();
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [category, setCategory] = useState("Uncategorized");
   const [date, setDate] = useState(new Date());
-  // const [activeTab, setActiveTab] = useState("Expense");
-// console.log(user, dokaan);
   const location = useLocation();
   const activeTab = location.pathname.includes("income") ? "Income" : "Expense";
+  const timeoutRef = useRef(null);
+  const intervalRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -43,44 +45,46 @@ const AddAExpense = () => {
   };
 
   const handleSubmit = async () => {
-  if (!amount || parseFloat(amount) <= 0)
-    return toast.error("Enter a valid amount");
+    if (!amount || parseFloat(amount) <= 0)
+      return toast.error("Enter a valid amount");
 
-  const expenseData = {
-    title: note || category || "No Title",
-    note: note || category || "No Note",
-    amount: parseFloat(amount),
-    category,
-    date: format(new Date(date), "yyyy-MM-dd HH:mm:ss"),
-    user_id: user?.id,
-    shopId: savedShop?.id,
-  };
+    const expenseData = {
+      title: note || category || "No Title",
+      note: note || category || "No Note",
+      amount: parseFloat(amount),
+      category,
+      date: format(new Date(date), "yyyy-MM-dd HH:mm:ss"),
+      user_id: user?.id,
+      shopId: savedShop?.id,
+    };
 
-  toast.promise(
-    fetch(`${import.meta.env.VITE_BASE_URL}/expenses?shopId=${savedShop.id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(expenseData),
-    }).then(async (res) => {
-      if (!res.ok) {
-        const errorText = await res.text(); // Optional: log or display error response
-        throw new Error(`Server error: ${res.status} - ${errorText}`);
+    toast.promise(
+      fetch(
+        `${import.meta.env.VITE_BASE_URL}/expenses/shop?shopId=${savedShop.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(expenseData),
+        }
+      ).then(async (res) => {
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Server error: ${res.status} - ${errorText}`);
+        }
+        return res.json();
+      }),
+      {
+        loading: "Saving...",
+        success: () => {
+          handleClear();
+          return "Expense added!";
+        },
+        error: (err) => `Failed to add expense: ${err.message}`,
       }
-      return res.json(); // Only parse JSON if response is OK
-    }),
-    {
-      loading: "Saving...",
-      success: () => {
-        handleClear();
-        return "Expense added!";
-      },
-      error: (err) => `Failed to add expense: ${err.message}`,
-    }
-  );
-};
-
+    );
+  };
 
   const keypad = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0"];
 
@@ -121,24 +125,78 @@ const AddAExpense = () => {
           {amount || "0"}
         </div>
 
-        {/* Note and Delete Buttons */}
-        <div className="flex justify-center gap-3 flex-wrap mb-4">
-          <button
-            onClick={() => {
-              const userNote = prompt("Add a note:");
-              if (userNote) setNote(userNote);
-            }}
-            className="flex items-center text-sm text-gray-300 gap-2 border border-gray-600 px-3 py-1 rounded"
-          >
-            <span className="text-lg">≡</span> Add Note
-          </button>
-          <button
-            onClick={handleDeleteLast}
-            className="flex items-center text-sm text-gray-300 gap-2 border border-gray-600 px-3 py-1 rounded"
-          >
-            <FiDelete /> Delete
-          </button>
+        {/* Note Section */}
+        <div className="w-full mb-4 px-2">
+          {note === "" ? (
+            <div className="flex justify-center gap-3 flex-wrap">
+              <button
+                onClick={() => {
+                  const userNote = prompt("Add a note:");
+                  if (userNote) setNote(userNote);
+                }}
+                className="flex items-center text-sm text-gray-300 gap-2 border border-gray-600 px-3 py-1 rounded"
+              >
+                <span className="text-lg">≡</span> Add Note
+              </button>
+              <button
+                onClick={handleDeleteLast}
+                className="flex items-center text-sm text-gray-300 gap-2 border border-gray-600 px-3 py-1 rounded"
+              >
+                <FiDelete /> Delete
+              </button>
+            </div>
+          ) : (
+            <>
+              <button
+                onMouseDown={() => {
+                  timeoutRef.current = setTimeout(() => {
+                    intervalRef.current = setInterval(() => {
+                      setNote((prev) => prev.slice(0, -1));
+                    }, 50);
+                  }, 300);
+                }}
+                onMouseUp={() => {
+                  clearTimeout(timeoutRef.current);
+                  clearInterval(intervalRef.current);
+                }}
+                onMouseLeave={() => {
+                  clearTimeout(timeoutRef.current);
+                  clearInterval(intervalRef.current);
+                }}
+                onClick={() => {
+                  setNote((prev) => prev.slice(0, -1));
+                }}
+                className="ml-auto text-xs text-red-400 flex items-center gap-1 hover:underline"
+              >
+                <FiDelete /> Clear
+              </button>
+
+              <textarea
+                rows={1}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Type a note..."
+                className="w-full border border-gray-600 rounded bg-zinc-800 text-white resize-none overflow-hidden focus:outline-none focus:ring-1 focus:ring-white px-3 py-2 transition-all duration-300 ease-in-out"
+                onInput={(e) => {
+                  e.target.style.height = "auto";
+                  e.target.style.height = `${e.target.scrollHeight}px`;
+                }}
+              />
+            </>
+          )}
         </div>
+
+        {/* Delete Amount button if note exists */}
+        {note && (
+          <div className="flex justify-center mb-4">
+            <button
+              onClick={handleDeleteLast}
+              className="flex items-center text-sm text-gray-300 gap-2 border border-gray-600 px-3 py-1 rounded"
+            >
+              <FiDelete /> Delete Amount
+            </button>
+          </div>
+        )}
 
         {/* Date & Category */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-sm text-gray-400 mb-4">
@@ -151,15 +209,15 @@ const AddAExpense = () => {
               className="bg-transparent text-white outline-none"
             />
           </label>
-          <button
-            onClick={() => {
-              const userCategory = prompt("Enter category:");
-              if (userCategory) setCategory(userCategory);
-            }}
-            className="flex items-center gap-2"
-          >
-            <FiGrid /> {category}
-          </button>
+
+          {/* Replace your old category button with CategorySelector */}
+          {savedShop?.id && (
+            <CategorySelector
+              shopId={savedShop.id}
+              selectedCategory={category}
+              onSelectCategory={setCategory}
+            />
+          )}
         </div>
 
         {/* Keypad */}
