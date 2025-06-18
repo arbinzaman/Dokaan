@@ -24,11 +24,11 @@ const fetchExpensesData = async ({ queryKey }) => {
       },
     }
   );
-console.log(res);
+  console.log(res);
   if (!res.ok) throw new Error("Failed to fetch expenses");
 
   const response = await res.json();
-  return Array.isArray(response.filteredExpenses) ? response.filteredExpenses : [];
+  return Array.isArray(response.data) ? response.data : [];
 };
 
 const ExpenseTable = () => {
@@ -50,7 +50,7 @@ const ExpenseTable = () => {
     queryFn: fetchExpensesData,
     enabled: !!savedShop?.id,
   });
-console.log(expenses);
+  console.log(expenses);
   const filteredExpenses = expenses.filter((expense) => {
     const term = searchTerm.toLowerCase();
     const title = expense.title?.toLowerCase() || "";
@@ -64,7 +64,10 @@ console.log(expenses);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentExpenses = filteredExpenses.slice(indexOfFirstItem, indexOfLastItem);
+  const currentExpenses = filteredExpenses.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
   const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
 
   const goToPage = (pageNum) => {
@@ -153,14 +156,16 @@ console.log(expenses);
         <table className="min-w-full divide-y divide-gray-700">
           <thead>
             <tr>
-              {["Title", "Category", "Amount", "Date", "Added By", "Shop"].map((h) => (
-                <th
-                  key={h}
-                  className="px-6 py-3 text-left text-xs font-medium text-black dark:text-white uppercase"
-                >
-                  {h}
-                </th>
-              ))}
+              {["Title", "Category", "Amount", "Date", "Added By", "Shop"].map(
+                (h) => (
+                  <th
+                    key={h}
+                    className="px-6 py-3 text-left text-xs font-medium text-black dark:text-white uppercase"
+                  >
+                    {h}
+                  </th>
+                )
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
@@ -200,8 +205,8 @@ console.log(expenses);
                     ৳ {expense.amount?.toFixed(2)}
                   </td>
                   <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    {expense.createdAt
-                      ? new Date(expense.createdAt).toLocaleDateString()
+                    {expense.updated_at
+                      ? new Date(expense.updated_at).toLocaleDateString()
                       : "-"}
                   </td>
                   <td className="px-6 py-4 text-sm text-black dark:text-white">
