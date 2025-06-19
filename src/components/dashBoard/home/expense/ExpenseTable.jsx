@@ -17,7 +17,7 @@ const fetchExpensesData = async ({ queryKey }) => {
   if (day) params.append("day", day);
 
   const res = await fetch(
-    `${import.meta.env.VITE_BASE_URL}/expenses/shop?${params.toString()}`,
+    `${import.meta.env.VITE_BASE_URL}/expenses?${params.toString()}`,
     {
       headers: {
         Authorization: token,

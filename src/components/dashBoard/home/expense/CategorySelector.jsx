@@ -10,7 +10,7 @@ const CategorySelector = ({ shopId, selectedCategory, onSelectCategory }) => {
   useEffect(() => {
     if (!shopId) return;
 
-    fetch(`${import.meta.env.VITE_BASE_URL}/expenses/shop?shopId=${shopId}`)
+    fetch(`${import.meta.env.VITE_BASE_URL}/expenses?shopId=${shopId}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch expenses");
         return res.json();
