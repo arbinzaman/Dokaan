@@ -1,33 +1,42 @@
-import { useState, useRef } from "react";
+import {  useRef, useState } from "react";
 import { useUser } from "../../../contexts/AuthContext";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import {
   FiCheck,
   FiCalendar,
-
   FiX,
   FiRotateCcw,
   FiDelete,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
-
-// Import CategorySelector here
-import CategorySelector from "../../../components/dashBoard/home/expense/CategorySelector";  // Adjust path as needed
+import { useLocation, useNavigate } from "react-router-dom";
+import CategorySelector from "../../../components/dashBoard/home/expense/CategorySelector";
 
 const AddAExpense = () => {
   const { user, savedShop } = useUser();
-  const [amount, setAmount] = useState("");
-  const [note, setNote] = useState("");
-  const [category, setCategory] = useState("Uncategorized");
-  const [date, setDate] = useState(new Date());
   const location = useLocation();
-  const activeTab = location.pathname.includes("income") ? "Income" : "Expense";
+  const navigate = useNavigate();
+  const existingExpense = location.state?.expense;
+
+  const [amount, setAmount] = useState(
+    existingExpense?.amount?.toString() || ""
+  );
+  const [note, setNote] = useState(existingExpense?.note || "");
+  const [category, setCategory] = useState(
+    existingExpense?.category || "Uncategorized"
+  );
+  const [date, setDate] = useState(
+    existingExpense?.date
+      ? new Date(existingExpense.date)
+      : new Date()
+  );
+
+  const activeTab = location.pathname.includes("income")
+    ? "Income"
+    : "Expense";
+
   const timeoutRef = useRef(null);
   const intervalRef = useRef(null);
-
-  const navigate = useNavigate();
 
   const handleNumberInput = (num) => {
     setAmount((prev) => (prev === "0" ? num : prev + num));
@@ -50,7 +59,7 @@ const AddAExpense = () => {
 
     const expenseData = {
       title: note || category || "No Title",
-      note: note || category || "No Note",
+      notes: note || category || "No Note",
       amount: parseFloat(amount),
       category,
       date: format(new Date(date), "yyyy-MM-dd HH:mm:ss"),
@@ -58,17 +67,20 @@ const AddAExpense = () => {
       shopId: savedShop?.id,
     };
 
+    const isEditing = !!existingExpense;
+    const endpoint = isEditing
+      ? `${import.meta.env.VITE_BASE_URL}/expenses/${existingExpense.id}`
+      : `${import.meta.env.VITE_BASE_URL}/expenses?shopId=${savedShop.id}`;
+    const method = isEditing ? "PUT" : "POST";
+
     toast.promise(
-      fetch(
-        `${import.meta.env.VITE_BASE_URL}/expenses/shop?shopId=${savedShop.id}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(expenseData),
-        }
-      ).then(async (res) => {
+      fetch(endpoint, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(expenseData),
+      }).then(async (res) => {
         if (!res.ok) {
           const errorText = await res.text();
           throw new Error(`Server error: ${res.status} - ${errorText}`);
@@ -76,12 +88,13 @@ const AddAExpense = () => {
         return res.json();
       }),
       {
-        loading: "Saving...",
+        loading: isEditing ? "Updating expense..." : "Saving expense...",
         success: () => {
           handleClear();
-          return "Expense added!";
+          navigate("/dashboard/expense");
+          return isEditing ? "Expense updated!" : "Expense added!";
         },
-        error: (err) => `Failed to add expense: ${err.message}`,
+        error: (err) => `Failed: ${err.message}`,
       }
     );
   };
@@ -89,24 +102,24 @@ const AddAExpense = () => {
   const keypad = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0"];
 
   return (
-    <div className="w-full  bg-opacity-50 backdrop-blur-sm text-white flex items-center justify-center">
-      <div className="w-full max-w-md  bg-opacity-80 rounded-xl">
+    <div className="w-full bg-opacity-50 backdrop-blur-sm text-white flex items-center justify-center">
+      <div className="w-full max-w-md bg-opacity-80 rounded-xl">
         {/* Top Bar */}
         <div className="flex justify-between items-center mb-20">
-          <button>
+          <button onClick={() => navigate(-1)}>
             <FiX className="text-2xl" />
           </button>
           <div className="flex gap-2 bg-zinc-800 rounded-full p-1">
             {["Expense", "Income"].map((tab) => (
               <button
                 key={tab}
-                onClick={() => {
-                  const route =
+                onClick={() =>
+                  navigate(
                     tab === "Income"
                       ? "/dashboard/income"
-                      : "/dashboard/expense";
-                  navigate(route);
-                }}
+                      : "/dashboard/expense"
+                  )
+                }
                 className={`px-4 py-1 rounded-full text-sm ${
                   activeTab === tab ? "bg-white text-black" : "text-white"
                 }`}
@@ -115,7 +128,7 @@ const AddAExpense = () => {
               </button>
             ))}
           </div>
-          <button>
+          <button onClick={handleClear}>
             <FiRotateCcw className="text-2xl" />
           </button>
         </div>
@@ -163,9 +176,7 @@ const AddAExpense = () => {
                   clearTimeout(timeoutRef.current);
                   clearInterval(intervalRef.current);
                 }}
-                onClick={() => {
-                  setNote((prev) => prev.slice(0, -1));
-                }}
+                onClick={() => setNote((prev) => prev.slice(0, -1))}
                 className="ml-auto text-xs text-red-400 flex items-center gap-1 hover:underline"
               >
                 <FiDelete /> Clear
@@ -186,7 +197,6 @@ const AddAExpense = () => {
           )}
         </div>
 
-        {/* Delete Amount button if note exists */}
         {note && (
           <div className="flex justify-center mb-4">
             <button
@@ -210,7 +220,6 @@ const AddAExpense = () => {
             />
           </label>
 
-          {/* Replace your old category button with CategorySelector */}
           {savedShop?.id && (
             <CategorySelector
               shopId={savedShop.id}
@@ -221,7 +230,7 @@ const AddAExpense = () => {
         </div>
 
         {/* Keypad */}
-        <div className="grid grid-cols-3 gap-3 ">
+        <div className="grid grid-cols-3 gap-3">
           {keypad.map((num, index) => (
             <button
               key={index}

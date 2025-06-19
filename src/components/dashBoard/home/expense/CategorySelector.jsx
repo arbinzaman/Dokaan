@@ -9,13 +9,21 @@ const CategorySelector = ({ shopId, selectedCategory, onSelectCategory }) => {
 
   useEffect(() => {
     if (!shopId) return;
+
     fetch(`${import.meta.env.VITE_BASE_URL}/expenses/shop?shopId=${shopId}`)
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch categories");
+        if (!res.ok) throw new Error("Failed to fetch expenses");
         return res.json();
       })
       .then((data) => {
-        setCategories(data.data || []);
+        const allExpenses = data.data || [];
+
+        // Extract unique category names
+        const uniqueCategories = Array.from(
+          new Set(allExpenses.map((item) => item.category).filter(Boolean))
+        ).map((name, index) => ({ id: index, name }));
+
+        setCategories(uniqueCategories);
       })
       .catch(() => toast.error("Failed to load categories"));
   }, [shopId]);
@@ -38,29 +46,21 @@ const CategorySelector = ({ shopId, selectedCategory, onSelectCategory }) => {
     const newCat = prompt("Enter new category:");
     if (!newCat || newCat.trim() === "") return;
 
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/expenses/shop?shopId=${shopId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: newCat.trim() }),
-        }
-      );
+    // Add locally only (since you're pulling categories from expenses)
+    const newCategory = newCat.trim();
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Failed to add category");
-      }
-
-      const data = await res.json();
-      setCategories((prev) => [...prev, data.data]);
-      onSelectCategory(data.data.name);
-      setExpanded(false);
-      toast.success("Category added");
-    } catch (err) {
-      toast.error(err.message || "Error adding category");
+    // Check if category already exists
+    const exists = categories.some((c) => c.name === newCategory);
+    if (exists) {
+      toast.error("Category already exists");
+      return;
     }
+
+    // Add to local list
+    setCategories((prev) => [...prev, { id: Date.now(), name: newCategory }]);
+    onSelectCategory(newCategory);
+    setExpanded(false);
+    toast.success("Category added (locally)");
   };
 
   return (
@@ -72,7 +72,7 @@ const CategorySelector = ({ shopId, selectedCategory, onSelectCategory }) => {
       >
         <FiGrid />
         {selectedCategory || "Select Category"}
-        <span className="ml-2">{expanded ? "▲" : "▼"}</span>
+        <span className="ml-2 rounded-xl">{expanded ? "▲" : "▼"}</span>
       </button>
 
       {expanded && (

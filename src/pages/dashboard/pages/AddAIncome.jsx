@@ -1,16 +1,16 @@
-import { useState,  } from "react";
+import { useState } from "react";
 import { useUser } from "../../../contexts/AuthContext";
 import { format } from "date-fns";
 import {
   FiCheck,
   FiCalendar,
-  FiGrid,
   FiX,
   FiRotateCcw,
   FiDelete,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import CategorySelector from "../../../components/dashBoard/home/expense/CategorySelector"; // ✅ Adjust path if needed
+
 const AddAIncome = () => {
   const { user, dokaan } = useUser();
   const [amount, setAmount] = useState("");
@@ -49,7 +49,7 @@ const AddAIncome = () => {
       user_id: user?.id,
       dokaanId: dokaan?.id,
     };
-    // console.log(incomeData);
+
     try {
       await fetch(`${import.meta.env.VITE_BASE_URL}/expense`, {
         method: "POST",
@@ -60,10 +60,10 @@ const AddAIncome = () => {
       });
 
       handleClear();
-      alert("Expense Added!");
+      alert("Income Added!");
     } catch (error) {
-      console.error("Failed to add expense:", error);
-      alert("Failed to add expense");
+      console.error("Failed to add income:", error);
+      alert("Failed to add income");
     }
   };
 
@@ -85,7 +85,7 @@ const AddAIncome = () => {
                   const route =
                     tab === "Income"
                       ? "/dashboard/income"
-                      : "/dashboard/expense";
+                      : "/dashboard/add-expense";
                   navigate(route);
                 }}
                 className={`px-4 py-1 rounded-full text-sm ${
@@ -136,15 +136,13 @@ const AddAIncome = () => {
               className="bg-transparent text-white outline-none"
             />
           </label>
-          <button
-            onClick={() => {
-              const userCategory = prompt("Enter category:");
-              if (userCategory) setCategory(userCategory);
-            }}
-            className="flex items-center gap-2"
-          >
-            <FiGrid /> {category}
-          </button>
+
+          {/* ✅ Reusable Category Selector */}
+          <CategorySelector
+            shopId={dokaan?.id}
+            selectedCategory={category}
+            onSelectCategory={(cat) => setCategory(cat)}
+          />
         </div>
 
         {/* Keypad */}

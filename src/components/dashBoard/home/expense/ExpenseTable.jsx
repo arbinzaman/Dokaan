@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useUser } from "../../../../contexts/AuthContext";
 import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
 
 const fetchExpensesData = async ({ queryKey }) => {
   const [, shopId, year, month, day] = queryKey;
@@ -24,7 +25,6 @@ const fetchExpensesData = async ({ queryKey }) => {
       },
     }
   );
-  console.log(res);
   if (!res.ok) throw new Error("Failed to fetch expenses");
 
   const response = await res.json();
@@ -33,11 +33,11 @@ const fetchExpensesData = async ({ queryKey }) => {
 
 const ExpenseTable = () => {
   const { savedShop } = useUser();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [year, setYear] = useState("");
   const [month, setMonth] = useState("");
   const [day, setDay] = useState("");
-
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -50,12 +50,13 @@ const ExpenseTable = () => {
     queryFn: fetchExpensesData,
     enabled: !!savedShop?.id,
   });
-  console.log(expenses);
+
   const filteredExpenses = expenses.filter((expense) => {
     const term = searchTerm.toLowerCase();
-    const title = expense.title?.toLowerCase() || "";
-    const category = expense.category?.toLowerCase() || "";
-    return title.includes(term) || category.includes(term);
+    return (
+      expense.title?.toLowerCase().includes(term) ||
+      expense.category?.toLowerCase().includes(term)
+    );
   });
 
   useEffect(() => {
@@ -95,46 +96,20 @@ const ExpenseTable = () => {
           Expense List
         </h2>
         <div className="flex gap-3 flex-wrap items-center">
-          <select
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            className="p-2 rounded"
-          >
+          <select value={year} onChange={(e) => setYear(e.target.value)} className="p-2 rounded">
             <option value="">All Years</option>
             {renderOptions(["2023", "2024", "2025"])}
           </select>
-          <select
-            value={month}
-            onChange={(e) => setMonth(e.target.value)}
-            className="p-2 rounded"
-          >
+          <select value={month} onChange={(e) => setMonth(e.target.value)} className="p-2 rounded">
             <option value="">All Months</option>
             {renderOptions([
-              "jan",
-              "feb",
-              "march",
-              "april",
-              "may",
-              "june",
-              "july",
-              "aug",
-              "sep",
-              "oct",
-              "nov",
-              "dec",
+              "jan", "feb", "march", "april", "may", "june",
+              "july", "aug", "sep", "oct", "nov", "dec",
             ])}
           </select>
-          <select
-            value={day}
-            onChange={(e) => setDay(e.target.value)}
-            className="p-2 rounded"
-          >
+          <select value={day} onChange={(e) => setDay(e.target.value)} className="p-2 rounded">
             <option value="">All Days</option>
-            {renderOptions(
-              [...Array(31).keys()].map((d) =>
-                (d + 1).toString().padStart(2, "0")
-              )
-            )}
+            {renderOptions([...Array(31).keys()].map((d) => (d + 1).toString().padStart(2, "0")))}
           </select>
           <div className="relative">
             <input
@@ -144,10 +119,7 @@ const ExpenseTable = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               value={searchTerm}
             />
-            <Search
-              className="absolute left-3 top-2.5 text-black dark:text-white"
-              size={18}
-            />
+            <Search className="absolute left-3 top-2.5 text-black dark:text-white" size={18} />
           </div>
         </div>
       </div>
@@ -156,16 +128,14 @@ const ExpenseTable = () => {
         <table className="min-w-full divide-y divide-gray-700">
           <thead>
             <tr>
-              {["Title", "Category", "Amount", "Date", "Added By", "Shop"].map(
-                (h) => (
-                  <th
-                    key={h}
-                    className="px-6 py-3 text-left text-xs font-medium text-black dark:text-white uppercase"
-                  >
-                    {h}
-                  </th>
-                )
-              )}
+              {["Title", "Category", "Amount", "Date", "Added By", "Shop"].map((h) => (
+                <th
+                  key={h}
+                  className="px-6 py-3 text-left text-xs font-medium text-black dark:text-white uppercase"
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
@@ -191,30 +161,17 @@ const ExpenseTable = () => {
               currentExpenses.map((expense) => (
                 <motion.tr
                   key={expense.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
+                  onClick={() => navigate("/dashboard/add-expense", { state: { expense } })}
+                  className="cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700 transition"
                 >
+                  <td className="px-6 py-4 text-sm text-black dark:text-white">{expense.title}</td>
+                  <td className="px-6 py-4 text-sm text-black dark:text-white">{expense.category || "-"}</td>
+                  <td className="px-6 py-4 text-sm text-black dark:text-white">৳ {expense.amount?.toFixed(2)}</td>
                   <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    {expense.title}
+                    {expense.updated_at ? new Date(expense.updated_at).toLocaleDateString() : "-"}
                   </td>
-                  <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    {expense.category || "-"}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    ৳ {expense.amount?.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    {expense.updated_at
-                      ? new Date(expense.updated_at).toLocaleDateString()
-                      : "-"}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    {expense.createdBy?.name || "-"}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-black dark:text-white">
-                    {expense.shop?.name || "-"}
-                  </td>
+                  <td className="px-6 py-4 text-sm text-black dark:text-white">{expense.createdBy?.name || "-"}</td>
+                  <td className="px-6 py-4 text-sm text-black dark:text-white">{expense.shop?.name || "-"}</td>
                 </motion.tr>
               ))
             )}
