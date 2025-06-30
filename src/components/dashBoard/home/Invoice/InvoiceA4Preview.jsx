@@ -7,6 +7,7 @@ const InvoiceA4Preview = ({ invoiceData }) => {
     products,
     totalPrice,
     invoiceId,
+    user,
     createdAt = new Date().toISOString(),
   } = invoiceData;
 
@@ -22,11 +23,16 @@ const InvoiceA4Preview = ({ invoiceData }) => {
         {/* <img src={dokaanLogo} alt="Dokaan Logo" className="w-14 h-auto" /> */}
       </header>
 
-      {/* Invoice + Date */}
+      {/* Invoice Info & Seller */}
       <section className="flex justify-between text-sm mb-4">
         <div>
           <p className="font-semibold text-gray-700">Invoice ID:</p>
           <p className="text-gray-600">{invoiceId}</p>
+
+          <p className="font-semibold text-gray-700 mt-4">Sold By:</p>
+          <p className="text-gray-800">{user?.name}</p>
+          {user?.email && <p className="text-gray-600">{user.email}</p>}
+          {user?.phone && <p className="text-gray-600">{user.phone}</p>}
         </div>
         <div className="text-right">
           <p className="font-semibold text-gray-700">Issued On:</p>

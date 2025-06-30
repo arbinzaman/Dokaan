@@ -1,13 +1,13 @@
 import dokaanLogo from "../../../../assets/Home/logos/DOKAAN.png";
 
-
 const InvoicePreview = ({ invoiceData }) => {
   const {
     shop,
     customer,
     products,
     totalPrice,
-    invoiceId ,
+    invoiceId,
+    user,
     createdAt = new Date().toISOString(),
   } = invoiceData;
 
@@ -22,15 +22,22 @@ const InvoicePreview = ({ invoiceData }) => {
         <p className="text-sm text-gray-600">{shop?.dokaan_phone}</p>
       </div>
 
-      {/* Meta Info */}
+      {/* Meta Info + Seller */}
       <div className="flex justify-between text-xs mb-4">
         <div>
           <p className="font-semibold">Invoice ID</p>
           <p className="text-gray-700">{invoiceId}</p>
+
+          <p className="font-semibold mt-3">Sold By</p>
+          <p className="text-gray-800">{user?.name}</p>
+          {user?.email && <p className="text-gray-600">{user.email}</p>}
+          {user?.phone && <p className="text-gray-600">{user.phone}</p>}
         </div>
         <div className="text-right">
           <p className="font-semibold">Date</p>
-          <p className="text-gray-700">{new Date(createdAt).toLocaleString()}</p>
+          <p className="text-gray-700">
+            {new Date(createdAt).toLocaleString()}
+          </p>
         </div>
       </div>
 
@@ -65,9 +72,13 @@ const InvoicePreview = ({ invoiceData }) => {
                 <tr key={idx} className="border-b">
                   <td className="p-2">{item.productName}</td>
                   <td className="text-right p-2">{item.quantity}</td>
-                  <td className="text-right p-2">৳{item.salesPrice.toFixed(2)}</td>
+                  <td className="text-right p-2">
+                    ৳{item.salesPrice.toFixed(2)}
+                  </td>
                   <td className="text-right p-2">{item.discount || 0}%</td>
-                  <td className="text-right p-2 font-semibold">৳{total.toFixed(2)}</td>
+                  <td className="text-right p-2 font-semibold">
+                    ৳{total.toFixed(2)}
+                  </td>
                 </tr>
               );
             })}

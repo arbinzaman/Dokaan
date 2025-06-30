@@ -121,39 +121,64 @@ const AddSaleProduct = () => {
     setScannedProducts(updated);
   };
 
-  const handlePreview = async () => {
-  if (scannedProducts.length === 0 || !customerName || !customerPhone) {
-    toast.error("Please complete required fields.");
-    return;
-  }
+  //   const handlePreview = async () => {
+  //   if (scannedProducts.length === 0 || !customerName || !customerPhone) {
+  //     toast.error("Please complete required fields.");
+  //     return;
+  //   }
 
-  const invoiceId = `${Date.now()}`;
-  const invoiceType = localStorage.getItem("invoiceType") || "POS"; // Fallback to POS
+  //   const invoiceId = `${Date.now()}`;
+  //   const invoiceType = localStorage.getItem("invoiceType") || "POS"; // Fallback to POS
 
-  navigate("/dashboard/preview-invoice", {
-    state: {
-      invoiceData: {
-        products: scannedProducts,
-        totalPrice,
-        customer: {
-          name: customerName,
-          phone: customerPhone,
-          email: customerEmail,
-          address: customerAddress,
-        },
-        shop: savedShop,
-        user,
-        invoiceId,
-        invoiceType, // 👈 Pass this
+  //   navigate("/dashboard/preview-invoice", {
+  //     state: {
+  //       invoiceData: {
+  //         products: scannedProducts,
+  //         totalPrice,
+  //         customer: {
+  //           name: customerName,
+  //           phone: customerPhone,
+  //           email: customerEmail,
+  //           address: customerAddress,
+  //         },
+  //         shop: savedShop,
+  //         user,
+  //         invoiceId,
+  //         invoiceType,
+  //       },
+  //     },
+  //   });
+  // };
+
+  const handlePrintDirect = () => {
+    if (scannedProducts.length === 0 || !customerName || !customerPhone) {
+      toast.error("Please complete required fields.");
+      return;
+    }
+
+    const invoiceId = `${Date.now()}`;
+    const invoiceType = localStorage.getItem("invoiceType") || "POS";
+
+    const invoiceData = {
+      products: scannedProducts,
+      totalPrice,
+      customer: {
+        name: customerName,
+        phone: customerPhone,
+        email: customerEmail,
+        address: customerAddress,
       },
-    },
-  });
-};
+      shop: savedShop,
+      user,
+      invoiceId,
+      invoiceType,
+    };
 
+    // Save invoiceData to localStorage
+    localStorage.setItem("invoiceData", JSON.stringify(invoiceData));
 
-  const handlePrint = () => {
-    handlePreview();
-    setTimeout(() => window.print(), 1000);
+    // Navigate with flag to auto print
+    navigate("/dashboard/preview-invoice?autoPrint=true");
   };
 
   return (
@@ -318,15 +343,15 @@ const AddSaleProduct = () => {
               </div>
 
               <div className="flex flex-wrap gap-4 mt-6">
-                <Button
+                {/* <Button
                   onClick={handlePreview}
                   variant="contained"
                   color="primary"
                 >
                   Preview Invoice
-                </Button>
+                </Button> */}
                 <Button
-                  onClick={handlePrint}
+                  onClick={handlePrintDirect}
                   variant="outlined"
                   color="secondary"
                 >
