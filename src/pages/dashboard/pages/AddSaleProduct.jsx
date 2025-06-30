@@ -1,26 +1,34 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { toast } from "react-hot-toast";
 import { useUser } from "@/contexts/AuthContext";
 import { Button } from "@mui/material";
-import SaleBarcodeScanner from "../../../components/dashBoard/home/sales/saleScanner/SaleBarcodeScanner";
+import SaleBarcodeScanner from "@/components/dashBoard/home/sales/saleScanner/SaleBarcodeScanner";
 import { MagnifyingGlass } from "react-loader-spinner";
-import { generateInvoicePDF } from "../../../utils/generateInvoicePDF";
+import { useNavigate } from "react-router-dom";
 
 const AddSaleProduct = () => {
   const [scannedProducts, setScannedProducts] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [scanning, setScanning] = useState(false);
-  const [loading, setLoading] = useState(false);
 
+  // Customer info fields
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
 
-  const { user, savedShop } = useUser();
+  // Search related state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchTimeoutRef = useRef(null);
 
+  const { user, savedShop } = useUser();
+  const navigate = useNavigate();
+
+  // Calculate total price on scannedProducts change
   useEffect(() => {
     const total = scannedProducts.reduce((sum, product) => {
       const price = product.salesPrice * product.quantity;
@@ -30,6 +38,52 @@ const AddSaleProduct = () => {
     setTotalPrice(total);
   }, [scannedProducts]);
 
+  // Search customers API call with debounce
+  useEffect(() => {
+    if (!searchTerm || !savedShop?.id) {
+      setSearchResults([]);
+      return;
+    }
+
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const token = Cookies.get("XTOKEN");
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/customers/search`,
+          {
+            params: {
+              shopId: savedShop.id,
+              search: searchTerm,
+            },
+            headers: {
+              Authorization: `${token}`,
+            },
+          }
+        );
+        setSearchResults(response.data.data || []);
+      } catch (error) {
+        toast.error("Error searching customers");
+      } finally {
+        setIsSearching(false);
+      }
+    }, 500); // debounce 500ms
+  }, [searchTerm, savedShop]);
+
+  // When user selects a customer from search dropdown, autofill fields
+  const handleSelectCustomer = (customer) => {
+    setCustomerName(customer.name || "");
+    setCustomerPhone(customer.phone || "");
+    setCustomerEmail(customer.email || "");
+    setCustomerAddress(customer.address || "");
+    setSearchResults([]); // clear dropdown
+    setSearchTerm(""); // clear search input
+  };
+
+  // Your existing handleScan and other functions...
+
   const handleScan = async (barcodeObject) => {
     setScanning(true);
     try {
@@ -37,33 +91,22 @@ const AddSaleProduct = () => {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/products/scan`,
         barcodeObject,
-        {
-          headers: { Authorization: `${token}` },
-        }
+        { headers: { Authorization: `${token}` } }
       );
 
-      if (response.status === 200) {
-        const newProduct = response.data.matchedProduct;
-        const alreadyExists = scannedProducts.some(
-          (p) => p.productCode === newProduct.productCode
-        );
+      const newProduct = response.data.matchedProduct;
+      const alreadyExists = scannedProducts.some(
+        (p) => p.productCode === newProduct.productCode
+      );
 
-        if (alreadyExists) {
-          toast.error("Product already added!");
-        } else {
-          setScannedProducts((prev) => [
-            ...prev,
-            {
-              ...newProduct,
-              salesPrice: newProduct.salesPrice,
-              quantity: 1,
-              discount: 0,
-            },
-          ]);
-          toast.success("Product added!");
-        }
+      if (alreadyExists) {
+        toast.error("Product already added!");
       } else {
-        toast.error("Product not found!");
+        setScannedProducts((prev) => [
+          ...prev,
+          { ...newProduct, quantity: 1, discount: 0 },
+        ]);
+        toast.success("Product added!");
       }
     } catch {
       toast.error("Error fetching product.");
@@ -78,29 +121,19 @@ const AddSaleProduct = () => {
     setScannedProducts(updated);
   };
 
-  const handleSubmit = async () => {
-    if (scannedProducts.length === 0) {
-      toast.error("Please scan at least one product.");
-      return;
-    }
+  const handlePreview = async () => {
+  if (scannedProducts.length === 0 || !customerName || !customerPhone) {
+    toast.error("Please complete required fields.");
+    return;
+  }
 
-    if (!customerName || !customerPhone) {
-      toast.error("Please enter customer name and phone.");
-      return;
-    }
+  const invoiceId = `${Date.now()}`;
+  const invoiceType = localStorage.getItem("invoiceType") || "POS"; // Fallback to POS
 
-    const fakeSaleId = `PREVIEW-${new Date().getTime()}`;
-
-    try {
-      setLoading(true);
-
-      const pdfBlob = generateInvoicePDF({
-        products: scannedProducts.map((item) => ({
-          ...item,
-          totalPrice:
-            item.salesPrice * item.quantity -
-            (item.discount / 100) * item.salesPrice * item.quantity,
-        })),
+  navigate("/dashboard/preview-invoice", {
+    state: {
+      invoiceData: {
+        products: scannedProducts,
         totalPrice,
         customer: {
           name: customerName,
@@ -110,27 +143,25 @@ const AddSaleProduct = () => {
         },
         shop: savedShop,
         user,
-        invoiceId: fakeSaleId,
-      });
+        invoiceId,
+        invoiceType, // 👈 Pass this
+      },
+    },
+  });
+};
 
-      const blobUrl = URL.createObjectURL(pdfBlob);
-      window.open(blobUrl, "_blank");
 
-      toast.success("PDF preview opened.");
-    } catch (err) {
-      console.error("PDF generation error:", err);
-      toast.error("Failed to generate PDF.");
-    } finally {
-      setLoading(false);
-    }
+  const handlePrint = () => {
+    handlePreview();
+    setTimeout(() => window.print(), 1000);
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6 mb-10">
       <section className="dark:text-gray-50">
         <form noValidate className="space-y-8">
-          {/* Scanner */}
-          <div className="rounded-2xl shadow-lg bg-white dark:bg-gray-900 p-6">
+          {/* SCANNER */}
+          <div className="rounded-xl shadow bg-white dark:bg-gray-900 p-6">
             <h3 className="text-2xl font-semibold mb-4">Scan Product</h3>
             {scanning ? (
               <div className="flex justify-center items-center h-40">
@@ -138,8 +169,6 @@ const AddSaleProduct = () => {
                   visible={true}
                   height="80"
                   width="80"
-                  ariaLabel="magnifying-glass-loading"
-                  glassColor="#c0efff"
                   color="#e15b64"
                 />
               </div>
@@ -148,53 +177,103 @@ const AddSaleProduct = () => {
             )}
           </div>
 
-          {/* Customer Info */}
-          <div className="rounded-2xl shadow-lg bg-white dark:bg-gray-900 p-6">
-            <h3 className="text-2xl font-semibold mb-4">Customer Information</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* CUSTOMER INFO WITH SEARCH */}
+          <div className="rounded-xl shadow bg-white dark:bg-gray-900 p-6 relative">
+            <h3 className="text-2xl font-semibold mb-4">Customer Info</h3>
+
+            {/* Search input for name/phone/email */}
+            <Input
+              label="Search Customer by Name / Phone / Email"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Start typing to search..."
+              autoComplete="off"
+            />
+
+            {/* Dropdown for search results */}
+            {isSearching && (
+              <div className="text-center text-sm text-gray-500">
+                Searching...
+              </div>
+            )}
+
+            {searchResults.length > 0 && (
+              <ul
+                className="absolute z-50 w-full max-h-60 overflow-y-auto mt-1 
+             border border-gray-300 dark:border-gray-700 
+             bg-white dark:bg-gray-800 
+             rounded-lg shadow-lg 
+             transition-all duration-200 ease-out 
+             sm:text-sm text-xs"
+              >
+                {searchResults.map((customer) => (
+                  <li
+                    key={customer.id}
+                    className="px-4 py-2 cursor-pointer 
+             hover:bg-blue-100 dark:hover:bg-blue-600 
+             text-gray-900 dark:text-gray-100 
+             transition-colors duration-150"
+                    onClick={() => handleSelectCustomer(customer)}
+                  >
+                    <div className="font-medium">{customer.name}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {customer.phone} • {customer.email}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
               <Input
                 label="Customer Name"
-                type="text"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
               />
               <Input
                 label="Phone"
-                type="tel"
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
               />
               <Input
                 label="Email"
-                type="email"
                 value={customerEmail}
                 onChange={(e) => setCustomerEmail(e.target.value)}
               />
               <Input
                 label="Address"
-                type="text"
                 value={customerAddress}
                 onChange={(e) => setCustomerAddress(e.target.value)}
               />
             </div>
           </div>
 
-          {/* Product List */}
+          {/* SCANNED PRODUCTS */}
           {scannedProducts.length > 0 && (
-            <div className="rounded-2xl shadow-lg bg-white dark:bg-gray-900 p-6">
+            <div className="rounded-xl shadow bg-white dark:bg-gray-900 p-6">
               <h3 className="text-2xl font-semibold mb-4">Scanned Products</h3>
               {scannedProducts.map((product, index) => (
                 <div key={product.productCode} className="mb-4 border-b pb-4">
-                  <h4 className="font-semibold text-lg mb-2">{product.productName}</h4>
+                  <h4 className="font-semibold text-lg mb-2">
+                    {product.productName}
+                  </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input label="Product Code" value={product.productCode} readOnly />
-                    <Input label="Category" value={product.itemCategory} readOnly />
+                    <Input label="Code" value={product.productCode} readOnly />
+                    <Input
+                      label="Category"
+                      value={product.itemCategory}
+                      readOnly
+                    />
                     <Input
                       label="Selling Price"
                       type="number"
                       value={product.salesPrice}
                       onChange={(e) =>
-                        updateProductField(index, "salesPrice", Number(e.target.value))
+                        updateProductField(
+                          index,
+                          "salesPrice",
+                          Number(e.target.value)
+                        )
                       }
                     />
                     <Input
@@ -202,7 +281,11 @@ const AddSaleProduct = () => {
                       type="number"
                       value={product.quantity}
                       onChange={(e) =>
-                        updateProductField(index, "quantity", Number(e.target.value))
+                        updateProductField(
+                          index,
+                          "quantity",
+                          Number(e.target.value)
+                        )
                       }
                     />
                     <Input
@@ -210,11 +293,15 @@ const AddSaleProduct = () => {
                       type="number"
                       value={product.discount}
                       onChange={(e) =>
-                        updateProductField(index, "discount", Number(e.target.value))
+                        updateProductField(
+                          index,
+                          "discount",
+                          Number(e.target.value)
+                        )
                       }
                     />
                     <Input
-                      label="Total (After Discount)"
+                      label="Total"
                       value={(
                         product.salesPrice * product.quantity -
                         (product.discount / 100) *
@@ -226,20 +313,26 @@ const AddSaleProduct = () => {
                 </div>
               ))}
 
-              <div className="text-xl font-bold mt-6">
+              <div className="text-xl font-bold mt-4">
                 Grand Total: ৳{totalPrice.toFixed(2)}
               </div>
 
-              <Button
-                type="button"
-                onClick={handleSubmit}
-                disabled={loading}
-                variant="contained"
-                color="primary"
-                className="w-full mt-6"
-              >
-                {loading ? "Generating PDF..." : "Preview Invoice PDF"}
-              </Button>
+              <div className="flex flex-wrap gap-4 mt-6">
+                <Button
+                  onClick={handlePreview}
+                  variant="contained"
+                  color="primary"
+                >
+                  Preview Invoice
+                </Button>
+                <Button
+                  onClick={handlePrint}
+                  variant="outlined"
+                  color="secondary"
+                >
+                  Print
+                </Button>
+              </div>
             </div>
           )}
         </form>
@@ -248,7 +341,7 @@ const AddSaleProduct = () => {
   );
 };
 
-// Reusable Input Component
+// Reusable Input
 const Input = ({ label, ...props }) => (
   <div>
     <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 block">

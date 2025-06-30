@@ -38,7 +38,8 @@
     "react-router-dom": "^6.28.0",
     "react-select": "^5.10.1",
     "recharts": "^2.15.0",
-    "scroll-lock": "^2.1.5"
+    "scroll-lock": "^2.1.5",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.55",

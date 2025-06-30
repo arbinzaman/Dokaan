@@ -7,6 +7,7 @@ import Profile from "../../../components/dashBoard/home/settings/Profile";
 import Security from "../../../components/dashBoard/home/settings/Security";
 import DokaanProfile from "../../../components/dashBoard/home/settings/DokaanProfile";
 import ThemeControlButton from "../../../components/dashBoard/home/settings/ThemeControlButton";
+import InvoiceTypeSelector from "../../../components/dashBoard/home/settings/InvoiceTypeSelector";
 
 const SettingsPage = () => {
 	return (
@@ -18,6 +19,7 @@ const SettingsPage = () => {
 				<Notifications />
 				<Security />
 				<ConnectedAccounts />
+				<InvoiceTypeSelector/>
 				<ThemeControlButton />
 				<LogoutZone />
 				<DangerZone />

@@ -37,6 +37,8 @@ import DokaanPage from "../pages/dashboard/pages/DokaanPage";
 import AddAExpense from "../pages/dashboard/pages/AddAExpense";
 import AddAIncome from "../pages/dashboard/pages/AddAIncome";
 import ExpensePage from "../pages/dashboard/pages/ExpensePage";
+// import InvoicePreview from "../components/dashBoard/home/Invoice/InvoicePreview";
+import InvoicePreviewPage from "../pages/dashboard/pages/InvoicePreviewPage";
 // import MobileSidebar from "../components/dashBoard/home/common/MobileSidebar";
 const router = createBrowserRouter(
   [
@@ -189,6 +191,10 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/add-expense",
           element: <AddAExpense />,
+        },
+        {
+          path: "/dashboard/preview-invoice",
+          element: <InvoicePreviewPage />,
         },
         {
           path: "/dashboard/expense",

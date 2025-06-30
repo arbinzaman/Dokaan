@@ -95,3 +95,13 @@
 .-rotate-360 {
   @apply rotate-[-360deg]
 }
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+  }
+
+  button {
+    display: none !important;
+  }
+}
