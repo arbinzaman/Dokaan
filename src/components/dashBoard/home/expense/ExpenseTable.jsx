@@ -92,9 +92,9 @@ const ExpenseTable = () => {
       transition={{ delay: 0.2 }}
     >
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <h2 className="text-xl font-semibold text-black dark:text-white">
+        {/* <h2 className="text-xl font-semibold text-black dark:text-white">
           Expense List
-        </h2>
+        </h2> */}
         <div className="flex gap-3 flex-wrap items-center">
           <select value={year} onChange={(e) => setYear(e.target.value)} className="p-2 rounded">
             <option value="">All Years</option>
