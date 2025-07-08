@@ -206,7 +206,7 @@ const router = createBrowserRouter(
           element: <AddAIncome />,
         },
         {
-          path: "/dashboard/memo",
+          path: "/dashboard/invoices",
           element: <InvoicePage />,
         },
         // {

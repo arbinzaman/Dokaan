@@ -177,9 +177,9 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                     onClick={handleItemClick}
                   />
                   <SidebarLink
-                    to="/dashboard/memos"
+                    to="/dashboard/invoices"
                     icon={FileText}
-                    label="Memos"
+                    label="invoices"
                     color="#F97316"
                     onClick={handleItemClick}
                   />
