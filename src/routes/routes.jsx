@@ -39,6 +39,7 @@ import AddAIncome from "../pages/dashboard/pages/AddAIncome";
 import ExpensePage from "../pages/dashboard/pages/ExpensePage";
 // import InvoicePreview from "../components/dashBoard/home/Invoice/InvoicePreview";
 import InvoicePreviewPage from "../pages/dashboard/pages/InvoicePreviewPage";
+import InvoicePage from "../pages/dashboard/pages/InvoicePage";
 // import MobileSidebar from "../components/dashBoard/home/common/MobileSidebar";
 const router = createBrowserRouter(
   [
@@ -203,6 +204,10 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/income",
           element: <AddAIncome />,
+        },
+        {
+          path: "/dashboard/memo",
+          element: <InvoicePage />,
         },
         // {
         //   path: "/dashboard/mobile-nav",
