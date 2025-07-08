@@ -123,8 +123,18 @@
 }
 
 @media print {
+   @page {
+    size: 92mm auto; /* width fixed to 92mm, height auto */
+    margin: 0;
+  }
   .no-print {
     display: none !important;
   }
 }
+
+.invoice-container {
+  width: 92mm;
+  max-width: 100%;
+}
+
 

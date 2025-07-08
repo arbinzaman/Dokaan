@@ -25,7 +25,7 @@ const InvoicePreviewPage = () => {
   const invoiceType = invoiceData.invoiceType || "POS";
 
   return (
-    <div className="p-4 print:bg-white print:p-0" id="print-section">
+    <div className="p-4 print:bg-white print:p-0" id="print-section"   style={{ width: '92mm', margin: '0 auto' }}>
       {invoiceType === "A4" ? (
         <InvoiceA4Preview invoiceData={invoiceData} />
       ) : (

@@ -12,7 +12,7 @@ const InvoicePreview = ({ invoiceData }) => {
   } = invoiceData;
 
   return (
-    <div className="w-full max-w-[92mm] mx-auto bg-white p-6 shadow-md text-gray-800 print:shadow-none print:px-2 print:py-2 font-inter border border-gray-300">
+    <div className=" invoice-container w-full max-w-[92mm] mx-auto bg-white p-6 shadow-md text-gray-800 print:shadow-none print:px-2 print:py-2 font-inter border border-gray-300 ">
       {/* Shop Header */}
       <div className="text-center border-b border-gray-300 pb-3 mb-4">
         <h1 className="text-2xl font-bold uppercase text-gray-900 tracking-wide">

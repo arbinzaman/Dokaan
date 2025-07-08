@@ -180,6 +180,56 @@ const AddSaleProduct = () => {
     // Navigate with flag to auto print
     navigate("/dashboard/preview-invoice?autoPrint=true");
   };
+  const handleSubmitSale = async () => {
+    if (scannedProducts.length === 0 || !customerName || !customerPhone) {
+      toast.error("Please complete required fields.");
+      return;
+    }
+
+    try {
+      const token = Cookies.get("XTOKEN");
+
+       await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/sales?shopId=${savedShop.id}`,
+        {
+          sellerId: user.id,
+          shopId: savedShop.id,
+          branch: savedShop.dokaan_location,
+          soldAt: new Date().toISOString(),
+          customer: {
+            name: customerName,
+            phone: customerPhone,
+            email: customerEmail,
+            address: customerAddress,
+          },
+          products: scannedProducts.map((p) => ({
+            code: p.productCode,
+            quantity: p.quantity,
+            totalPrice:
+              p.salesPrice * p.quantity -
+              (p.discount / 100) * p.salesPrice * p.quantity,
+            discount: p.discount,
+          })),
+        },
+        {
+          headers: {
+            Authorization: `${token}`,
+          },
+        }
+      );
+
+      toast.success("Sale submitted successfully!");
+
+      // Optionally redirect or clear form
+      // navigate("/dashboard/sales-history"); // or wherever you want
+    } catch (error) {
+      console.error("Sale submit error:", error);
+      toast.error(
+        error?.response?.data?.message ||
+          "Error submitting sale. Check console."
+      );
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 mb-10">
@@ -351,7 +401,10 @@ const AddSaleProduct = () => {
                   Preview Invoice
                 </Button> */}
                 <Button
-                  onClick={handlePrintDirect}
+                  onClick={() => {
+                    handleSubmitSale();
+                    handlePrintDirect();
+                  }}
                   variant="outlined"
                   color="secondary"
                 >
