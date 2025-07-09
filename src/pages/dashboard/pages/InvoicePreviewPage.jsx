@@ -11,7 +11,7 @@ const InvoicePreviewPage = () => {
   // Prefer passed state, fallback to localStorage
   const invoiceData =
     state?.invoiceData || JSON.parse(localStorage.getItem("invoiceData"));
-
+console.log(invoiceData);
   useEffect(() => {
     if (autoPrint && invoiceData) {
       setTimeout(() => {

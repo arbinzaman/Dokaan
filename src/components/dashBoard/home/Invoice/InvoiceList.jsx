@@ -4,6 +4,7 @@ import { useUser } from "@/contexts/AuthContext";
 import { Search } from "lucide-react";
 import { motion } from "framer-motion";
 import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
 
 const fetchInvoices = async ({ queryKey }) => {
   const [, shopId, year, month, day] = queryKey;
@@ -24,10 +25,8 @@ const fetchInvoices = async ({ queryKey }) => {
       },
     }
   );
-  console.log(res);
   if (!res.ok) throw new Error("Failed to fetch invoices");
   const data = await res.json();
-  console.log("Fetched invoice response:", data);
 
   return Array.isArray(data.data) ? data.data : [];
 };
@@ -40,6 +39,8 @@ const InvoiceList = () => {
   const [day, setDay] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  const navigate = useNavigate();
 
   const {
     data: invoices = [],
@@ -74,6 +75,13 @@ const InvoiceList = () => {
 
   const goToPage = (pageNum) => {
     if (pageNum >= 1 && pageNum <= totalPages) setCurrentPage(pageNum);
+  };
+
+  const handleView = (invoiceData) => {
+    localStorage.setItem("invoiceData", JSON.stringify(invoiceData));
+    navigate("/dashboard/preview-invoice", {
+      state: { invoiceData },
+    });
   };
 
   const renderOptions = (options) =>
@@ -153,14 +161,7 @@ const InvoiceList = () => {
         <table className="min-w-full divide-y divide-gray-700">
           <thead>
             <tr>
-              {[
-                "Invoice No",
-                "Customer",
-                "Total",
-                "Seller",
-                "Date",
-                "Actions",
-              ].map((h) => (
+              {["Invoice No", "Customer", "Total", "Seller", "Date", "Actions"].map((h) => (
                 <th
                   key={h}
                   className="px-6 py-3 text-left text-sm font-semibold text-black dark:text-white uppercase"
@@ -202,12 +203,21 @@ const InvoiceList = () => {
                       : "-"}
                   </td>
                   <td className="px-6 py-4 flex gap-2">
-                    <button className="text-blue-500 hover:underline text-sm">
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      whileHover={{ scale: 1.05 }}
+                      onClick={() => handleView(inv)}
+                      className="px-4 py-1 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-all duration-200 text-sm"
+                    >
                       View
-                    </button>
-                    <button className="text-red-500 hover:underline text-sm">
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      whileHover={{ scale: 1.05 }}
+                      className="px-4 py-1 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 transition-all duration-200 text-sm"
+                    >
                       Return
-                    </button>
+                    </motion.button>
                   </td>
                 </tr>
               ))

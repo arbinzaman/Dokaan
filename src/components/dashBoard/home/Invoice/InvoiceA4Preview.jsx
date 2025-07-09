@@ -1,14 +1,29 @@
 import dokaanLogo from "../../../../assets/Home/logos/DOKAAN.png";
 
 const InvoiceA4Preview = ({ invoiceData }) => {
+  if (!invoiceData) return <div>No invoice data found.</div>;
+
+  // Normalize products array: either use products or map from sales
+  const products = Array.isArray(invoiceData.products)
+    ? invoiceData.products
+    : Array.isArray(invoiceData.sales)
+    ? invoiceData.sales.map((sale) => ({
+        productName: sale.name || "Unnamed Product",
+        quantity: sale.quantity || 0,
+        salesPrice: sale.salesPrice || 0,
+        discount: sale.discount || 0,
+        productCode: sale.code || "",
+        itemCategory: sale.itemCategory || "",
+      }))
+    : [];
+
   const {
-    shop,
-    customer,
-    products,
-    totalPrice,
-    invoiceId,
-    user,
-    createdAt = new Date().toISOString(),
+    shop = invoiceData.shop || {},
+    customer = invoiceData.customer || {},
+    totalPrice = invoiceData.totalPrice || 0,
+    invoiceId = invoiceData.invoiceId || invoiceData.invoiceNumber || "N/A",
+    user = invoiceData.user || {},
+    createdAt = invoiceData.createdAt || new Date().toISOString(),
   } = invoiceData;
 
   return (
@@ -16,9 +31,9 @@ const InvoiceA4Preview = ({ invoiceData }) => {
       {/* Header */}
       <header className="flex justify-between items-center border-b border-gray-300 pb-6 mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-wide text-gray-900 uppercase">{shop?.dokaan_name}</h1>
-          <p className="text-sm text-gray-600 mt-1">{shop?.dokaan_location}</p>
-          <p className="text-sm text-gray-600">{shop?.dokaan_phone}</p>
+          <h1 className="text-3xl font-bold tracking-wide text-gray-900 uppercase">{shop?.dokaan_name || shop?.shopName || "Shop Name"}</h1>
+          <p className="text-sm text-gray-600 mt-1">{shop?.dokaan_location || shop?.shopLocation || ""}</p>
+          <p className="text-sm text-gray-600">{shop?.dokaan_phone || shop?.shopPhone || ""}</p>
         </div>
         {/* <img src={dokaanLogo} alt="Dokaan Logo" className="w-14 h-auto" /> */}
       </header>
@@ -30,7 +45,7 @@ const InvoiceA4Preview = ({ invoiceData }) => {
           <p className="text-gray-600">{invoiceId}</p>
 
           <p className="font-semibold text-gray-700 mt-4">Sold By:</p>
-          <p className="text-gray-800">{user?.name}</p>
+          <p className="text-gray-800">{user?.name || invoiceData.sellerName || "Seller Name"}</p>
           {user?.email && <p className="text-gray-600">{user.email}</p>}
           {user?.phone && <p className="text-gray-600">{user.phone}</p>}
         </div>
@@ -43,10 +58,10 @@ const InvoiceA4Preview = ({ invoiceData }) => {
       {/* Customer Info */}
       <section className="bg-gray-50 border border-gray-200 rounded-md p-4 mb-6 text-sm">
         <p className="font-semibold text-gray-700 mb-2">Customer Information:</p>
-        <p>{customer?.name}</p>
-        <p>{customer?.phone}</p>
-        {customer?.email && <p>{customer?.email}</p>}
-        {customer?.address && <p>{customer?.address}</p>}
+        <p>{customer?.name || "Walk-in Customer"}</p>
+        <p>{customer?.phone || ""}</p>
+        {customer?.email && <p>{customer.email}</p>}
+        {customer?.address && <p>{customer.address}</p>}
       </section>
 
       {/* Products Table */}
@@ -61,21 +76,29 @@ const InvoiceA4Preview = ({ invoiceData }) => {
           </tr>
         </thead>
         <tbody>
-          {products.map((item, idx) => {
-            const lineTotal =
-              item.salesPrice * item.quantity -
-              (item.discount / 100) * item.salesPrice * item.quantity;
+          {products.length > 0 ? (
+            products.map((item, idx) => {
+              const lineTotal =
+                item.salesPrice * item.quantity -
+                (item.discount / 100) * item.salesPrice * item.quantity;
 
-            return (
-              <tr key={idx} className="border-t border-gray-200 hover:bg-gray-50 transition-colors">
-                <td className="p-3">{item.productName}</td>
-                <td className="p-3 text-right">{item.quantity}</td>
-                <td className="p-3 text-right">৳{item.salesPrice.toFixed(2)}</td>
-                <td className="p-3 text-right">{item.discount || 0}%</td>
-                <td className="p-3 text-right font-medium">৳{lineTotal.toFixed(2)}</td>
-              </tr>
-            );
-          })}
+              return (
+                <tr key={idx} className="border-t border-gray-200 hover:bg-gray-50 transition-colors">
+                  <td className="p-3">{item.productName}</td>
+                  <td className="p-3 text-right">{item.quantity}</td>
+                  <td className="p-3 text-right">৳{item.salesPrice.toFixed(2)}</td>
+                  <td className="p-3 text-right">{item.discount || 0}%</td>
+                  <td className="p-3 text-right font-medium">৳{lineTotal.toFixed(2)}</td>
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan={5} className="text-center py-4 text-gray-400">
+                No products found.
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
 
@@ -101,9 +124,9 @@ const InvoiceA4Preview = ({ invoiceData }) => {
       <footer className="mt-12 border-t pt-6 text-center text-xs text-gray-500">
         <p className="italic mb-2">Thank you for shopping with us!</p>
         <img src={dokaanLogo} alt="Dokaan Logo" className="w-10 mx-auto mb-1" />
-        <p className="text-[11px]">
+        {/* <p className="text-[11px]">
           Made with <span className="text-red-500 font-semibold">Dokaan</span>
-        </p>
+        </p> */}
       </footer>
     </div>
   );
