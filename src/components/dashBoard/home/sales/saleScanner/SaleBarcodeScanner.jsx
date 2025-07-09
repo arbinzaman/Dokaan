@@ -8,9 +8,8 @@ const SaleBarcodeScanner = ({ onScan, setManualCodeInput }) => {
   const hasScannedRef = useRef(false);
   const [isScanning, setIsScanning] = useState(false);
 
-  // Play beep sound on successful scan
   const playBeep = () => {
-    const beep = new Audio("/audios/beep.mp3"); // Adjust path if needed
+    const beep = new Audio("/audios/beep.mp3");
     beep.play().catch(() => {});
   };
 
@@ -22,7 +21,13 @@ const SaleBarcodeScanner = ({ onScan, setManualCodeInput }) => {
       codeReaderRef.current = codeReader;
 
       const devices = await BrowserMultiFormatReader.listVideoInputDevices();
-      const selectedDeviceId = devices[0]?.deviceId;
+
+      // Find back camera explicitly (environment-facing)
+      const backCamera = devices.find((device) =>
+        /back|rear|environment/i.test(device.label)
+      );
+
+      const selectedDeviceId = backCamera?.deviceId || devices[0]?.deviceId;
 
       if (!selectedDeviceId) {
         console.error("No camera found");
@@ -40,7 +45,7 @@ const SaleBarcodeScanner = ({ onScan, setManualCodeInput }) => {
           if (result && !hasScannedRef.current) {
             const code = result.getText();
             hasScannedRef.current = true;
-            setManualCodeInput(code);  // Update manual input in parent
+            setManualCodeInput(code);
             onScan({ code });
             playBeep();
           }
@@ -78,7 +83,6 @@ const SaleBarcodeScanner = ({ onScan, setManualCodeInput }) => {
     hasScannedRef.current = false;
   };
 
-  // Start scanner on mount
   useEffect(() => {
     startScanner();
     return () => stopScanner();

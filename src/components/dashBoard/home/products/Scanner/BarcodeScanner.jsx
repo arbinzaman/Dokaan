@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { Button } from "@mui/material";
-// import { toast } from "react-hot-toast";
 
 const BarcodeScanner = ({ onScan, handleInputChange }) => {
   const videoRef = useRef(null);
   const codeReader = useRef(null);
-  const hasScannedRef = useRef(false); // Use ref for immediate sync flag
+  const hasScannedRef = useRef(false);
   const [scannedBarcode, setScannedBarcode] = useState("");
   const [isScanning, setIsScanning] = useState(false);
 
@@ -15,9 +14,10 @@ const BarcodeScanner = ({ onScan, handleInputChange }) => {
     beep.play().catch((e) => console.error("Beep sound error:", e));
   };
 
+  // Explicit environment facing constraints here:
   const videoConstraints = {
     video: {
-      facingMode: "environment",
+      facingMode: { exact: "environment" }, // forces back camera
       width: { ideal: 640 },
       height: { ideal: 480 },
     },
@@ -48,30 +48,25 @@ const BarcodeScanner = ({ onScan, handleInputChange }) => {
   const startScanner = () => {
     if (!videoRef.current) return;
 
-    hasScannedRef.current = false; // reset immediately when starting
+    hasScannedRef.current = false;
     setIsScanning(true);
 
     codeReader.current = new BrowserMultiFormatReader();
 
     codeReader.current
-      .decodeFromConstraints(
-        videoConstraints,
-        videoRef.current,
-        (result, err) => {
-          if (result && !hasScannedRef.current) {
-            const code = result.getText();
-            hasScannedRef.current = true; // block further calls immediately
-            setScannedBarcode(code);
-            onScan(code);
-            playBeep();
-            // toast.success("Barcode scanned successfully!");
-            stopScanner();
-          }
-          if (err && !(err instanceof DOMException)) {
-            console.warn(err);
-          }
+      .decodeFromConstraints(videoConstraints, videoRef.current, (result, err) => {
+        if (result && !hasScannedRef.current) {
+          const code = result.getText();
+          hasScannedRef.current = true;
+          setScannedBarcode(code);
+          onScan(code);
+          playBeep();
+          stopScanner();
         }
-      )
+        if (err && !(err instanceof DOMException)) {
+          console.warn(err);
+        }
+      })
       .catch((err) => {
         console.error("ZXing start error:", err);
         setIsScanning(false);
@@ -80,11 +75,8 @@ const BarcodeScanner = ({ onScan, handleInputChange }) => {
 
   useEffect(() => {
     startScanner();
-
-    return () => {
-      stopScanner();
-    };
-  }, []); // empty deps: run once on mount
+    return () => stopScanner();
+  }, []);
 
   return (
     <div className="col-span-full sm:col-span-1">
