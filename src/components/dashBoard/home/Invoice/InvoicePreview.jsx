@@ -3,7 +3,6 @@ import dokaanLogo from "../../../../assets/Home/logos/DOKAAN.png";
 const InvoicePreview = ({ invoiceData }) => {
   if (!invoiceData) return <div>No invoice data found.</div>;
 
-  // Normalize products: use products if present, else map sales to products
   const products = Array.isArray(invoiceData.products)
     ? invoiceData.products
     : Array.isArray(invoiceData.sales)
@@ -17,8 +16,13 @@ const InvoicePreview = ({ invoiceData }) => {
       }))
     : [];
 
+  const shop = {
+    dokaan_name: invoiceData.shop?.dokaan_name || invoiceData.shopName || "Unnamed Shop",
+    dokaan_location: invoiceData.shop?.dokaan_location || invoiceData.shopAddress || "",
+    dokaan_phone: invoiceData.shop?.dokaan_phone || invoiceData.shopPhone || "",
+  };
+
   const {
-    shop = invoiceData.shop || {},
     customer = invoiceData.customer || {},
     totalPrice = invoiceData.totalPrice || 0,
     invoiceNumber,
@@ -29,16 +33,14 @@ const InvoicePreview = ({ invoiceData }) => {
 
   return (
     <div className="invoice-container w-full max-w-[92mm] mx-auto bg-white p-6 shadow-md text-gray-800 print:shadow-none print:px-2 print:py-2 font-inter border border-gray-300">
-      {/* Shop Header */}
       <div className="text-center border-b border-gray-300 pb-3 mb-4">
         <h1 className="text-2xl font-bold uppercase text-gray-900 tracking-wide">
-          {shop.dokaan_name || shop.shopName || "Unnamed Shop"}
+          {shop.dokaan_name}
         </h1>
-        <p className="text-sm text-gray-600">{shop.dokaan_location || shop.shopLocation || ""}</p>
-        <p className="text-sm text-gray-600">{shop.dokaan_phone || shop.shopPhone || ""}</p>
+        <p className="text-sm text-gray-600">{shop.dokaan_location}</p>
+        <p className="text-sm text-gray-600">{shop.dokaan_phone}</p>
       </div>
 
-      {/* Meta Info + Seller */}
       <div className="flex justify-between text-xs mb-4">
         <div>
           <p className="font-semibold">Invoice ID</p>
@@ -55,7 +57,6 @@ const InvoicePreview = ({ invoiceData }) => {
         </div>
       </div>
 
-      {/* Customer Info */}
       <div className="mb-4 border border-gray-200 p-3 text-sm">
         <p className="font-semibold text-gray-700 mb-1">Billed To:</p>
         <p>{customer.name || "Walk-in Customer"}</p>
@@ -64,7 +65,6 @@ const InvoicePreview = ({ invoiceData }) => {
         {customer.address && <p>{customer.address}</p>}
       </div>
 
-      {/* Products Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-xs border-collapse mb-4">
           <thead className="bg-gray-100 text-gray-800">
@@ -104,7 +104,6 @@ const InvoicePreview = ({ invoiceData }) => {
         </table>
       </div>
 
-      {/* Total Summary */}
       <div className="text-sm border-t pt-3 mt-4">
         <div className="flex justify-between py-1">
           <span className="font-medium">Subtotal</span>
@@ -120,13 +119,9 @@ const InvoicePreview = ({ invoiceData }) => {
         </div>
       </div>
 
-      {/* Footer Branding */}
       <div className="text-center mt-6 text-xs text-gray-500 border-t pt-3">
         <p className="italic">Thanks for shopping with us!</p>
         <img src={dokaanLogo} alt="Dokaan Logo" className="w-12 mx-auto mt-2 mb-1" />
-        {/* <p className="text-[11px]">
-          Made with <span className="text-red-500 font-semibold">Dokaan</span>
-        </p> */}
       </div>
     </div>
   );
