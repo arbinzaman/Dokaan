@@ -6,6 +6,7 @@ import {
 } from "./design/Hero";
 import { useRef } from "react";
 import dokaanLogo from "../../../assets/Home/logos/DOKAAN_FINAL.png";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   const parallaxRef = useRef(null);
@@ -42,7 +43,7 @@ const Hero = () => {
           <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-xl max-w-3xl mx-auto mb-6 text-n-2 lg:mb-8 font-semibold">
             ব্যবসার হিসাব রাখুন হাতের নাগালে!
           </p>
-          <Button>Get started</Button>
+          <Button><Link to="/signup">Get started</Link></Button>
         </div>
         <div className="relative max-w-[23rem] mx-auto md:max-w-5xl xl:mb-24">
           <div className="relative z-1 p-0.5 rounded-2xl ">

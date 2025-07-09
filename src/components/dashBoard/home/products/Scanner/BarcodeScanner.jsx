@@ -3,9 +3,8 @@ import Quagga from "quagga";
 import { Button } from "@mui/material";
 
 const BarcodeScanner = ({ onScan, handleInputChange }) => {
-  const [scannedBarcodes, setScannedBarcodes] = useState([]);
+  const [scannedBarcode, setScannedBarcode] = useState("");
 
-  // Play beep sound after scanning
   const playBeep = () => {
     const beep = new Audio(`/audios/beep.mp3`);
     beep.play().catch((error) => console.error("Error playing sound:", error));
@@ -43,13 +42,9 @@ const BarcodeScanner = ({ onScan, handleInputChange }) => {
     Quagga.onDetected((data) => {
       const scannedCode = data.codeResult.code;
       if (scannedCode) {
-        setScannedBarcodes((prev) => [...prev, scannedCode]);
+        setScannedBarcode(scannedCode);
         onScan(scannedCode);
-
-        // 🔊 Play beep sound
         playBeep();
-
-        // Stop scanning after detection
         Quagga.stop();
       }
     });
@@ -61,42 +56,34 @@ const BarcodeScanner = ({ onScan, handleInputChange }) => {
   }, [onScan]);
 
   return (
-    <>
-      <div className="flex">
-        {/* Barcode Scanner Viewport */}
-        <div id="interactive" className="viewport w-40 h-40 mr-4"></div>
+    <div className="col-span-full sm:col-span-1">
+      <label htmlFor="code" className="text-sm">
+        Barcode (Scan or Type)
+      </label>
 
-        {/* Desktop View */}
-        <div className="hidden sm:block col-span-full sm:col-span-1 relative">
-          <Button onClick={() => Quagga.start()}>Re-Scan</Button>
-          {scannedBarcodes.map((data, id) => (
-            <input
-              key={id}
-              id="code"
-              type="text"
-              value={data}
-              onChange={handleInputChange}
-              className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2 mt-2"
-            />
-          ))}
-        </div>
+      <div className="flex items-center gap-4">
+        {/* Scanner View */}
+        <div id="interactive" className="viewport w-40 h-40 border rounded" />
+
+        {/* Manual Input */}
+        <input
+          id="code"
+          type="text"
+          value={scannedBarcode}
+          onChange={(e) => {
+            setScannedBarcode(e.target.value);
+            handleInputChange(e);
+            onScan(e.target.value);
+          }}
+          placeholder="Scan or type barcode"
+          className="flex-1 rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
+        />
       </div>
 
-      {/* Mobile View */}
-      <div className="block sm:hidden col-span-full sm:col-span-1 relative mt-4">
-        <Button onClick={() => Quagga.start()}>Re-Scan</Button>
-        {scannedBarcodes.map((data, id) => (
-          <input
-            key={id}
-            id="code"
-            type="text"
-            value={data}
-            onChange={handleInputChange}
-            className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2 mt-2"
-          />
-        ))}
-      </div>
-    </>
+      <Button onClick={() => Quagga.start()} className="mt-2">
+        Re-Scan
+      </Button>
+    </div>
   );
 };
 

@@ -1,13 +1,15 @@
 import {
   BarChart2,
-  DollarSign,
   Settings,
   ShoppingBag,
-  ShoppingCart,
   TrendingUp,
-  Users,
   Box,
+  FileText,
+  UserCheck,
+  UserCog,
+  User,
 } from "lucide-react";
+import { FaBangladeshiTakaSign } from "react-icons/fa6";
 import { useState } from "react";
 import { useUser } from "../../../../../contexts/AuthContext";
 import MobileSidebar from "./Mobilesidebar";
@@ -22,11 +24,18 @@ const SIDEBAR_ITEMS = [
     href: "/dashboard",
   },
   {
+    id: "shop",
+    name: "Shop",
+    icon: ShoppingBag,
+    color: "#22C55E", // you can customize this
+    href: "/dashboard/shop",
+  },
+  {
     id: "inventory",
     name: "Inventory",
-    href: "/dashboard/inventory", // Link to the inventory page
-    icon: Box, // Using the Box icon from lucide-react
-    color: "#FF9900", // You can customize the color as needed
+    icon: Box,
+    color: "#FF9900",
+    href: "/dashboard/inventory",
   },
   {
     id: "products",
@@ -36,25 +45,25 @@ const SIDEBAR_ITEMS = [
     href: "/dashboard/products",
   },
   {
+    id: "customers",
+    name: "Customers",
+    icon: UserCheck,
+    color: "#EC4899",
+    href: "/dashboard/customers",
+  },
+  {
     id: "users",
     name: "Users",
-    icon: Users,
-    color: "#EC4899",
+    icon: UserCog,
+    color: "#C084FC",
     href: "/dashboard/users",
   },
   {
     id: "sales",
     name: "Sales",
-    icon: DollarSign,
+    icon: FaBangladeshiTakaSign,
     color: "#10B981",
     href: "/dashboard/sales",
-  },
-  {
-    id: "orders",
-    name: "Orders",
-    icon: ShoppingCart,
-    color: "#F59E0B",
-    href: "/dashboard/orders",
   },
   {
     id: "analytics",
@@ -64,32 +73,71 @@ const SIDEBAR_ITEMS = [
     href: "/dashboard/analytics",
   },
   {
+    id: "expenses",
+    name: "Expenses",
+    icon: FaBangladeshiTakaSign,
+    color: "#EF4444",
+    href: "/dashboard/expense",
+  },
+  {
+    id: "employees",
+    name: "Employees",
+    icon: User,
+    color: "#3B82F6",
+    href: "/dashboard/employee",
+  },
+  {
+    id: "invoices",
+    name: "Receipts / invoices",
+    icon: FileText,
+    color: "#F97316",
+    href: "/dashboard/invoices",
+  },
+  {
     id: "settings",
     name: "Settings",
     icon: Settings,
     color: "#6EE7B7",
     href: "/dashboard/settings",
   },
- 
 ];
+
 
 const Sidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { dokaan } = useUser();
+  const { dokaan, user } = useUser();
+
+  const role = user?.role;
+
+  const roleBasedAllowedIds = {
+    admin: ["users"],
+    "shop-owner": SIDEBAR_ITEMS.map((item) => item.id).filter(
+      (id) => id !== "users"
+    ),
+    employee: ["inventory", "customers", "sales", "invoices", "settings"],
+  };
+
+  const allowedIds = role ? roleBasedAllowedIds[role] || [] : [];
+
+  const filteredSidebarItems = SIDEBAR_ITEMS.filter((item) =>
+    allowedIds.includes(item.id)
+  );
+
+  const dokaanToPass = role === "employee" ? null : dokaan;
 
   return (
     <>
       <MobileSidebar
-        sidebarItems={SIDEBAR_ITEMS}
+        sidebarItems={filteredSidebarItems}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
       <DesktopSidebar
-        sidebarItems={SIDEBAR_ITEMS}
+        sidebarItems={filteredSidebarItems}
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
-        dokaan={dokaan}
+        dokaan={dokaanToPass}
       />
     </>
   );

@@ -21,7 +21,6 @@ const SaleBarcodeScanner = ({ onScan }) => {
             facingMode: "environment",
           },
           area: {
-            // crop image to focus center
             top: "25%",
             right: "25%",
             left: "25%",
@@ -29,13 +28,11 @@ const SaleBarcodeScanner = ({ onScan }) => {
           },
           singleChannel: false,
         },
-        frequency: 10, // try 5–15
-
+        frequency: 10,
         locator: {
-          patchSize: "x-large", // better for distant barcodes
-          halfSample: true, // speeds up and improves performance
+          patchSize: "x-large",
+          halfSample: true,
         },
-
         numOfWorkers: navigator.hardwareConcurrency,
         decoder: {
           readers: [
@@ -48,9 +45,7 @@ const SaleBarcodeScanner = ({ onScan }) => {
             "code_39_vin_reader",
             "codabar_reader",
             "i2of5_reader",
-            "i2of5_reader",
-            "code_93_reader"
-
+            "code_93_reader",
           ],
         },
         locate: true,
@@ -68,15 +63,12 @@ const SaleBarcodeScanner = ({ onScan }) => {
 
     Quagga.onDetected((data) => {
       const code = data.codeResult.code;
-
       const errors = data.codeResult.decodedCodes
         .map((d) => d.error)
         .filter((e) => e !== undefined);
+      const avgError = errors.reduce((a, b) => a + b, 0) / errors.length;
 
-      const averageError = errors.reduce((a, b) => a + b, 0) / errors.length;
-
-      // Filter out weak scans (adjust threshold as needed)
-      if (code && averageError < 0.25 && code !== lastScannedCode) {
+      if (code && avgError < 0.25 && code !== lastScannedCode) {
         lastScannedCode = code;
         setScannedCode(code);
         onScan({ barcode: code });
@@ -91,34 +83,31 @@ const SaleBarcodeScanner = ({ onScan }) => {
     };
   }, [onScan]);
 
+  const handleManualInput = (e) => {
+    const inputValue = e.target.value;
+    setScannedCode(inputValue);
+    if (inputValue.length > 5) {
+      onScan({ barcode: inputValue });
+    }
+  };
+
   return (
-    <>
-      <div className="flex">
-        <div id="interactive" className="viewport w-40 h-40 mr-4"></div>
+    <div className="w-full flex flex-col md:flex-row items-start gap-4">
+      <div id="interactive" className="viewport w-full md:w-1/2 h-48 bg-black rounded"></div>
 
-        <div className="hidden sm:block">
-          <Button onClick={() => Quagga.start()}>Re-Scan</Button>
-          {scannedCode && (
-            <input
-              type="text"
-              value={scannedCode}
-              className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2 mt-2"
-            />
-          )}
-        </div>
+      <div className="w-full md:w-1/2">
+        <Button onClick={() => Quagga.start()} variant="outlined">
+          Re-Scan
+        </Button>
+        <input
+          type="text"
+          placeholder="Enter barcode manually"
+          value={scannedCode}
+          onChange={handleManualInput}
+          className="w-full mt-2 rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
+        />
       </div>
-
-      <div className="block sm:hidden mt-4">
-        <Button onClick={() => Quagga.start()}>Re-Scan</Button>
-        {scannedCode && (
-          <input
-            type="text"
-            value={scannedCode}
-            className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2 mt-2"
-          />
-        )}
-      </div>
-    </>
+    </div>
   );
 };
 

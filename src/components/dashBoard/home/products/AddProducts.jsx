@@ -4,187 +4,318 @@ import Cookies from "js-cookie";
 import { useUser } from "../../../../contexts/AuthContext";
 import { Button } from "@mui/material";
 import BarcodeScanner from "./Scanner/BarcodeScanner";
+import CreatableSelect from "react-select/creatable";
+
+const toastStyle = {
+  borderRadius: "12px",
+  background: "#1e293b",
+  color: "#fff",
+  padding: "14px 20px",
+  fontSize: "16px",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+};
+
+const toastIconTheme = {
+  primary: "#60a5fa",
+  secondary: "#fff",
+};
 
 const AddProducts = () => {
   const [productData, setProductData] = useState({
     name: "",
     code: "",
-    purchasePrice: "",
-    salesPrice: "",
-    initialStock: "",
+    itemCategory: "",
+    purchasePrice: null,
+    salesPrice: null,
+    initialStock: null,
   });
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const { user, dokaan } = useUser();
+  const [isUpdateMode, setIsUpdateMode] = useState(false);
+
+  const { user, savedShop } = useUser();
+
+  const categoryOptions = [
+    { value: "Groceries", label: "Groceries" },
+    { value: "Electronics", label: "Electronics" },
+    { value: "Mobile Shop", label: "Mobile Shop" },
+    { value: "Stationery", label: "Stationery" },
+    { value: "Clothing", label: "Clothing" },
+    { value: "Cosmetics", label: "Cosmetics" },
+    { value: "Pharmacy", label: "Pharmacy" },
+    { value: "Bakery", label: "Bakery" },
+  ];
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
-    setProductData((prev) => ({ ...prev, [id]: value }));
+    const numericFields = ["purchasePrice", "salesPrice", "initialStock"];
+
+    setProductData((prev) => ({
+      ...prev,
+      [id]: numericFields.includes(id)
+        ? value === ""
+          ? null
+          : Number(value)
+        : value,
+    }));
   };
 
-  const handleScan = (scannedCode) => {
+  const handleCategoryChange = (selectedOption) => {
+    setProductData((prev) => ({
+      ...prev,
+      itemCategory: selectedOption?.value || "",
+    }));
+  };
+
+  const handleScan = async (scannedCode) => {
     setProductData((prev) => ({ ...prev, code: scannedCode }));
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/products/scan`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ barcode: scannedCode }),
+        }
+      );
+
+      const data = await res.json();
+      if (res.ok && data?.matchedProduct) {
+        const found = data.matchedProduct;
+
+        setProductData({
+          name: found.productName || "",
+          code: found.code || scannedCode,
+          itemCategory: found.itemCategory || "",
+          purchasePrice: found.purchasePrice ?? null,
+          salesPrice: found.salesPrice ?? null,
+          initialStock: null,
+        });
+        setIsUpdateMode(true);
+        toast.success("Product found. You can update the stock.", {
+          style: { ...toastStyle, background: "#22c55e" }, // green bg for success
+          iconTheme: { primary: "#ffffff", secondary: "#22c55e" },
+        });
+      } else {
+        setIsUpdateMode(false);
+        toast("No product found. You can add it as a new product.", {
+          style: { ...toastStyle, background: "#3b82f6" }, // blue bg for info
+          iconTheme: { primary: "#ffffff", secondary: "#3b82f6" },
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error fetching product info", {
+        style: { ...toastStyle, background: "#ef4444" }, // red bg for error
+        iconTheme: { primary: "#ffffff", secondary: "#ef4444" },
+      });
+    }
   };
 
   const handleSubmit = async () => {
     const payload = {
       ...productData,
-      shopId: dokaan.id,
+      shopId: savedShop.id,
       ownerId: user.id,
     };
 
     const token = Cookies.get("XTOKEN");
 
     if (!token) {
-      toast.error("Authentication token not found.");
+      toast.error("Authentication token not found.", {
+        style: { ...toastStyle, background: "#ef4444" },
+        iconTheme: { primary: "#fff", secondary: "#ef4444" },
+      });
       return;
     }
+
+    const url = isUpdateMode
+      ? `${import.meta.env.VITE_BASE_URL}/products/${productData.code}`
+      : `${import.meta.env.VITE_BASE_URL}/products`;
 
     toast.promise(
       (async () => {
         setLoading(true);
         try {
-          const response = await fetch(
-            `${import.meta.env.VITE_BASE_URL}/products`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `${token}`,
-              },
-              body: JSON.stringify(payload),
-            }
-          );
+          const response = await fetch(url, {
+            method: isUpdateMode ? "PUT" : "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${token}`,
+            },
+            body: JSON.stringify(payload),
+          });
 
-          if (response.status === 200) {
-            setMessage("Product added successfully!");
+          if (response.ok) {
+            setMessage(
+              isUpdateMode
+                ? "Stock updated successfully!"
+                : "Product added successfully!"
+            );
             setProductData({
               name: "",
               code: "",
-              purchasePrice: "",
-              salesPrice: "",
-              initialStock: "",
+              itemCategory: "",
+              purchasePrice: null,
+              salesPrice: null,
+              initialStock: null,
             });
+            setIsUpdateMode(false);
           } else {
             const errorData = await response.json();
-            throw new Error(errorData.message || "Failed to add product");
+            throw new Error(errorData.message || "Failed to save product");
           }
         } catch (error) {
           setMessage(`Error: ${error.message}`);
+          throw error; // rethrow to trigger toast.promise error toast
         } finally {
           setLoading(false);
         }
       })(),
       {
-        loading: "Saving...",
-        success: <b>Product added successfully!</b>,
-        error: <b>Could not save product. Please try again.</b>,
+        loading: isUpdateMode ? "Updating stock..." : "Saving...",
+        success: isUpdateMode ? "Stock updated!" : "Product added!",
+        error: "Something went wrong!",
+      },
+      {
+        style: toastStyle,
+        iconTheme: toastIconTheme,
       }
     );
   };
 
   return (
-    <div>
-      <section className="dark:text-gray-50">
-        <form noValidate className="container">
-          <fieldset className="grid grid-cols-4 gap-6 p-6 rounded-md shadow-sm bg-white dark:bg-gray-900">
-            <div className="col-span-full">
-              <h3 className="text-xl">Name and Code</h3>
-              <hr className="my-2 border-dashed bg-black dark:border-gray-300" />
-            </div>
-            <div className="grid grid-cols-2 gap-4 col-span-full lg:col-span-3">
-              <div className="col-span-full sm:col-span-1 relative">
-                <label htmlFor="name" className="text-sm">
-                  Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={productData.name}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
-                />
-              </div>
+    <div className="px-4 py-6 max-w-2xl mx-auto dark:text-gray-50">
+      <form noValidate className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium">
+              Product Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={productData.name}
+              onChange={handleInputChange}
+              className="mt-1 w-full border rounded-md px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            />
+          </div>
 
-              {/* Barcode Scanner Component */}
-              <BarcodeScanner onScan={handleScan} handleInputChange={handleInputChange} />
+          <div>
+            <label
+              htmlFor="itemCategory"
+              className="block text-sm font-medium mb-1"
+            >
+              Category
+            </label>
+            <CreatableSelect
+              isClearable
+              options={categoryOptions}
+              onChange={handleCategoryChange}
+              value={
+                productData.itemCategory
+                  ? {
+                      value: productData.itemCategory,
+                      label: productData.itemCategory,
+                    }
+                  : null
+              }
+              placeholder="Select or create category"
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  backgroundColor: "#1f2937",
+                  borderColor: "#4b5563",
+                  color: "#fff",
+                }),
+                singleValue: (base) => ({
+                  ...base,
+                  color: "#fff",
+                }),
+                input: (base) => ({
+                  ...base,
+                  color: "#fff",
+                }),
+                menu: (base) => ({
+                  ...base,
+                  backgroundColor: "#1f2937",
+                  color: "#fff",
+                }),
+              }}
+            />
+          </div>
 
-            </div>
-          </fieldset>
+          <div>
+            <BarcodeScanner
+              onScan={handleScan}
+              handleInputChange={handleInputChange}
+            />
+          </div>
 
-          <hr className="my-6 border-black dark:border-gray-300" />
+          <div>
+            <label
+              htmlFor="purchasePrice"
+              className="block text-sm font-medium"
+            >
+              Purchase Price
+            </label>
+            <input
+              id="purchasePrice"
+              type="number"
+              value={productData.purchasePrice ?? ""}
+              onChange={handleInputChange}
+              className="mt-1 w-full border rounded-md px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            />
+          </div>
 
-          <fieldset className="grid grid-cols-4 gap-6 p-6 rounded-md shadow-sm bg-white dark:bg-gray-900">
-            <div className="col-span-full">
-              <h3 className="text-xl">Pricing</h3>
-              <hr className="my-2 border-dashed bg-black dark:border-gray-300" />
-            </div>
-            <div className="grid grid-cols-2 gap-4 col-span-full lg:col-span-3">
-              <div className="col-span-full sm:col-span-1 relative">
-                <label htmlFor="purchasePrice" className="text-sm">
-                  Purchase Price
-                </label>
-                <input
-                  id="purchasePrice"
-                  type="text"
-                  value={productData.purchasePrice}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
-                />
-              </div>
-              <div className="col-span-full sm:col-span-1 relative">
-                <label htmlFor="salesPrice" className="text-sm">
-                  Sales Price
-                </label>
-                <input
-                  id="salesPrice"
-                  type="text"
-                  value={productData.salesPrice}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
-                />
-              </div>
-            </div>
-          </fieldset>
+          <div>
+            <label htmlFor="salesPrice" className="block text-sm font-medium">
+              Sales Price
+            </label>
+            <input
+              id="salesPrice"
+              type="number"
+              value={productData.salesPrice ?? ""}
+              onChange={handleInputChange}
+              className="mt-1 w-full border rounded-md px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            />
+          </div>
 
-          <hr className="my-6 border-black dark:border-gray-300" />
+          <div>
+            <label htmlFor="initialStock" className="block text-sm font-medium">
+              Initial Stock
+            </label>
+            <input
+              id="initialStock"
+              type="number"
+              value={productData.initialStock ?? ""}
+              onChange={handleInputChange}
+              className="mt-1 w-full border rounded-md px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            />
+          </div>
+        </div>
 
-          <fieldset className="grid grid-cols-4 gap-6 p-6 rounded-md shadow-sm bg-white dark:bg-gray-900">
-            <div className="col-span-full">
-              <h3 className="text-xl">Stock</h3>
-              <hr className="my-2 border-dashed bg-black dark:border-gray-300" />
-            </div>
-            <div className="col-span-full sm:col-span-2 relative">
-              <label htmlFor="initialStock" className="text-sm">
-                Initial Stock
-              </label>
-              <input
-                id="initialStock"
-                type="text"
-                value={productData.initialStock}
-                onChange={handleInputChange}
-                className="w-full rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
-              />
-            </div>
-          </fieldset>
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          disabled={loading}
+          variant="contained"
+          color="primary"
+          className="w-full !mt-4"
+        >
+          {loading
+            ? "Processing..."
+            : isUpdateMode
+            ? "Update Stock"
+            : "Save Product"}
+        </Button>
 
-          <hr className="my-6 border-black dark:border-gray-300" />
-
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={loading}
-            variant="contained"
-            color="primary"
-            className="w-full"
-          >
-            {loading ? "Adding..." : "Save Product"}
-          </Button>
-
-          {message && <p className="mt-4 text-center">{message}</p>}
-        </form>
-      </section>
+        {message && <p className="text-center text-sm mt-2">{message}</p>}
+      </form>
     </div>
   );
 };

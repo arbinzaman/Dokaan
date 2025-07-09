@@ -3,62 +3,105 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useQuery } from "@tanstack/react-query";
 import { FaBangladeshiTakaSign } from "react-icons/fa6";
-// import Header from "../../../components/dashBoard/home/common/Header";
 import StatCard from "../../../components/dashBoard/home/common/StatCard";
-import { CreditCard, ShoppingCart, TrendingUp } from "lucide-react";
-import SalesByCategoryChart from "../../../components/dashBoard/home/sales/SalesByCategoryChart";
+import {
+  CreditCard,
+  ShoppingCart,
+  // TrendingUp
+} from "lucide-react";
+// import SalesByCategoryChart from "../../../components/dashBoard/home/sales/SalesByCategoryChart";
 import DailySalesTrend from "../../../components/dashBoard/home/sales/DailySalesTrend";
 import { useUser } from "../../../contexts/AuthContext";
 import SalesTrendChart from "../../../components/dashBoard/home/products/SalesTrendChart";
+import CategoryDistributionChart from "../../../components/dashBoard/home/overview/CategoryDistributionChart";
+import SalesTable from "../../../components/dashBoard/home/sales/SalesTable";
+import SalesChannelChart from "../../../components/dashBoard/home/overview/SalesChannelChart";
 
-const salesStats = {
-  totalRevenue: "$1,234,567",
-  averageOrderValue: "$78.90",
-  conversionRate: "3.45%",
-  salesGrowth: "12.3%",
-};
+const ACCENT_COLOR = "rgb(204, 51, 51)";
 
 const SalesPage = () => {
-  const { dokaan } = useUser();
+  const { savedShop } = useUser();
 
-  // Fetch total revenue
-  const { data: revenueData = {}, isLoading: revenueLoading } = useQuery({
-    queryKey: ["totalRevenue", dokaan?.id],
-    queryFn: async () => {
-      const token = Cookies.get("XTOKEN");
+  const fetchSalesData = async () => {
+    const token = Cookies.get("XTOKEN");
+    if (!token) throw new Error("No token found");
+    const shopId = Number(savedShop?.id);
+    if (isNaN(shopId)) throw new Error("Invalid shop ID");
 
-      if (!token) {
-        throw new Error("No token found in cookies");
+    const response = await axios.get(
+      `${import.meta.env.VITE_BASE_URL}/sales/total-revenue?shopId=${shopId}`,
+      {
+        headers: {
+          Authorization: `${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
       }
+    );
 
-      const shopId = Number(dokaan?.id);
-      if (isNaN(shopId)) {
-        throw new Error("Invalid shop ID");
+    return response.data; // expected: { totalRevenue: number, salesGrowth: string }
+  };
+
+  const fetchTotalSalesCount = async () => {
+    const token = Cookies.get("XTOKEN");
+    if (!token) throw new Error("No token found");
+    const shopId = Number(savedShop?.id);
+    if (isNaN(shopId)) throw new Error("Invalid shop ID");
+
+    const response = await axios.get(
+      `${
+        import.meta.env.VITE_BASE_URL
+      }/sales/total-sales-count?shopId=${shopId}`,
+      {
+        headers: {
+          Authorization: `${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
       }
+    );
 
-      const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/sales/total-revenue`,
-        {
-          headers: {
-            Authorization: `${token}`,
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          params: { shopId },
-        }
-      );
+    return response.data; // expected: { totalSales: number, date: string }
+  };
 
-      return response.data;
-    },
-    enabled: !!dokaan?.id,
+  const {
+    data: salesData = { totalRevenue: 0, salesGrowth: "0.0%" },
+    isLoading: salesDataLoading,
+    isError: salesDataError,
+    error: salesDataErrorObj,
+  } = useQuery({
+    queryKey: ["salesData", savedShop?.id],
+    queryFn: fetchSalesData,
+    enabled: !!savedShop?.id,
   });
 
-  const totalRevenue = revenueData?.totalRevenue || 0;
+  const {
+    data: totalSalesData = { totalSales: 0, date: "" },
+    isLoading: totalSalesLoading,
+    isError: totalSalesError,
+    error: totalSalesErrorObj,
+  } = useQuery({
+    queryKey: ["totalSalesCount", savedShop?.id],
+    queryFn: fetchTotalSalesCount,
+    enabled: !!savedShop?.id,
+  });
+
+  if (salesDataError)
+    return (
+      <div className="text-red-500 text-center p-4">
+        Error loading sales data: {salesDataErrorObj?.message}
+      </div>
+    );
+
+  if (totalSalesError)
+    return (
+      <div className="text-red-500 text-center p-4">
+        Error loading total sales count: {totalSalesErrorObj?.message}
+      </div>
+    );
 
   return (
     <div className="flex-1 overflow-auto relative z-10">
-      {/* <Header title='Sales Dashboard' /> */}
-
       <main className="max-w-7xl mx-auto py-6 px-4 lg:px-8">
         {/* SALES STATS */}
         <motion.div
@@ -69,39 +112,54 @@ const SalesPage = () => {
         >
           <StatCard
             name="Total Profit"
-            icon={FaBangladeshiTakaSign} // Swap to Rupee or Taka-looking icon
-            value={revenueLoading ? "..." : `৳${totalRevenue.toLocaleString()}`}
+            icon={FaBangladeshiTakaSign}
+            value={
+              salesDataLoading ? "..." : salesData.totalRevenue.toLocaleString()
+            }
             color="#EF4444"
           />
           <StatCard
-            name="Avg. Order Value"
+            name="Total Sales Count"
             icon={ShoppingCart}
-            value={salesStats.averageOrderValue}
+            value={
+              totalSalesLoading
+                ? "..."
+                : totalSalesData.totalSales.toLocaleString()
+            }
+            subtext={totalSalesData.date}
             color="#10B981"
           />
+
+          {/* Changed this card
           <StatCard
-            name="Conversion Rate"
-            icon={TrendingUp}
-            value={salesStats.conversionRate}
-            color="#F59E0B"
-          />
+            name="Total Revenue"
+            icon={FaBangladeshiTakaSign}
+            value={
+              salesDataLoading ? "..." : salesData.totalRevenue.toLocaleString()
+            }
+            color="#3B82F6" // blue neon or your choice
+          /> */}
+
           <StatCard
             name="Sales Growth"
             icon={CreditCard}
-            value={salesStats.salesGrowth}
-            color="#EF4444"
+            value={salesDataLoading ? "..." : salesData.salesGrowth}
+            color=""
           />
         </motion.div>
 
-        {/* <SalesOverviewChart /> */}
-		<SalesTrendChart/>
+        <SalesTable />
+        <SalesTrendChart />
 
-        <div className=" mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <SalesByCategoryChart />
+        <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* <SalesByCategoryChart /> */}
+          <CategoryDistributionChart accentColor={ACCENT_COLOR} />
+          <SalesChannelChart/>
           <DailySalesTrend />
         </div>
       </main>
     </div>
   );
 };
+
 export default SalesPage;

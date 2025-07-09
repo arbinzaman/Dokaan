@@ -1,21 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { X, ImagePlus, CheckCircle, Loader2, MapPin, Phone, Store } from "lucide-react";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
-import { useUser } from "../../../contexts/AuthContext";
 
-const DokaanUpdateModal = ({ isOpen, onClose }) => {
-  const { dokaan, setDokaan } = useUser(); // Use dokaan and setDokaan from AuthContext
-
+const DokaanUpdateModal = ({ isOpen, onClose, dokaan }) => {
+  // Initialize with empty strings or null; will update with useEffect
   const [formData, setFormData] = useState({
-    name: dokaan?.dokaan_name || "",
-    email: dokaan?.dokaan_email || "",
-    phone: dokaan?.dokaan_phone || "",
-    location: dokaan?.dokaan_location || "",
-    type: dokaan?.dokaan_type || "",
-    profileImage: null,
+    dokaan_name: "",
+    dokaan_email: "",
+    dokaan_phone: "",
+    dokaan_type: "",
+    dokaan_location: "",
+    dokaan_image: null,
   });
+  const [previewImage, setPreviewImage] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [previewImage, setPreviewImage] = useState(dokaan?.dokaan_imageUrl);
+  // Update formData and previewImage when modal opens or dokaan changes
+  useEffect(() => {
+    if (isOpen && dokaan) {
+      setFormData({
+        dokaan_name: dokaan.dokaan_name || "",
+        dokaan_email: dokaan.dokaan_email || "",
+        dokaan_phone: dokaan.dokaan_phone || "",
+        dokaan_type: dokaan.dokaan_type || "",
+        dokaan_location: dokaan.dokaan_location || "",
+        dokaan_image: null,
+      });
+      setPreviewImage(dokaan.dokaan_imageUrl || null);
+    }
+  }, [isOpen, dokaan]);
 
   if (!isOpen) return null;
 
@@ -26,156 +40,145 @@ const DokaanUpdateModal = ({ isOpen, onClose }) => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setFormData((prev) => ({ ...prev, profileImage: file }));
+    setFormData((prev) => ({ ...prev, dokaan_image: file }));
 
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
-        setPreviewImage(reader.result);
-      };
+      reader.onload = () => setPreviewImage(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+    setIsSubmitting(true);
+
     const formDataToSend = new FormData();
-    if (formData?.name) formDataToSend.append("dokaan_name", formData.name);
-    if (formData?.email) formDataToSend.append("dokaan_email", formData.email);
-    if (formData?.phone) formDataToSend.append("dokaan_phone", formData.phone);
-    if (formData?.location) formDataToSend.append("dokaan_location", formData.location);
-    if (formData?.type) formDataToSend.append("dokaan_type", formData.type);
-    if (formData?.profileImage) formDataToSend.append("dokaan_imageUrl", formData.profileImage);
-  
-    const token = Cookies.get("XTOKEN");
-    
-    // Use `toast.promise` to handle async operation status
-    await toast.promise(
-      (async () => {
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/dokaan/${dokaan?.id}`, {
-          method: "PUT",
-          headers: {
-            Authorization: `${token}`,
-          },
-          body: formDataToSend,
-        });
-  
-        const data = await response.json();
-  
-        if (response?.status === 200) {
-          setDokaan(data.data); // Update dokaan context
-          onClose(); // Close the modal after successful update
-          return data; // Resolve promise to trigger success toast
-        } else {
-          throw new Error(data.message || "Something went wrong.");
-        }
-      })(),
-      {
-        loading: "Saving...",
-        success: <b>Dokaan updated</b>,
-        error: <b>Could not update profile. Please try again.</b>,
+    for (const key in formData) {
+      if (key === "dokaan_image" && formData[key]) {
+        formDataToSend.append("dokaan_imageUrl", formData[key]);
+      } else {
+        formDataToSend.append(key, formData[key]);
       }
-    ).catch((error) => {
-      console.error("Error updating profile:", error);
-    });
+    }
+
+    const token = Cookies.get("XTOKEN");
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/dokaan/${dokaan?.id}`, {
+        method: "PUT",
+        headers: { Authorization: token },
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+
+      if (response.status === 200) {
+        toast.success("Dokaan updated!", {
+          icon: "🏪",
+          style: {
+            background: "#1f1f1f",
+            color: "#fff",
+            borderRadius: "10px",
+          },
+        });
+        setTimeout(() => onClose(), 1000);
+      } else {
+        throw new Error(data.message || "Update failed.");
+      }
+    } catch (err) {
+      toast.error("❌ " + err.message, {
+        style: {
+          background: "#1f1f1f",
+          color: "#fff",
+          borderRadius: "10px",
+        },
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div className="bg-gray-800 p-6 rounded-lg max-w-md mx-auto shadow-lg w-full">
-        <h2 className="text-lg font-semibold text-gray-100 mb-4">Edit Profile</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-          <div>
-            <label className="block text-gray-400 mb-1">Name</label>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+      <div className="relative bg-[#1f1f1f] w-full max-w-md p-6 rounded-xl shadow-xl animate-fadeIn">
+        <button
+          className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition"
+          onClick={onClose}
+        >
+          <X className="w-5 h-5" />
+        </button>
+        <h2 className="text-xl font-bold text-red-400 mb-6 text-center">Edit Dokaan</h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Store className="text-red-500" />
             <input
               type="text"
-              name="name"
-              value={formData.name}
+              name="dokaan_name"
+              placeholder="Shop name"
+              value={formData.dokaan_name}
               onChange={handleChange}
-              className="w-full p-2 rounded bg-gray-700 text-white focus:ring-2 focus:ring-indigo-600 outline-none"
-              placeholder="Enter your dokaan name"
+              className="w-full bg-gray-800 text-white p-2 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
-          <div>
-            <label className="block text-gray-400 mb-1">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full p-2 rounded bg-gray-700 text-white focus:ring-2 focus:ring-indigo-600 outline-none"
-              placeholder="Enter your email"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-400 mb-1">Phone</label>
+
+          <div className="flex items-center gap-2">
+            <Phone className="text-red-500" />
             <input
               type="text"
-              name="phone"
-              value={formData.phone}
+              name="dokaan_phone"
+              placeholder="Phone"
+              value={formData.dokaan_phone}
               onChange={handleChange}
-              className="w-full p-2 rounded bg-gray-700 text-white focus:ring-2 focus:ring-indigo-600 outline-none"
-              placeholder="Enter your phone number"
+              className="w-full bg-gray-800 text-white p-2 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
-          <div>
-            <label className="block text-gray-400 mb-1">Location</label>
+
+          <div className="flex items-center gap-2">
+            <MapPin className="text-red-500" />
             <input
               type="text"
-              name="location"
-              value={formData.location}
+              name="dokaan_location"
+              placeholder="Location"
+              value={formData.dokaan_location}
               onChange={handleChange}
-              className="w-full p-2 rounded bg-gray-700 text-white focus:ring-2 focus:ring-indigo-600 outline-none"
-              placeholder="Enter your location"
+              className="w-full bg-gray-800 text-white p-2 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
-          <div>
-            <label className="block text-gray-400 mb-1">Type</label>
-            <input
-              type="text"
-              name="type"
-              value={formData.type}
-              onChange={handleChange}
-              className="w-full p-2 rounded bg-gray-700 text-white focus:ring-2 focus:ring-indigo-600 outline-none"
-              placeholder="Enter your dokaan type"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-400 mb-1">Profile Image</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700"
-            />
-          </div>
-          {previewImage && (
-            <div className="mt-4">
-              <img
-                src={previewImage}
-                alt="Preview"
-                className="w-20 h-20 rounded-full object-cover"
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <label htmlFor="dokaan_image" className="cursor-pointer">
+                <ImagePlus className="text-red-500 hover:scale-110 transition-transform w-6 h-6" />
+              </label>
+              <input
+                id="dokaan_image"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
               />
+              {previewImage && (
+                <img
+                  src={previewImage}
+                  alt="Preview"
+                  className="w-10 h-10 rounded-full object-cover border border-red-400"
+                />
+              )}
             </div>
-          )}
-          <div className="flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-600"
-            >
-              Cancel
-            </button>
+
             <button
               type="submit"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded"
+              className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-full transition flex items-center justify-center mx-auto sm:mx-0 w-12 h-12"
+              disabled={isSubmitting}
+              title="Update Dokaan"
             >
-              Update
+              {isSubmitting ? (
+                <Loader2 className="animate-spin w-5 h-5" />
+              ) : (
+                <CheckCircle className="w-5 h-5" />
+              )}
             </button>
           </div>
         </form>

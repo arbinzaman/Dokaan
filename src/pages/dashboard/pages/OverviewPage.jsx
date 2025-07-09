@@ -10,21 +10,25 @@ import SalesChannelChart from "../../../components/dashBoard/home/overview/Sales
 import { useUser } from "../../../contexts/AuthContext";
 import SalesTrendChart from "../../../components/dashBoard/home/products/SalesTrendChart";
 
-const ACCENT_COLOR = "rgb(204, 51, 51)";
-
 const OverviewPage = () => {
-   const {  dokaan } = useUser(); // Get user details from context
+  const { savedShop} = useUser(); // Get user details from context
+// console.log(savedShop);
+  // Fetch total sales
   const { data, isError } = useQuery({
     queryKey: ["totalSales"],
     queryFn: async () => {
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/sales/total`
+        `${import.meta.env.VITE_BASE_URL}/sales/total?shopId=${savedShop.id}`
       );
       return response.data;
     },
   });
 
-  const { data: productData, isError: isProductError } = useQuery({
+  const matchedShopSales =
+    data && String(data.shopId) === String(savedShop?.id) ? data : null;
+
+  // Fetch total products
+  const { data: productData } = useQuery({
     queryKey: ["totalProducts"],
     queryFn: async () => {
       const response = await axios.get(
@@ -34,20 +38,21 @@ const OverviewPage = () => {
     },
   });
 
-  const formattedSales = data?.totalSales
-    ? `৳${data.totalSales.toLocaleString()}`
-    : isError
+  const formattedSales = isError
     ? "Error"
-    : "৳0";
+    : `৳${(matchedShopSales?.totalSales ?? 0).toLocaleString()}`;
 
-  const formattedProducts = productData?.data
-    ? productData.data
-    : isProductError
+  const matchedShopProduct = productData?.data?.find(
+    (item) => String(item.shopId) === String(savedShop?.id)
+  );
+
+  const formattedProducts = isError
     ? "Error"
-    : "0";
+    : matchedShopProduct?.totalProducts ?? 0;
+
   // Fetch total revenue
   const { data: revenueData = {}, isLoading: revenueLoading } = useQuery({
-    queryKey: ["totalRevenue", dokaan?.id],
+    queryKey: ["totalRevenue", savedShop?.id],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
 
@@ -55,13 +60,13 @@ const OverviewPage = () => {
         throw new Error("No token found in cookies");
       }
 
-      const shopId = Number(dokaan?.id);
+      const shopId = Number(savedShop?.id);
       if (isNaN(shopId)) {
         throw new Error("Invalid shop ID");
       }
 
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/sales/total-revenue`,
+        `${import.meta.env.VITE_BASE_URL}/sales/total-revenue?${shopId}`,
         {
           headers: {
             Authorization: `${token}`,
@@ -74,8 +79,9 @@ const OverviewPage = () => {
 
       return response.data;
     },
-    enabled: !!dokaan?.id,
+    enabled: !!savedShop?.id,
   });
+
   const totalRevenue = revenueData?.totalRevenue || 0;
 
   return (
@@ -92,27 +98,27 @@ const OverviewPage = () => {
             name="Total Sales"
             icon={Zap}
             value={formattedSales}
-            color={ACCENT_COLOR}
+            color="#00FFFF" // Vibrant Cyan
           />
           <StatCard
             name="Total Products"
             icon={ShoppingBag}
             value={formattedProducts}
-            color={ACCENT_COLOR}
+            color="#FF00FF" // Neon Pink
           />
           <StatCard
             name="Total Profit"
-            icon={FaBangladeshiTakaSign} // Swap to Rupee or Taka-looking icon
+            icon={FaBangladeshiTakaSign}
             value={revenueLoading ? "..." : `৳${totalRevenue.toLocaleString()}`}
-            color="#EF4444"
+            color="#39FF14" // Neon Green
           />
         </motion.div>
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <SalesTrendChart accentColor={ACCENT_COLOR} />
-          <CategoryDistributionChart accentColor={ACCENT_COLOR} />
-          <SalesChannelChart accentColor={ACCENT_COLOR} />
+          <SalesTrendChart accentColor="#00FFFF" />
+          <CategoryDistributionChart accentColor="#FF00FF" />
+          <SalesChannelChart accentColor="#39FF14" />
         </div>
       </main>
     </div>
