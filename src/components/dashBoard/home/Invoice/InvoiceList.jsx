@@ -7,27 +7,19 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 
 const fetchInvoices = async ({ queryKey }) => {
-  const [, shopId, year, month, day] = queryKey;
+  const [, shopId] = queryKey;
+  if (!shopId) return [];
+
   const token = Cookies.get("XTOKEN");
+  const res = await fetch(`${import.meta.env.VITE_BASE_URL}/invoices?shopId=${shopId}`, {
+    headers: {
+      Authorization: token,
+      Accept: "application/json",
+    },
+  });
 
-  const params = new URLSearchParams();
-  if (shopId) params.append("shopId", shopId);
-  if (year) params.append("year", year);
-  if (month) params.append("month", month);
-  if (day) params.append("day", day);
-
-  const res = await fetch(
-    `${import.meta.env.VITE_BASE_URL}/invoices?${params.toString()}`,
-    {
-      headers: {
-        Authorization: token,
-        Accept: "application/json",
-      },
-    }
-  );
   if (!res.ok) throw new Error("Failed to fetch invoices");
   const data = await res.json();
-
   return Array.isArray(data.data) ? data.data : [];
 };
 
@@ -42,17 +34,27 @@ const InvoiceList = () => {
 
   const navigate = useNavigate();
 
-  const {
-    data: invoices = [],
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["invoices", savedShop?.id, year, month, day],
+  // Fetch all invoices once for the shop
+  const { data: invoices = [], isLoading, error } = useQuery({
+    queryKey: ["invoices", savedShop?.id],
     queryFn: fetchInvoices,
     enabled: !!savedShop?.id,
+    staleTime: 1000 * 60 * 5, // cache 5 mins
+    cacheTime: 1000 * 60 * 10, // keep cache 10 mins
   });
 
+  // Client-side filtering (date + search)
   const filteredInvoices = invoices.filter((invoice) => {
+    const invoiceDate = new Date(invoice.createdAt);
+    if (year && invoiceDate.getFullYear().toString() !== year) return false;
+    if (
+      month &&
+      (invoiceDate.getMonth() + 1).toString().padStart(2, "0") !== month
+    )
+      return false;
+    if (day && invoiceDate.getDate().toString().padStart(2, "0") !== day)
+      return false;
+
     const term = searchTerm.toLowerCase();
     return (
       invoice.invoiceNumber?.toLowerCase().includes(term) ||
@@ -79,9 +81,7 @@ const InvoiceList = () => {
 
   const handleView = (invoiceData) => {
     localStorage.setItem("invoiceData", JSON.stringify(invoiceData));
-    navigate("/dashboard/preview-invoice", {
-      state: { invoiceData },
-    });
+    navigate("/dashboard/preview-invoice", { state: { invoiceData } });
   };
 
   const renderOptions = (options) =>
@@ -161,14 +161,16 @@ const InvoiceList = () => {
         <table className="min-w-full divide-y divide-gray-700">
           <thead>
             <tr>
-              {["Invoice No", "Customer", "Total", "Seller", "Date", "Actions"].map((h) => (
-                <th
-                  key={h}
-                  className="px-6 py-3 text-left text-sm font-semibold text-black dark:text-white uppercase"
-                >
-                  {h}
-                </th>
-              ))}
+              {["Invoice No", "Customer", "Total", "Seller", "Date", "Actions"].map(
+                (h) => (
+                  <th
+                    key={h}
+                    className="px-6 py-3 text-left text-sm font-semibold text-black dark:text-white uppercase"
+                  >
+                    {h}
+                  </th>
+                )
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
