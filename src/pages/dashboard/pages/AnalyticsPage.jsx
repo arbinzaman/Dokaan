@@ -72,13 +72,15 @@ const AnalyticsPage = () => {
           headers: { Authorization: token },
         }
       );
+        console.log("🔁 Raw Financial Report Response:", res.data);
       return res.data?.data;
     },
     enabled: !!shopId,
   });
 
   const { summary, revenueBreakdown, expenseBreakdown } = incomeStatement;
-  const grouped = financialReport?.grouped ?? {};
+  const grouped = financialReport ?? {};
+
 
   return (
     <div className={`max-w-7xl mx-auto px-4 py-8 transition-colors ${mode === "dark" ? "text-white" : "text-gray-900"}`}>
@@ -98,7 +100,7 @@ const AnalyticsPage = () => {
             revenueBreakdown={revenueBreakdown}
             expenseBreakdown={expenseBreakdown}
           />
-          <RevenueExpenseChart data={grouped} />
+          <RevenueExpenseChart data={grouped}  />
         </>
       )}
     </div>

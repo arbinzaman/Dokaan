@@ -43,7 +43,7 @@ const RevenueExpenseChart = ({ data }) => {
 
   console.log(data, chartData);
   return (
-    <div className="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-xl p-6 mb-8 border border-gray-200 dark:border-zinc-700">
+    <div className="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-xl p-6 mb-8 border border-gray-200 dark:border-zinc-700 mt-10">
       <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white tracking-tight">
         📊 Revenue, Expenses & Profit
       </h3>
