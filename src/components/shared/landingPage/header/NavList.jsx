@@ -30,7 +30,7 @@ const NavList = ({ handleSectionNavigation, handleClick, openNavigation }) => {
           rel="noopener noreferrer"
           className="text-[#39ff14] drop-shadow-[0_0_5px_#39ff14] font-code text-2xl uppercase px-6 py-6 md:py-8 lg:text-xs lg:font-semibold"
         >
-          Download App
+          Download Mobile App
         </a>
 
         {user ? (

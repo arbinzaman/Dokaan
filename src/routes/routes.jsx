@@ -40,6 +40,7 @@ import ExpensePage from "../pages/dashboard/pages/ExpensePage";
 // import InvoicePreview from "../components/dashBoard/home/Invoice/InvoicePreview";
 import InvoicePreviewPage from "../pages/dashboard/pages/InvoicePreviewPage";
 import InvoicePage from "../pages/dashboard/pages/InvoicePage";
+import AddFixedCost from "../components/dashBoard/home/expense/AddFixedCost";
 // import MobileSidebar from "../components/dashBoard/home/common/MobileSidebar";
 const router = createBrowserRouter(
   [
@@ -208,6 +209,10 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/invoices",
           element: <InvoicePage />,
+        },
+        {
+          path: "/dashboard/save-fixed-cost",
+          element: <AddFixedCost />,
         },
         // {
         //   path: "/dashboard/mobile-nav",
