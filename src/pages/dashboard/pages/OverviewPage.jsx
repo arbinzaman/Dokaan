@@ -12,7 +12,7 @@ import SalesTrendChart from "../../../components/dashBoard/home/products/SalesTr
 
 const OverviewPage = () => {
   const { savedShop} = useUser(); // Get user details from context
-console.log(savedShop);
+// console.log(savedShop);
   // Fetch total sales
   const { data, isError } = useQuery({
     queryKey: ["totalSales"],

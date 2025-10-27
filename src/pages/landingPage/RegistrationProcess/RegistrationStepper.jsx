@@ -1,76 +1,186 @@
-import { Briefcase, MapPin } from "lucide-react";
+import { useState } from "react";
+import {
+  Stepper,
+  Step,
+  StepLabel,
+  Button,
+  Box,
+  Typography,
+} from "@mui/material";
+import { FaUser, FaStore } from "react-icons/fa";
+import axios from "axios";
+import toast from "react-hot-toast";
+import ShopInfoForm from "./ShopInfoForm";
+import UserRegistrationForm from "./UserRegistrationForm";
 import { useUser } from "../../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
-const DokaanSelection = () => {
-  const { dokaan, setSavedShop, savedShop } = useUser();
+const steps = ["User Info", "Shop Info"];
+
+const icons = {
+  1: <FaUser size={20} />,
+  2: <FaStore size={20} />,
+};
+
+const StepIcon = ({ icon, active, completed }) => (
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      width: 40,
+      height: 40,
+      borderRadius: "50%",
+      backgroundColor: completed ? "green" : active ? "blue" : "gray",
+      color: "white",
+    }}
+  >
+    {icon}
+  </Box>
+);
+
+const RegistrationStepper = () => {
+  const [activeStep, setActiveStep] = useState(0);
+  const [userData, setUserData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+  const [shopData, setShopData] = useState({
+    dokaan_name: "",
+    dokaan_location: "",
+    dokaan_email: "",
+    dokaan_phone: "",
+    dokaan_type: "",
+  });
+  const [errors, setErrors] = useState({});
+  const { setUser, setDokaan } = useUser();
   const navigate = useNavigate();
 
-  const handleSelect = (shop) => {
-    setSavedShop(shop);
-    navigate("/dashboard");
+  const validateData = () => {
+    const validationErrors =
+      activeStep === 0
+        ? {
+            name: userData.name ? "" : "Name is required",
+            email: userData.email ? "" : "Email is required",
+            password: userData.password ? "" : "Password is required",
+          }
+        : {
+            dokaan_name: shopData.dokaan_name ? "" : "Shop Name is required",
+            dokaan_location: shopData.dokaan_location
+              ? ""
+              : "Shop Location is required",
+            dokaan_email: shopData.dokaan_email ? "" : "Shop Email is required",
+            dokaan_phone: shopData.dokaan_phone ? "" : "Shop Phone is required",
+          };
+
+    setErrors(validationErrors);
+    return Object.values(validationErrors).every((val) => !val);
+  };
+
+  const handleNext = () => {
+    if (validateData()) setActiveStep((prev) => prev + 1);
+  };
+
+  const handleSubmit = async () => {
+    const registrationData = { ...userData, ...shopData };
+
+    toast.promise(
+      axios
+        .post(`${import.meta.env.VITE_BASE_URL}/dokaan`, registrationData)
+        .then(({ data }) => {
+          Cookies.set("XTOKEN", data.access_token, { expires: 1, path: "/" });
+
+          setUser(data.data.owner); // Save logged-in user
+          setDokaan(data.data.dokaan); // Save shop info
+
+          navigate("/select-shop"); // Navigate to Select Shop page
+          return data;
+        }),
+      {
+        loading: "Saving...",
+        success: "Registration successful!",
+        error: "Registration failed!",
+      }
+    );
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-black via-[#2a0000] to-[#3f0000]">
-      <h2 className="text-3xl font-bold text-white mb-8 text-center">
-        🛍️ Select Your Shop
-      </h2>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 w-full max-w-3xl mx-auto">
-        {dokaan?.map((shop) => (
-          <div
-            key={shop.id}
-            onClick={() => handleSelect(shop)}
-            className={`relative cursor-pointer backdrop-blur-md rounded-xl overflow-hidden border p-3 transition-all duration-300 ${
-              savedShop?.id === shop.id
-                ? "border-red-500 bg-gradient-to-tr from-red-600/70 to-black/40 scale-105 shadow-lg"
-                : "border-white/20 bg-black/30 hover:scale-105 hover:border-red-400"
-            }`}
-          >
-            {/* Dokaan Image or Placeholder */}
-            <div className="w-full h-28 bg-black/20 rounded-lg flex items-center justify-center mb-3 overflow-hidden">
-              {shop.dokaan_imageUrl ? (
-                <img
-                  src={shop.dokaan_imageUrl}
-                  alt={shop.dokaan_name}
-                  className="object-cover w-full h-full rounded-lg"
-                />
-              ) : (
-                <Briefcase className="text-red-400 w-8 h-8" />
-              )}
-            </div>
-
-            <h3 className="text-md font-semibold text-white mb-1 flex items-center gap-2">
-              {shop.dokaan_name}
-            </h3>
-            <p className="text-xs text-red-300 flex items-center gap-1">
-              <MapPin size={14} /> {shop.dokaan_location}
-            </p>
-            <p className="text-xs text-red-400 mt-1 truncate">
-              📞 {shop.dokaan_phone}
-            </p>
-            <p className="text-xs text-red-400 truncate">
-              📧 {shop.dokaan_email}
-            </p>
-
-            {savedShop?.id === shop.id && (
-              <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow">
-                Selected
-              </div>
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        p: 3,
+      }}
+    >
+      <Box
+        sx={{
+          width: { xs: "100%", sm: "75%", md: "50%" },
+          backgroundColor: "gray.700",
+          borderRadius: 2,
+          boxShadow: 3,
+          p: 3,
+        }}
+      >
+        <Typography variant="h4" align="center" gutterBottom>
+          Registration
+        </Typography>
+        <Stepper activeStep={activeStep} alternativeLabel>
+          {steps.map((label, index) => (
+            <Step key={index}>
+              <StepLabel
+                StepIconComponent={() => (
+                  <StepIcon
+                    icon={icons[index + 1]}
+                    active={activeStep === index}
+                    completed={activeStep > index}
+                  />
+                )}
+              >
+                {label}
+              </StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+        <Box sx={{ mt: 3 }}>
+          {activeStep === 0 ? (
+            <UserRegistrationForm
+              userData={userData}
+              setUserData={setUserData}
+              errors={errors}
+            />
+          ) : (
+            <ShopInfoForm
+              shopData={shopData}
+              setShopData={setShopData}
+              errors={errors}
+            />
+          )}
+          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+            <Button
+              disabled={activeStep === 0}
+              onClick={() => setActiveStep((prev) => prev - 1)}
+            >
+              Back
+            </Button>
+            {activeStep === steps.length - 1 ? (
+              <Button variant="contained" onClick={handleSubmit}>
+                Submit
+              </Button>
+            ) : (
+              <Button variant="contained" onClick={handleNext}>
+                Next
+              </Button>
             )}
-          </div>
-        ))}
-      </div>
-
-      {savedShop && (
-        <div className="mt-8 text-center text-green-400 text-md font-medium">
-          ✅ You selected <strong>{savedShop.dokaan_name}</strong> in{" "}
-          {savedShop.dokaan_location}
-        </div>
-      )}
-    </div>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
-export default DokaanSelection;
+export default RegistrationStepper;

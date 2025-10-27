@@ -3,7 +3,7 @@ import { useState } from "react";
 
 const DokaanTable = ({ shops = [], loading, onEdit }) => {
   const [searchTerm, setSearchTerm] = useState("");
-
+console.log(shops);
   const filteredShops = shops.filter((shop) => {
     const nameMatch = shop.dokaan_name
       ?.toLowerCase()

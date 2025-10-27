@@ -9,7 +9,7 @@ import { useState } from "react";
 
 const DokaanPage = () => {
   const { dokaan } = useUser();
-
+console.log(dokaan);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDokaan, setSelectedDokaan] = useState(null);
 
@@ -19,8 +19,9 @@ const DokaanPage = () => {
   };
 
   // Ensure dokaan is always an array
-  const shopData = Array.isArray(dokaan) ? dokaan : [];
-
+  const shopData = Array.isArray(dokaan) ? dokaan : [dokaan];
+//   console.log("Shop Data:", shopData);
+// console.log(shopData);
   return (
     <div className="flex-1 overflow-auto relative z-10">
       <main className="max-w-7xl mx-auto py-6 px-4 lg:px-8">

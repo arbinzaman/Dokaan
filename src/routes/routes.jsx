@@ -34,6 +34,13 @@ import DokaanSelection from "../pages/dashboard/pages/DokaanSelection";
 import NotFound from "../components/shared/Notfound";
 import AddAShop from "../pages/dashboard/pages/AddAShop";
 import DokaanPage from "../pages/dashboard/pages/DokaanPage";
+import AddAExpense from "../pages/dashboard/pages/AddAExpense";
+import AddAIncome from "../pages/dashboard/pages/AddAIncome";
+import ExpensePage from "../pages/dashboard/pages/ExpensePage";
+// import InvoicePreview from "../components/dashBoard/home/Invoice/InvoicePreview";
+import InvoicePreviewPage from "../pages/dashboard/pages/InvoicePreviewPage";
+import InvoicePage from "../pages/dashboard/pages/InvoicePage";
+import AddFixedCost from "../components/dashBoard/home/expense/AddFixedCost";
 // import MobileSidebar from "../components/dashBoard/home/common/MobileSidebar";
 const router = createBrowserRouter(
   [
@@ -182,6 +189,30 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/*",
           element: <NotFound />,
+        },
+        {
+          path: "/dashboard/add-expense",
+          element: <AddAExpense />,
+        },
+        {
+          path: "/dashboard/preview-invoice",
+          element: <InvoicePreviewPage />,
+        },
+        {
+          path: "/dashboard/expense",
+          element: <ExpensePage />,
+        },
+        {
+          path: "/dashboard/income",
+          element: <AddAIncome />,
+        },
+        {
+          path: "/dashboard/invoices",
+          element: <InvoicePage />,
+        },
+        {
+          path: "/dashboard/save-fixed-cost",
+          element: <AddFixedCost />,
         },
         // {
         //   path: "/dashboard/mobile-nav",

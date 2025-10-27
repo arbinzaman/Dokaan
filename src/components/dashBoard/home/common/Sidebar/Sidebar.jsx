@@ -77,7 +77,7 @@ const SIDEBAR_ITEMS = [
     name: "Expenses",
     icon: FaBangladeshiTakaSign,
     color: "#EF4444",
-    href: "/dashboard/expenses",
+    href: "/dashboard/expense",
   },
   {
     id: "employees",
@@ -87,11 +87,11 @@ const SIDEBAR_ITEMS = [
     href: "/dashboard/employee",
   },
   {
-    id: "memos",
-    name: "Receipts / Memos",
+    id: "invoices",
+    name: "Receipts / invoices",
     icon: FileText,
     color: "#F97316",
-    href: "/dashboard/memos",
+    href: "/dashboard/invoices",
   },
   {
     id: "settings",
@@ -115,7 +115,7 @@ const Sidebar = () => {
     "shop-owner": SIDEBAR_ITEMS.map((item) => item.id).filter(
       (id) => id !== "users"
     ),
-    employee: ["inventory", "customers", "sales", "memos", "settings"],
+    employee: ["inventory", "customers", "sales", "invoices", "settings"],
   };
 
   const allowedIds = role ? roleBasedAllowedIds[role] || [] : [];

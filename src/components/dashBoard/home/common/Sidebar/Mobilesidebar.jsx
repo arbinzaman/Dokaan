@@ -10,6 +10,7 @@ import {
   UserCheck,
   UserCog,
   Receipt,
+  Diff,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -19,7 +20,9 @@ import { useUser } from "../../../../../contexts/AuthContext";
 const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const { savedShop, dokaan, setSavedShop, user } = useUser();
   const handleItemClick = () => setIsMobileMenuOpen(false);
-  const otherDokaans = dokaan?.filter((d) => d.id !== savedShop?.id);
+  const otherDokaans = Array.isArray(dokaan)
+    ? dokaan.filter((d) => d.id !== savedShop?.id)
+    : [];
 
   const role = user?.role;
 
@@ -47,11 +50,12 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
             </button>
           </Link>
           <Link
-            to="/dashboard/analytics"
+            to="/dashboard/add-expense"
             className="p-2 rounded-full hover:bg-gray-700"
           >
-            <TrendingUp size={26} style={{ color: "#3B82F6" }} />
+            <Diff size={26} style={{ color: "#EF4444" }} />
           </Link>
+
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="p-2 rounded-full hover:bg-gray-700"
@@ -159,7 +163,7 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                     onClick={handleItemClick}
                   />
                   <SidebarLink
-                    to="/dashboard/expenses"
+                    to="/dashboard/expense"
                     icon={FileText}
                     label="Expenses"
                     color="#EF4444"
@@ -173,10 +177,17 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                     onClick={handleItemClick}
                   />
                   <SidebarLink
-                    to="/dashboard/memos"
+                    to="/dashboard/invoices"
                     icon={FileText}
-                    label="Memos"
+                    label="invoices"
                     color="#F97316"
+                    onClick={handleItemClick}
+                  />
+                  <SidebarLink
+                    to="/dashboard/analytics"
+                    icon={TrendingUp}
+                    label="Analytics"
+                    color="#3B82F6"
                     onClick={handleItemClick}
                   />
                   <SidebarLink
@@ -224,6 +235,13 @@ const MobileSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                     icon={UserCog}
                     label="Settings"
                     color="#FACC15"
+                    onClick={handleItemClick}
+                  />
+                  <SidebarLink
+                    to="/dashboard/analytics"
+                    icon={TrendingUp}
+                    label="Analytics"
+                    color="#3B82F6"
                     onClick={handleItemClick}
                   />
                 </>
