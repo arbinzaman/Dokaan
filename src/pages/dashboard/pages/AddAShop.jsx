@@ -84,13 +84,15 @@ const handleSubmit = async (e) => {
     formData.append("dokaan_phone", form.dokaan_phone);
     formData.append("dokaan_type", form.dokaan_type);
     formData.append("ownerId", user?.id);
+    formData.append("email", user?.email); // ✅ use email from context
+
 
     if (form.dokaan_imageUrl) {
       formData.append("dokaan_imageUrl", form.dokaan_imageUrl);
     }
 
     const res = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/dokaan/${user?.email}`,
+      `${import.meta.env.VITE_BASE_URL}/dokaan`,
       formData,
       {
         headers: {

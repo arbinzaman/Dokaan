@@ -6,6 +6,9 @@ const DokaanSelection = () => {
   const { dokaan, setSavedShop, savedShop } = useUser();
   const navigate = useNavigate();
 
+  // Convert dokaan to an array if it's a single object
+  const dokaanList = Array.isArray(dokaan) ? dokaan : dokaan ? [dokaan] : [];
+
   const handleSelect = (shop) => {
     setSavedShop(shop);
     navigate("/dashboard");
@@ -18,7 +21,7 @@ const DokaanSelection = () => {
       </h2>
 
       <div className="grid w-full max-w-3xl mx-auto grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 place-items-center">
-        {dokaan?.map((shop) => (
+        {dokaanList.map((shop) => (
           <div
             key={shop.id}
             onClick={() => handleSelect(shop)}

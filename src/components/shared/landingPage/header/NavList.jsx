@@ -25,12 +25,12 @@ const NavList = ({ handleSectionNavigation, handleClick, openNavigation }) => {
           Pricing
         </button>
         <a
-          href="https://drive.google.com/uc?export=download&id=1W7OdlyNAttLTKkahlglO-wTeuDgyKUNO"
+          href="https://drive.google.com/file/d/1UwUeq3zu8N2VvGk59ReNgPiowpCvMKS9/view?usp=sharing"
           target="_blank"
           rel="noopener noreferrer"
           className="text-[#39ff14] drop-shadow-[0_0_5px_#39ff14] font-code text-2xl uppercase px-6 py-6 md:py-8 lg:text-xs lg:font-semibold"
         >
-          Download App
+          Download Mobile App
         </a>
 
         {user ? (

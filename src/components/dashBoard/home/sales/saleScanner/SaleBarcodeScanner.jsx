@@ -1,112 +1,112 @@
-import { useEffect, useState } from "react";
-import Quagga from "quagga";
+import { useEffect, useRef, useState } from "react";
+import { BrowserMultiFormatReader } from "@zxing/browser";
 import { Button } from "@mui/material";
 
-const SaleBarcodeScanner = ({ onScan }) => {
-  const [scannedCode, setScannedCode] = useState("");
+const SaleBarcodeScanner = ({ onScan, setManualCodeInput }) => {
+  const videoRef = useRef(null);
+  const codeReaderRef = useRef(null);
+  const hasScannedRef = useRef(false);
+  const [isScanning, setIsScanning] = useState(false);
 
   const playBeep = () => {
     const beep = new Audio("/audios/beep.mp3");
-    beep.play().catch((error) => console.error("Error playing sound:", error));
+    beep.play().catch(() => {});
   };
 
-  useEffect(() => {
-    Quagga.init(
-      {
-        inputStream: {
-          type: "LiveStream",
-          constraints: {
-            width: 800,
-            height: 600,
-            facingMode: "environment",
-          },
-          area: {
-            top: "25%",
-            right: "25%",
-            left: "25%",
-            bottom: "25%",
-          },
-          singleChannel: false,
-        },
-        frequency: 10,
-        locator: {
-          patchSize: "x-large",
-          halfSample: true,
-        },
-        numOfWorkers: navigator.hardwareConcurrency,
-        decoder: {
-          readers: [
-            "code_128_reader",
-            "ean_reader",
-            "ean_8_reader",
-            "upc_reader",
-            "upc_e_reader",
-            "code_39_reader",
-            "code_39_vin_reader",
-            "codabar_reader",
-            "i2of5_reader",
-            "code_93_reader",
-          ],
-        },
-        locate: true,
-      },
-      (err) => {
-        if (err) {
-          console.error(err);
-          return;
+  const startScanner = async () => {
+    if (!videoRef.current) return;
+
+    try {
+      const codeReader = new BrowserMultiFormatReader();
+      codeReaderRef.current = codeReader;
+
+      const devices = await BrowserMultiFormatReader.listVideoInputDevices();
+
+      // Find back camera explicitly (environment-facing)
+      const backCamera = devices.find((device) =>
+        /back|rear|environment/i.test(device.label)
+      );
+
+      const selectedDeviceId = backCamera?.deviceId || devices[0]?.deviceId;
+
+      if (!selectedDeviceId) {
+        console.error("No camera found");
+        setIsScanning(false);
+        return;
+      }
+
+      hasScannedRef.current = false;
+      setIsScanning(true);
+
+      await codeReader.decodeFromVideoDevice(
+        selectedDeviceId,
+        videoRef.current,
+        (result, err) => {
+          if (result && !hasScannedRef.current) {
+            const code = result.getText();
+            hasScannedRef.current = true;
+            setManualCodeInput(code);
+            onScan({ code });
+            playBeep();
+          }
+          if (
+            err &&
+            !(err instanceof DOMException) &&
+            !/NotFoundException/i.test(err.name || err.toString())
+          ) {
+            console.warn("ZXing error:", err);
+          }
         }
-        Quagga.start();
-      }
-    );
-
-    let lastScannedCode = null;
-
-    Quagga.onDetected((data) => {
-      const code = data.codeResult.code;
-      const errors = data.codeResult.decodedCodes
-        .map((d) => d.error)
-        .filter((e) => e !== undefined);
-      const avgError = errors.reduce((a, b) => a + b, 0) / errors.length;
-
-      if (code && avgError < 0.25 && code !== lastScannedCode) {
-        lastScannedCode = code;
-        setScannedCode(code);
-        onScan({ barcode: code });
-        playBeep();
-        Quagga.stop();
-      }
-    });
-
-    return () => {
-      Quagga.offDetected();
-      Quagga.stop();
-    };
-  }, [onScan]);
-
-  const handleManualInput = (e) => {
-    const inputValue = e.target.value;
-    setScannedCode(inputValue);
-    if (inputValue.length > 5) {
-      onScan({ barcode: inputValue });
+      );
+    } catch (error) {
+      console.error("Scanner start error:", error);
+      setIsScanning(false);
     }
   };
 
-  return (
-    <div className="w-full flex flex-col md:flex-row items-start gap-4">
-      <div id="interactive" className="viewport w-full md:w-1/2 h-48 bg-black rounded"></div>
+  const stopScanner = () => {
+    try {
+      if (codeReaderRef.current) {
+        if (typeof codeReaderRef.current.reset === "function") {
+          codeReaderRef.current.reset();
+        }
+        codeReaderRef.current = null;
+      }
+    } catch (error) {
+      console.error("Error stopping scanner:", error);
+    }
+    if (videoRef.current?.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+    }
+    setIsScanning(false);
+    hasScannedRef.current = false;
+  };
 
-      <div className="w-full md:w-1/2">
-        <Button onClick={() => Quagga.start()} variant="outlined">
-          Re-Scan
-        </Button>
-        <input
-          type="text"
-          placeholder="Enter barcode manually"
-          value={scannedCode}
-          onChange={handleManualInput}
-          className="w-full mt-2 rounded-md border border-red-400 dark:border-gray-700 dark:text-white text-black bg-white dark:bg-black p-2"
-        />
-      </div>
+  useEffect(() => {
+    startScanner();
+    return () => stopScanner();
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center w-full">
+      <video
+        ref={videoRef}
+        style={{ width: "100%", maxWidth: 400, borderRadius: 8 }}
+        muted
+        autoPlay
+        playsInline
+      />
+      <Button
+        variant="outlined"
+        className="mt-2"
+        onClick={() => {
+          if (isScanning) stopScanner();
+          else startScanner();
+        }}
+      >
+        {isScanning ? "Stop Scan" : "Start Scan"}
+      </Button>
     </div>
   );
 };

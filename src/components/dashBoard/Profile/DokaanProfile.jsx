@@ -3,7 +3,11 @@ import { useUser } from "../../../contexts/AuthContext";
 const DokaanProfile = () => {
   const { dokaan, savedShop, setSavedShop } = useUser();
 
-  const otherDokaans = dokaan?.filter((d) => d.id !== savedShop?.id) || [];
+  // Ensure dokaan is always an array
+  const dokaanList = Array.isArray(dokaan) ? dokaan : dokaan ? [dokaan] : [];
+
+  // Filter out current savedShop from list
+  const otherDokaans = dokaanList.filter((d) => d.id !== savedShop?.id);
 
   return (
     <div className="flex flex-col items-center text-black dark:text-white w-full">
