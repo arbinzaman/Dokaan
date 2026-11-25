@@ -426,14 +426,46 @@ const handleDemoApiRequest = async ({ method, rawUrl, params: axiosParams, body:
   if (m === "POST" && path === "/auth/login") {
     const email = String(body.email || "").toLowerCase().trim();
     const password = String(body.password || "");
-    const user = db.users.find((u) => u.email.toLowerCase() === email);
+    let user = db.users.find((u) => u.email.toLowerCase() === email);
 
-    if (!user || (user.password && user.password !== password)) {
+    if (!user) {
+      // Offline demo: any new email signs in as a fresh shop owner with sample shops
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 4) {
+        return {
+          status: 401,
+          data: {
+            message:
+              "Enter a valid email and a password of at least 4 characters.",
+          },
+        };
+      }
+      const displayName =
+        email
+          .split("@")[0]
+          .replace(/[._-]+/g, " ")
+          .replace(/\d+/g, "")
+          .trim()
+          .replace(/\b\w/g, (c) => c.toUpperCase()) || "Demo Owner";
+      user = {
+        id: db.nextIds.user++,
+        name: displayName,
+        email,
+        password,
+        role: "shop-owner",
+        twoFactorEnabled: false,
+        subscriptionStatus: true,
+        profileImageUrl: null,
+        shopIds: db.shops.slice(0, 2).map((s) => s.id),
+        createdAt: new Date().toISOString(),
+      };
+      db.users.unshift(user);
+      saveDemoDb(db);
+    } else if (user.password && user.password !== password) {
       return {
         status: 401,
         data: {
           message:
-            "Invalid credentials. Try owner@dokaan.demo, cashier@dokaan.demo, or admin@dokaan.demo (password: demo123).",
+            "Incorrect password for this account. Built-in demo accounts use password: demo123.",
         },
       };
     }

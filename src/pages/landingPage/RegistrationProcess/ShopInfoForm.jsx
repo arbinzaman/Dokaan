@@ -1,5 +1,5 @@
 const inputClass =
-  "w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 text-white placeholder-zinc-500 border border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent";
+  "w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 text-white placeholder-zinc-500 border border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent";
 
 const ShopInfoForm = ({ shopData, setShopData, errors = {} }) => {
   return (

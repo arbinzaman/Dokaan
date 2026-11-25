@@ -79,7 +79,7 @@ const OtpVerificationModal = () => {
         <h1 className="text-xl font-bold text-center text-n-1">Verify OTP</h1>
         <p className="text-xs text-center text-n-3">
           Enter the verification code sent to your registered email.{" "}
-          <span className="text-indigo-400 font-medium">(Demo code: 123456)</span>
+          <span className="text-red-400 font-medium">(Demo code: 123456)</span>
         </p>
         <form onSubmit={handleVerifyOtp} className="space-y-4">
           <input
@@ -92,7 +92,7 @@ const OtpVerificationModal = () => {
           <button
             type="submit"
             disabled={isVerifying}
-            className="w-full px-4 py-2.5 font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-60 transition-colors"
+            className="w-full px-4 py-2.5 font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-60 transition-colors"
           >
             {isVerifying ? "Verifying..." : "Verify OTP"}
           </button>

@@ -129,7 +129,7 @@ const Login = () => {
         {/* Left: Instant 1-Click Demo Access */}
         <div className="lg:col-span-6 rounded-3xl bg-zinc-900/80 border border-zinc-800 p-7 sm:p-8 flex flex-col justify-between">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-medium mb-4">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-medium mb-4">
               <Sparkles size={13} />
               1-Click Offline Demo
             </div>
@@ -150,10 +150,10 @@ const Login = () => {
                     key={account.email}
                     type="button"
                     onClick={() => handleQuickDemo(account)}
-                    className="w-full text-left p-4 rounded-2xl border border-zinc-800 bg-zinc-950/70 hover:border-indigo-500/60 hover:bg-zinc-900 transition-all group flex items-center justify-between gap-3"
+                    className="w-full text-left p-4 rounded-2xl border border-zinc-800 bg-zinc-950/70 hover:border-red-500/60 hover:bg-zinc-900 transition-all group flex items-center justify-between gap-3"
                   >
                     <div className="flex items-start gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center flex-shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center flex-shrink-0">
                         <Icon size={18} />
                       </div>
                       <div className="min-w-0">
@@ -198,6 +198,10 @@ const Login = () => {
             <p className="text-sm text-zinc-400 mt-1">
               Sign in with demo credentials or your new registration
             </p>
+            <p className="mt-3 text-xs text-red-200/90 bg-red-950/40 border border-red-900/60 rounded-xl px-3 py-2">
+              Demo mode: any email + password (4+ characters) signs you in as a
+              shop owner with sample shops.
+            </p>
           </div>
 
           <form onSubmit={handleLogin} noValidate className="space-y-4">
@@ -215,7 +219,7 @@ const Login = () => {
                 defaultValue="owner@dokaan.demo"
                 autoComplete="email"
                 placeholder="owner@dokaan.demo"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 text-white placeholder-zinc-500 border border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 text-white placeholder-zinc-500 border border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
               />
             </div>
 
@@ -233,7 +237,7 @@ const Login = () => {
                 defaultValue="demo123"
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="w-full px-3.5 py-2.5 pr-11 rounded-xl bg-zinc-950 text-white placeholder-zinc-500 border border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3.5 py-2.5 pr-11 rounded-xl bg-zinc-950 text-white placeholder-zinc-500 border border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
               />
               <button
                 type="button"
@@ -265,7 +269,7 @@ const Login = () => {
             Don&apos;t have an account?{" "}
             <Link
               to="/signup"
-              className="text-indigo-400 hover:text-indigo-300 font-medium"
+              className="text-red-400 hover:text-red-300 font-medium"
             >
               Register at Dokaan
             </Link>

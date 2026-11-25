@@ -31,7 +31,7 @@ const PLANS = [
       "সব বৈশিষ্ট্যসহ আনলিমিটেড অ্যাক্সেস",
       "মাল্টি-শপ ও কর্মচারী রোল ম্যানেজমেন্ট",
       "লাইভ আয়-ব্যয় ও প্রফিট অ্যানালিটিক্স",
-      "২৪/৭ কাস্টমার সাপোর্ট ও ব্যাকআপ",
+      "২৪/৭ কাস্টমার সাপোর্ট ও ক্লাউড ব্যাকআপ",
     ],
   },
   {
@@ -55,70 +55,77 @@ const PLANS = [
 
 const PricingList = () => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch max-w-5xl mx-auto">
-      {PLANS.map((plan) => (
-        <div
-          key={plan.id}
-          className={`relative rounded-3xl p-7 flex flex-col border transition-all ${
-            plan.popular
-              ? "border-indigo-500/80 bg-zinc-900 shadow-2xl shadow-indigo-950/30"
-              : "border-zinc-800 bg-zinc-900/50 hover:border-zinc-700"
-          }`}
-        >
-          {plan.popular && (
-            <span className="absolute -top-3 left-7 px-3 py-1 rounded-full bg-indigo-600 text-white text-[11px] font-semibold uppercase tracking-wider">
-              Most Popular
-            </span>
-          )}
-          {plan.badge && !plan.popular && (
-            <span className="absolute top-6 right-6 px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-semibold">
-              {plan.badge}
-            </span>
-          )}
-
-          <div>
-            <h3 className="text-lg font-semibold text-white">{plan.title}</h3>
-            <p className="text-xs text-zinc-400 mt-0.5">{plan.bnTitle}</p>
-            <p className="mt-3 text-sm text-zinc-400 min-h-[2.5rem]">
-              {plan.description}
-            </p>
-          </div>
-
-          <div className="my-6 flex items-baseline gap-1">
-            <span className="text-2xl font-semibold text-zinc-300">৳</span>
-            <span className="text-4xl font-bold tracking-tight text-white tabular-nums">
-              {plan.price}
-            </span>
-            <span className="text-sm text-zinc-400 ml-1">{plan.period}</span>
-          </div>
-
-          <Link
-            to="/signup"
-            className={`w-full text-center py-2.5 px-4 rounded-xl text-sm font-semibold transition-colors mb-6 ${
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch max-w-5xl mx-auto">
+        {PLANS.map((plan) => (
+          <div
+            key={plan.id}
+            className={`relative rounded-3xl p-7 flex flex-col border transition-all ${
               plan.popular
-                ? "bg-white text-zinc-950 hover:bg-zinc-200"
-                : "bg-zinc-800 text-white hover:bg-zinc-700"
+                ? "border-red-600/90 bg-gradient-to-b from-red-950/40 to-zinc-950 shadow-2xl shadow-red-950/40"
+                : "border-red-950/70 bg-zinc-950/70 hover:border-red-800/70"
             }`}
           >
-            {plan.cta}
-          </Link>
+            {plan.popular && (
+              <span className="absolute -top-3 left-7 px-3 py-1 rounded-full bg-red-600 text-white text-[11px] font-semibold uppercase tracking-wider shadow-md">
+                Most Popular
+              </span>
+            )}
+            {plan.badge && !plan.popular && (
+              <span className="absolute top-6 right-6 px-2.5 py-0.5 rounded-full bg-red-600/15 border border-red-500/30 text-red-300 text-xs font-semibold">
+                {plan.badge}
+              </span>
+            )}
 
-          <ul className="space-y-3 pt-5 border-t border-zinc-800 flex-grow">
-            {plan.features.map((feature) => (
-              <li
-                key={feature}
-                className="flex items-start gap-2.5 text-sm text-zinc-300"
-              >
-                <Check
-                  size={16}
-                  className="text-emerald-400 flex-shrink-0 mt-0.5"
-                />
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+            <div>
+              <h3 className="text-lg font-semibold text-white">{plan.title}</h3>
+              <p className="text-xs text-red-300/80 mt-0.5">{plan.bnTitle}</p>
+              <p className="mt-3 text-sm text-zinc-400 min-h-[2.5rem]">
+                {plan.description}
+              </p>
+            </div>
+
+            <div className="my-6 flex items-baseline gap-1">
+              <span className="text-2xl font-semibold text-red-400">৳</span>
+              <span className="text-4xl font-bold tracking-tight text-white tabular-nums">
+                {plan.price}
+              </span>
+              <span className="text-sm text-zinc-400 ml-1">{plan.period}</span>
+            </div>
+
+            <Link
+              to="/signup"
+              className={`w-full text-center py-2.5 px-4 rounded-xl text-sm font-semibold transition-colors mb-6 ${
+                plan.popular
+                  ? "bg-red-600 text-white hover:bg-red-500 shadow-lg shadow-red-950/40"
+                  : "bg-zinc-900 text-white border border-red-950/80 hover:bg-red-950/50"
+              }`}
+            >
+              {plan.cta}
+            </Link>
+
+            <ul className="space-y-3 pt-5 border-t border-red-950/70 flex-grow">
+              {plan.features.map((feature) => (
+                <li
+                  key={feature}
+                  className="flex items-start gap-2.5 text-sm text-zinc-300"
+                >
+                  <Check
+                    size={16}
+                    className="text-red-400 flex-shrink-0 mt-0.5"
+                  />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <p className="text-center text-xs text-zinc-400">
+        All plans include camera barcode scanning, POS &amp; A4 receipt printing,
+        dark/light dashboard themes, and free Android APK access.
+      </p>
     </div>
   );
 };

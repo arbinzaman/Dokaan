@@ -4,7 +4,7 @@ import Footer from "../components/shared/landingPage/Footer";
 
 const Main = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-950 text-zinc-100 selection:bg-indigo-500/30 selection:text-indigo-200">
+    <div className="min-h-screen flex flex-col bg-[#0a0607] text-zinc-100 selection:bg-red-600/35 selection:text-red-100">
       <Header />
       <main className="flex-1">
         <Outlet />

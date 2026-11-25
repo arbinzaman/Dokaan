@@ -165,7 +165,7 @@ const RegistrationStepper = () => {
                 key={step.id}
                 className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs font-medium transition-colors ${
                   isCurrent
-                    ? "border-indigo-500/70 bg-indigo-500/10 text-white"
+                    ? "border-red-500/70 bg-red-500/10 text-white"
                     : isCompleted
                     ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-300"
                     : "border-zinc-800 bg-zinc-950/50 text-zinc-500"
@@ -176,7 +176,7 @@ const RegistrationStepper = () => {
                     isCompleted
                       ? "bg-emerald-500 text-zinc-950"
                       : isCurrent
-                      ? "bg-indigo-600 text-white"
+                      ? "bg-red-600 text-white"
                       : "bg-zinc-800 text-zinc-400"
                   }`}
                 >
@@ -232,7 +232,7 @@ const RegistrationStepper = () => {
           Already have an account?{" "}
           <Link
             to="/login"
-            className="text-indigo-400 hover:text-indigo-300 font-medium"
+            className="text-red-400 hover:text-red-300 font-medium"
           >
             Sign in
           </Link>
