@@ -1,16 +1,31 @@
 import { useUser } from "../../../../contexts/AuthContext";
 import NavList from "./NavList";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import { disablePageScroll, enablePageScroll } from "scroll-lock";
 import { useState, useEffect, useCallback } from "react";
-import { ArrowRight, Menu, X } from "lucide-react";
+import { ArrowRight, Menu, Play, X } from "lucide-react";
 import finalLogo from "../../../../assets/Home/logos/DOKAAN Only D.png";
+import { activateDemoSession } from "../../../../demo/mockServer";
 
 const Header = () => {
-  const { user, logout } = useUser();
+  const { user, logout, setUser, setDokaan, selectShop } = useUser();
   const { pathname, hash } = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [openNavigation, setOpenNavigation] = useState(false);
+
+  const handleLaunchDemo = () => {
+    closeNavigation();
+    const session = activateDemoSession("owner@dokaan.demo");
+    setUser(session.user);
+    setDokaan(session.dokaan);
+    selectShop(session.savedShop);
+    queryClient.clear();
+    toast.success("Entered Interactive Demo as Shop Owner!");
+    navigate("/dashboard");
+  };
 
   const closeNavigation = useCallback(() => {
     setOpenNavigation(false);
@@ -112,13 +127,14 @@ const Header = () => {
               >
                 Sign in
               </Link>
-              <Link
-                to="/signup"
+              <button
+                type="button"
+                onClick={handleLaunchDemo}
                 className="px-4 py-2 rounded-xl text-sm font-semibold bg-white text-zinc-950 hover:bg-zinc-200 transition-colors inline-flex items-center gap-1.5"
               >
-                Get Started
-                <ArrowRight size={15} />
-              </Link>
+                <Play size={13} className="fill-zinc-950" />
+                Live Demo
+              </button>
             </>
           )}
         </div>

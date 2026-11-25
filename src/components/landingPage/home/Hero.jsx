@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
   Boxes,
   CheckCircle2,
+  Play,
   Printer,
   ScanLine,
   ShieldCheck,
@@ -13,6 +16,8 @@ import {
   Store,
   TrendingUp,
 } from "lucide-react";
+import { useUser } from "../../../contexts/AuthContext";
+import { activateDemoSession } from "../../../demo/mockServer";
 
 const PREVIEW_TABS = [
   { id: "overview", label: "Overview", icon: BarChart3 },
@@ -31,6 +36,19 @@ const MONTHLY_BARS = [
 
 const Hero = () => {
   const [activeTab, setActiveTab] = useState("overview");
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { setUser, setDokaan, selectShop } = useUser();
+
+  const handleLaunchDemo = () => {
+    const session = activateDemoSession("owner@dokaan.demo");
+    setUser(session.user);
+    setDokaan(session.dokaan);
+    selectShop(session.savedShop);
+    queryClient.clear();
+    toast.success("Entered Interactive Demo as Shop Owner!");
+    navigate("/dashboard");
+  };
 
   return (
     <section
@@ -76,18 +94,20 @@ const Hero = () => {
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
-            <Link
-              to="/signup"
+            <button
+              type="button"
+              onClick={handleLaunchDemo}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-200 transition-colors shadow-lg shadow-white/5"
             >
-              Start 1-Year Free Trial
+              <Play size={15} className="fill-zinc-950" />
+              Try Interactive Demo
               <ArrowRight size={16} />
-            </Link>
+            </button>
             <Link
               to="/login"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-zinc-800 bg-zinc-900/70 text-zinc-200 font-medium text-sm hover:bg-zinc-900 hover:border-zinc-700 transition-colors"
             >
-              Sign In to Dashboard
+              Sign In / Choose Role
             </Link>
           </div>
 

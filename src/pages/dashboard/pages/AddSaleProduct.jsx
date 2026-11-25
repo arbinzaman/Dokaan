@@ -5,8 +5,8 @@ import { toast } from "react-hot-toast";
 import { useUser } from "@/contexts/AuthContext";
 import SaleBarcodeScanner from "@/components/dashBoard/home/sales/saleScanner/SaleBarcodeScanner";
 import { useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
-import { Printer, CheckCircle, Trash2, Search } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Printer, CheckCircle, Trash2, Search, Plus } from "lucide-react";
 
 const roundCurrency = (value) => Math.round((Number(value) || 0) * 100) / 100;
 
@@ -32,6 +32,24 @@ const AddSaleProduct = () => {
   const { user, savedShop } = useUser();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // Fetch shop products for 1-click quick-add chips alongside barcode scanner
+  const { data: quickCatalog = [] } = useQuery({
+    queryKey: ["products", savedShop?.id],
+    queryFn: async () => {
+      const token = Cookies.get("XTOKEN");
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/products`, {
+        params: { shopId: savedShop?.id },
+        headers: token ? { Authorization: `${token}` } : undefined,
+      });
+      return Array.isArray(res.data?.data) ? res.data.data : [];
+    },
+    enabled: !!savedShop?.id,
+  });
+
+  const availableQuickProducts = quickCatalog
+    .filter((p) => Number(p.stock ?? p.initialStock ?? 0) > 0)
+    .slice(0, 8);
 
   const totalPrice = roundCurrency(
     scannedProducts.reduce((sum, product) => {
@@ -339,6 +357,10 @@ const AddSaleProduct = () => {
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+      queryClient.invalidateQueries({ queryKey: ["income-statement"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-report"] });
 
       toast.success("Sale recorded successfully!");
       resetCart();
@@ -407,6 +429,46 @@ const AddSaleProduct = () => {
               </button>
             </div>
           </div>
+
+          {availableQuickProducts.length > 0 && (
+            <div className="mt-5 pt-4 border-t border-gray-200 dark:border-gray-800">
+              <div className="flex items-center justify-between mb-2.5">
+                <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                  Quick Add from Shelf (Click to Scan)
+                </span>
+                <span className="text-[11px] text-gray-400">
+                  Tap any item or type its barcode above
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                {availableQuickProducts.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    disabled={scanning}
+                    onClick={() => searchProductByCode(item.code)}
+                    className="text-left p-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-800/50 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/30 transition-colors group"
+                  >
+                    <div className="flex items-start justify-between gap-1.5">
+                      <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">
+                        {item.name}
+                      </p>
+                      <Plus
+                        size={14}
+                        className="text-indigo-500 flex-shrink-0 mt-0.5"
+                      />
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400">
+                      <span className="font-mono">{item.code}</span>
+                      <span className="font-semibold text-gray-800 dark:text-gray-200 tabular-nums">
+                        ৳{Number(item.salesPrice ?? 0).toFixed(0)}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* CUSTOMER INFO WITH SEARCH */}

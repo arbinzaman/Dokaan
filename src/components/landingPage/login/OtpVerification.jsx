@@ -78,7 +78,8 @@ const OtpVerificationModal = () => {
         </button>
         <h1 className="text-xl font-bold text-center text-n-1">Verify OTP</h1>
         <p className="text-xs text-center text-n-3">
-          Enter the verification code sent to your registered email.
+          Enter the verification code sent to your registered email.{" "}
+          <span className="text-indigo-400 font-medium">(Demo code: 123456)</span>
         </p>
         <form onSubmit={handleVerifyOtp} className="space-y-4">
           <input

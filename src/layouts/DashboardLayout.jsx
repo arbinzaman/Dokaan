@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation, Link } from "react-router-dom";
 import { ArrowLeft, Moon, Plus, Store, Sun } from "lucide-react";
 import { useUser } from "../contexts/AuthContext";
 import { useThemeMode } from "../contexts/ThemeContext";
+import DemoBanner from "../components/shared/DemoBanner";
 
 const ROUTE_TITLES = {
   "/dashboard": "Overview",
@@ -66,6 +67,7 @@ const DashboardLayout = () => {
       <Sidebar />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <DemoBanner />
         {/* Clean Minimalist Top Header */}
         <header className="sticky top-0 z-20 h-16 flex-shrink-0 bg-white/85 dark:bg-zinc-950/85 backdrop-blur-md border-b border-slate-200/80 dark:border-zinc-800/80 px-4 sm:px-6 flex items-center justify-between gap-3 no-print">
           <div className="flex items-center gap-3 min-w-0">
