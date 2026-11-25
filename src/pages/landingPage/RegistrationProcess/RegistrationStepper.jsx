@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  Stepper,
-  Step,
-  StepLabel,
-  Button,
-  Box,
-  Typography,
-} from "@mui/material";
-import { FaUser, FaStore } from "react-icons/fa";
+import { Check, Loader2, Store, User } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import ShopInfoForm from "./ShopInfoForm";
@@ -15,30 +7,12 @@ import UserRegistrationForm from "./UserRegistrationForm";
 import { useUser } from "../../../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
+import dokaanIcon from "../../../assets/Home/logos/DOKAAN Only D.png";
 
-const steps = ["User Info", "Shop Info"];
-
-const stepIcons = {
-  1: <FaUser size={18} />,
-  2: <FaStore size={18} />,
-};
-
-const CustomStepIcon = ({ active, completed, icon }) => (
-  <Box
-    sx={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      width: 38,
-      height: 38,
-      borderRadius: "50%",
-      backgroundColor: completed ? "#10b981" : active ? "#6366f1" : "#3f3f46",
-      color: "white",
-    }}
-  >
-    {stepIcons[String(icon)]}
-  </Box>
-);
+const STEPS = [
+  { id: 0, label: "Account Details", icon: User },
+  { id: 1, label: "Shop Details", icon: Store },
+];
 
 const RegistrationStepper = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -108,7 +82,12 @@ const RegistrationStepper = () => {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (activeStep === 0) {
+      handleNext();
+      return;
+    }
     if (isSubmitting) return;
     if (!validateStep(1)) return;
 
@@ -159,49 +138,57 @@ const RegistrationStepper = () => {
   };
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        px: 2,
-        pt: 12,
-        pb: 6,
-      }}
-    >
-      <Box
-        sx={{
-          width: { xs: "100%", sm: "85%", md: "520px" },
-          backgroundColor: "#15131D",
-          border: "1px solid #252134",
-          borderRadius: 3,
-          boxShadow: 6,
-          p: { xs: 3, sm: 4 },
-          color: "#ffffff",
-        }}
-      >
-        <Typography variant="h5" align="center" fontWeight="bold" gutterBottom>
-          Create Your Dokaan Account
-        </Typography>
-        <Stepper activeStep={activeStep} alternativeLabel sx={{ my: 2 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel
-                StepIconComponent={CustomStepIcon}
-                sx={{
-                  "& .MuiStepLabel-label": { color: "#ADA8C3" },
-                  "& .MuiStepLabel-label.Mui-active": { color: "#ffffff" },
-                  "& .MuiStepLabel-label.Mui-completed": { color: "#10b981" },
-                }}
+    <div className="min-h-screen flex items-center justify-center px-4 pt-24 pb-16">
+      <div className="w-full max-w-lg rounded-3xl bg-zinc-900/80 border border-zinc-800 p-7 sm:p-9 shadow-2xl">
+        <div className="text-center mb-6">
+          <img
+            src={dokaanIcon}
+            alt="Dokaan"
+            className="w-10 h-10 mx-auto mb-3 object-contain"
+          />
+          <h1 className="text-2xl font-bold tracking-tight text-white">
+            Create your Dokaan account
+          </h1>
+          <p className="text-sm text-zinc-400 mt-1">
+            Set up your owner profile and first shop in 2 quick steps
+          </p>
+        </div>
+
+        {/* Clean Minimalist Stepper */}
+        <div className="grid grid-cols-2 gap-3 mb-7">
+          {STEPS.map((step) => {
+            const Icon = step.icon;
+            const isCompleted = activeStep > step.id;
+            const isCurrent = activeStep === step.id;
+            return (
+              <div
+                key={step.id}
+                className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs font-medium transition-colors ${
+                  isCurrent
+                    ? "border-indigo-500/70 bg-indigo-500/10 text-white"
+                    : isCompleted
+                    ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-300"
+                    : "border-zinc-800 bg-zinc-950/50 text-zinc-500"
+                }`}
               >
-                {label}
-              </StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-        <Box sx={{ mt: 3 }}>
+                <span
+                  className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    isCompleted
+                      ? "bg-emerald-500 text-zinc-950"
+                      : isCurrent
+                      ? "bg-indigo-600 text-white"
+                      : "bg-zinc-800 text-zinc-400"
+                  }`}
+                >
+                  {isCompleted ? <Check size={13} /> : <Icon size={13} />}
+                </span>
+                <span className="truncate">{step.label}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
           {activeStep === 0 ? (
             <UserRegistrationForm
               userData={userData}
@@ -215,37 +202,43 @@ const RegistrationStepper = () => {
               errors={errors}
             />
           )}
-          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-            <Button
+
+          <div className="flex items-center justify-between gap-3 pt-4">
+            <button
+              type="button"
               disabled={activeStep === 0 || isSubmitting}
-              onClick={() => setActiveStep((prev) => prev - 1)}
-              sx={{ color: "#CAC6DD" }}
+              onClick={() => setActiveStep(0)}
+              className="px-4 py-2.5 rounded-xl border border-zinc-800 text-sm font-medium text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 transition-colors"
             >
               Back
-            </Button>
-            {activeStep === steps.length - 1 ? (
-              <Button
-                variant="contained"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Submitting..." : "Submit"}
-              </Button>
-            ) : (
-              <Button variant="contained" onClick={handleNext}>
-                Next
-              </Button>
-            )}
-          </Box>
-          <p className="text-center text-n-3 text-sm mt-5">
-            Already have an account?{" "}
-            <Link to="/login" className="text-color-1 hover:underline font-medium">
-              Sign in
-            </Link>
-          </p>
-        </Box>
-      </Box>
-    </Box>
+            </button>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-6 py-2.5 rounded-xl bg-white text-zinc-950 hover:bg-zinc-200 disabled:opacity-60 font-semibold text-sm transition-colors inline-flex items-center gap-2"
+            >
+              {isSubmitting && <Loader2 size={15} className="animate-spin" />}
+              {activeStep === 0
+                ? "Continue to Shop Info"
+                : isSubmitting
+                ? "Creating Account..."
+                : "Create Account"}
+            </button>
+          </div>
+        </form>
+
+        <p className="text-center text-zinc-400 text-sm mt-6">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-indigo-400 hover:text-indigo-300 font-medium"
+          >
+            Sign in
+          </Link>
+        </p>
+      </div>
+    </div>
   );
 };
 

@@ -1,10 +1,9 @@
-import { Menu } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
 import DokaanProfile from "../../../../dashBoard/Profile/DokaanProfile";
 import dokaanLogoDark from "../../../../../assets/Home/logos/DOKAAN.png";
 import dokaanLogoLight from "../../../../../assets/Home/logos/Dokaan_White.png";
-import ThemeToggleButton from "../../../../shared/Theme/ThemeToggleButton";
 import { useUser } from "../../../../../contexts/AuthContext";
 
 const DesktopSidebar = ({ sidebarItems, isSidebarOpen, setIsSidebarOpen }) => {
@@ -14,15 +13,15 @@ const DesktopSidebar = ({ sidebarItems, isSidebarOpen, setIsSidebarOpen }) => {
 
   return (
     <motion.aside
-      className={`hidden lg:flex flex-col h-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 border-r border-gray-200 dark:border-gray-800 overflow-y-auto flex-shrink-0 ${
-        isSidebarOpen ? "w-64 p-4" : "w-20 p-3"
+      className={`hidden lg:flex flex-col h-full bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 border-r border-slate-200/80 dark:border-zinc-800/80 overflow-y-auto flex-shrink-0 no-print ${
+        isSidebarOpen ? "w-64 px-3.5 py-4" : "w-[74px] px-2.5 py-4"
       }`}
-      animate={{ width: isSidebarOpen ? 256 : 80 }}
-      transition={{ duration: 0.2 }}
+      animate={{ width: isSidebarOpen ? 256 : 74 }}
+      transition={{ duration: 0.18 }}
     >
-      {/* Toggle Button */}
+      {/* Brand + Collapse Control */}
       <div
-        className={`flex items-center mb-4 ${
+        className={`flex items-center mb-5 px-1 ${
           isSidebarOpen ? "justify-between" : "justify-center"
         }`}
       >
@@ -31,12 +30,12 @@ const DesktopSidebar = ({ sidebarItems, isSidebarOpen, setIsSidebarOpen }) => {
             <img
               src={dokaanLogoDark}
               alt="Dokaan"
-              className="w-24 dark:hidden"
+              className="h-7 object-contain dark:hidden"
             />
             <img
               src={dokaanLogoLight}
               alt="Dokaan"
-              className="w-24 hidden dark:block"
+              className="h-7 object-contain hidden dark:block"
             />
           </Link>
         )}
@@ -44,13 +43,13 @@ const DesktopSidebar = ({ sidebarItems, isSidebarOpen, setIsSidebarOpen }) => {
           type="button"
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           aria-label={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-900 hover:text-slate-900 dark:hover:text-zinc-100 transition-colors"
         >
-          <Menu size={20} />
+          {isSidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
         </button>
       </div>
 
-      {/* Dokaan Profile: only visible for shop-owner when sidebar is open */}
+      {/* Shop Switcher for shop-owner */}
       {isSidebarOpen && user?.role === "shop-owner" && (
         <div className="mb-4">
           <DokaanProfile />
@@ -66,29 +65,29 @@ const DesktopSidebar = ({ sidebarItems, isSidebarOpen, setIsSidebarOpen }) => {
               key={item.id}
               to={item.href}
               title={!isSidebarOpen ? item.name : undefined}
-              className={`flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              className={`group relative flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                 isSidebarOpen ? "justify-start" : "justify-center"
               } ${
                 isActive
-                  ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400"
-                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  ? "bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs"
+                  : "text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-900 hover:text-slate-900 dark:hover:text-zinc-100"
               }`}
             >
-              <item.icon
-                size={20}
-                style={{ color: isActive ? undefined : item.color }}
-                className="flex-shrink-0"
-              />
-              {isSidebarOpen && <span className="ml-3 truncate">{item.name}</span>}
+              <item.icon size={18} className="flex-shrink-0" />
+              {isSidebarOpen && (
+                <span className="ml-3 truncate">{item.name}</span>
+              )}
             </Link>
           );
         })}
       </nav>
 
-      {/* Theme Toggle */}
+      {/* Subtle Footer Caption */}
       {isSidebarOpen && (
-        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 flex justify-center">
-          <ThemeToggleButton />
+        <div className="mt-4 pt-3 border-t border-slate-200/70 dark:border-zinc-800/70 px-2">
+          <p className="text-[11px] text-slate-400 dark:text-zinc-500">
+            Dokaan Retail ERP
+          </p>
         </div>
       )}
     </motion.aside>

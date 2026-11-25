@@ -2,8 +2,8 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../../../contexts/AuthContext";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { ThreeDots } from "react-loader-spinner";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import dokaanIcon from "../../../assets/Home/logos/DOKAAN Only D.png";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -39,7 +39,6 @@ const Login = () => {
 
         if (data.user.twoFactorEnabled) {
           const toastId = toast.loading("Sending OTP...");
-
           try {
             const otpRes = await fetch(
               `${import.meta.env.VITE_BASE_URL}/auth/send-otp`,
@@ -51,9 +50,7 @@ const Login = () => {
                 },
               }
             );
-
             if (!otpRes.ok) throw new Error("Failed to send OTP.");
-
             toast.dismiss(toastId);
             toast.success("OTP sent successfully!");
             navigate("/verify-otp");
@@ -98,25 +95,45 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 pt-24 pb-12">
-      <div className="w-full max-w-md p-8 space-y-5 rounded-2xl bg-n-7/80 border border-n-6 shadow-xl">
-        <h1 className="text-2xl font-bold text-center text-n-1">Login</h1>
-        <form onSubmit={handleLogin} noValidate className="space-y-5">
-          <div className="space-y-1.5 text-sm">
-            <label htmlFor="email" className="block text-n-2 font-medium">
-              Email
+    <div className="min-h-screen flex items-center justify-center px-4 pt-24 pb-16">
+      <div className="w-full max-w-md rounded-3xl bg-zinc-900/80 border border-zinc-800 p-7 sm:p-9 shadow-2xl">
+        <div className="text-center mb-7">
+          <img
+            src={dokaanIcon}
+            alt="Dokaan"
+            className="w-11 h-11 mx-auto mb-3 object-contain"
+          />
+          <h1 className="text-2xl font-bold tracking-tight text-white">
+            Welcome back
+          </h1>
+          <p className="text-sm text-zinc-400 mt-1">
+            Sign in to manage your shop dashboard
+          </p>
+        </div>
+
+        <form onSubmit={handleLogin} noValidate className="space-y-4">
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-xs font-medium text-zinc-300 mb-1.5"
+            >
+              Email Address
             </label>
             <input
               type="email"
               name="email"
               id="email"
               autoComplete="email"
-              placeholder="Enter your email"
-              className="w-full px-4 py-3 rounded-lg bg-n-8 text-n-1 placeholder-n-4 border border-n-6 focus:outline-none focus:border-color-1"
+              placeholder="owner@dokaan.app"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 text-white placeholder-zinc-500 border border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
-          <div className="relative space-y-1.5 text-sm">
-            <label htmlFor="password" className="block text-n-2 font-medium">
+
+          <div className="relative">
+            <label
+              htmlFor="password"
+              className="block text-xs font-medium text-zinc-300 mb-1.5"
+            >
               Password
             </label>
             <input
@@ -124,39 +141,41 @@ const Login = () => {
               name="password"
               id="password"
               autoComplete="current-password"
-              placeholder="Enter your password"
-              className="w-full px-4 py-3 pr-11 rounded-lg bg-n-8 text-n-1 placeholder-n-4 border border-n-6 focus:outline-none focus:border-color-1"
+              placeholder="••••••••"
+              className="w-full px-3.5 py-2.5 pr-11 rounded-xl bg-zinc-950 text-white placeholder-zinc-500 border border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? "Hide password" : "Show password"}
-              className="absolute right-3 top-9 p-1 text-n-4 hover:text-n-1"
+              className="absolute right-3 top-8 p-1 text-zinc-500 hover:text-zinc-200 transition-colors"
             >
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
+              {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
             </button>
-            {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
           </div>
-          {!isLoading ? (
-            <button
-              type="submit"
-              className="w-full p-3 text-center font-semibold rounded-lg text-n-8 bg-n-1 hover:bg-n-2 transition-colors"
-            >
-              Sign In
-            </button>
-          ) : (
-            <button
-              type="button"
-              disabled
-              className="flex justify-center items-center w-full p-3 rounded-lg bg-n-6 cursor-not-allowed"
-            >
-              <ThreeDots visible height="24" width="36" color="#ffffff" />
-            </button>
+
+          {error && (
+            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
+              {error}
+            </div>
           )}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-2.5 px-4 rounded-xl bg-white text-zinc-950 hover:bg-zinc-200 disabled:opacity-60 font-semibold text-sm transition-colors inline-flex items-center justify-center gap-2 mt-2"
+          >
+            {isLoading && <Loader2 size={16} className="animate-spin" />}
+            {isLoading ? "Signing in..." : "Sign In"}
+          </button>
         </form>
-        <p className="text-center text-n-3 text-sm mt-4">
+
+        <p className="text-center text-zinc-400 text-sm mt-6">
           Don&apos;t have an account?{" "}
-          <Link to="/signup" className="text-color-1 hover:underline font-medium">
+          <Link
+            to="/signup"
+            className="text-indigo-400 hover:text-indigo-300 font-medium"
+          >
             Register at Dokaan
           </Link>
         </p>

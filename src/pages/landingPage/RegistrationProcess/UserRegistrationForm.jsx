@@ -1,18 +1,8 @@
 import { useState } from "react";
-import { TextField, IconButton, InputAdornment } from "@mui/material";
-import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
+import { Eye, EyeOff } from "lucide-react";
 
-const darkInputSx = {
-  "& .MuiInputLabel-root": { color: "#ADA8C3" },
-  "& .MuiInputLabel-root.Mui-focused": { color: "#AC6AFF" },
-  "& .MuiOutlinedInput-root": {
-    color: "#ffffff",
-    "& fieldset": { borderColor: "#3F3A52" },
-    "&:hover fieldset": { borderColor: "#757185" },
-    "&.Mui-focused fieldset": { borderColor: "#AC6AFF" },
-    "& input": { color: "#ffffff" },
-  },
-};
+const inputClass =
+  "w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 text-white placeholder-zinc-500 border border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent";
 
 const UserRegistrationForm = ({ userData, setUserData, errors = {} }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -24,95 +14,95 @@ const UserRegistrationForm = ({ userData, setUserData, errors = {} }) => {
       : "";
 
   return (
-    <>
-      <TextField
-        label="Name"
-        type="text"
-        fullWidth
-        margin="normal"
-        value={userData.name}
-        onChange={(e) => setUserData({ ...userData, name: e.target.value })}
-        error={!!errors.name}
-        helperText={errors.name}
-        sx={darkInputSx}
-      />
+    <div className="space-y-4">
+      <div>
+        <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+          Full Name
+        </label>
+        <input
+          type="text"
+          value={userData.name}
+          onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+          placeholder="e.g., Karim Ahmed"
+          className={inputClass}
+        />
+        {errors.name && (
+          <p className="text-xs text-rose-400 mt-1">{errors.name}</p>
+        )}
+      </div>
 
-      <TextField
-        label="Email"
-        type="email"
-        fullWidth
-        margin="normal"
-        value={userData.email}
-        onChange={(e) => setUserData({ ...userData, email: e.target.value })}
-        error={!!errors.email}
-        helperText={errors.email}
-        sx={darkInputSx}
-      />
+      <div>
+        <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+          Email Address
+        </label>
+        <input
+          type="email"
+          value={userData.email}
+          onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+          placeholder="you@example.com"
+          className={inputClass}
+        />
+        {errors.email && (
+          <p className="text-xs text-rose-400 mt-1">{errors.email}</p>
+        )}
+      </div>
 
-      <TextField
-        label="Password"
-        type={showPassword ? "text" : "password"}
-        fullWidth
-        margin="normal"
-        value={userData.password}
-        onChange={(e) => setUserData({ ...userData, password: e.target.value })}
-        error={!!errors.password}
-        helperText={errors.password}
-        sx={darkInputSx}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                onClick={() => setShowPassword(!showPassword)}
-                edge="end"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? (
-                  <AiFillEyeInvisible size={20} color="#CAC6DD" />
-                ) : (
-                  <AiFillEye size={20} color="#CAC6DD" />
-                )}
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
+      <div className="relative">
+        <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+          Password
+        </label>
+        <input
+          type={showPassword ? "text" : "password"}
+          value={userData.password}
+          onChange={(e) =>
+            setUserData({ ...userData, password: e.target.value })
+          }
+          placeholder="Minimum 6 characters"
+          className={`${inputClass} pr-10`}
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          aria-label={showPassword ? "Hide password" : "Show password"}
+          className="absolute right-3 top-8 p-1 text-zinc-500 hover:text-zinc-200"
+        >
+          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+        </button>
+        {errors.password && (
+          <p className="text-xs text-rose-400 mt-1">{errors.password}</p>
+        )}
+      </div>
 
-      <TextField
-        label="Confirm Password"
-        type={showConfirmPassword ? "text" : "password"}
-        fullWidth
-        margin="normal"
-        value={userData.confirmPassword || ""}
-        onChange={(e) =>
-          setUserData({ ...userData, confirmPassword: e.target.value })
-        }
-        error={!!(errors.confirmPassword || mismatchError)}
-        helperText={errors.confirmPassword || mismatchError}
-        sx={darkInputSx}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                edge="end"
-                aria-label={
-                  showConfirmPassword
-                    ? "Hide confirm password"
-                    : "Show confirm password"
-                }
-              >
-                {showConfirmPassword ? (
-                  <AiFillEyeInvisible size={20} color="#CAC6DD" />
-                ) : (
-                  <AiFillEye size={20} color="#CAC6DD" />
-                )}
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
-    </>
+      <div className="relative">
+        <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+          Confirm Password
+        </label>
+        <input
+          type={showConfirmPassword ? "text" : "password"}
+          value={userData.confirmPassword || ""}
+          onChange={(e) =>
+            setUserData({ ...userData, confirmPassword: e.target.value })
+          }
+          placeholder="Re-enter password"
+          className={`${inputClass} pr-10`}
+        />
+        <button
+          type="button"
+          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+          aria-label={
+            showConfirmPassword ? "Hide confirm password" : "Show confirm password"
+          }
+          className="absolute right-3 top-8 p-1 text-zinc-500 hover:text-zinc-200"
+        >
+          {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+        </button>
+        {(errors.confirmPassword || mismatchError) && (
+          <p className="text-xs text-rose-400 mt-1">
+            {errors.confirmPassword || mismatchError}
+          </p>
+        )}
+      </div>
+    </div>
   );
 };
 

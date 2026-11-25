@@ -1,16 +1,16 @@
 import Header from "../components/shared/landingPage/header/Header";
 import { Outlet } from "react-router-dom";
 import Footer from "../components/shared/landingPage/Footer";
-import ButtonGradient from "../assets/Home/svg/ButtonGradient";
 
 const Main = () => {
   return (
-    <section className="min-h-screen bg-n-8 text-n-1">
+    <div className="min-h-screen flex flex-col bg-zinc-950 text-zinc-100 selection:bg-indigo-500/30 selection:text-indigo-200">
       <Header />
-      <Outlet />
+      <main className="flex-1">
+        <Outlet />
+      </main>
       <Footer />
-      <ButtonGradient />
-    </section>
+    </div>
   );
 };
 

@@ -10,9 +10,9 @@ export default {
       colors: {
         dashboard: {
           dark: {
-            background: "#121212",
-            sidebar: "#1E1E1E",
-            text: "#FFFFFF",
+            background: "#09090B",
+            sidebar: "#111114",
+            text: "#F4F4F5",
           },
           light: {
             background: "#F8FAFC",
