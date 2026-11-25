@@ -4,119 +4,112 @@ import Cookies from "js-cookie";
 import { useQuery } from "@tanstack/react-query";
 import { FaBangladeshiTakaSign } from "react-icons/fa6";
 import StatCard from "../../../components/dashBoard/home/common/StatCard";
-import {
-  CreditCard,
-  ShoppingCart,
-  // TrendingUp
-} from "lucide-react";
-// import SalesByCategoryChart from "../../../components/dashBoard/home/sales/SalesByCategoryChart";
+import { CreditCard, Plus, ShoppingCart } from "lucide-react";
 import DailySalesTrend from "../../../components/dashBoard/home/sales/DailySalesTrend";
 import { useUser } from "../../../contexts/AuthContext";
 import SalesTrendChart from "../../../components/dashBoard/home/products/SalesTrendChart";
 import CategoryDistributionChart from "../../../components/dashBoard/home/overview/CategoryDistributionChart";
 import SalesTable from "../../../components/dashBoard/home/sales/SalesTable";
 import SalesChannelChart from "../../../components/dashBoard/home/overview/SalesChannelChart";
-
-const ACCENT_COLOR = "rgb(204, 51, 51)";
+import { useNavigate } from "react-router-dom";
 
 const SalesPage = () => {
   const { savedShop } = useUser();
-
-  const fetchSalesData = async () => {
-    const token = Cookies.get("XTOKEN");
-    if (!token) throw new Error("No token found");
-    const shopId = Number(savedShop?.id);
-    if (isNaN(shopId)) throw new Error("Invalid shop ID");
-
-    const response = await axios.get(
-      `${import.meta.env.VITE_BASE_URL}/sales/total-revenue?shopId=${shopId}`,
-      {
-        headers: {
-          Authorization: `${token}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    return response.data; // expected: { totalRevenue: number, salesGrowth: string }
-  };
-
-  const fetchTotalSalesCount = async () => {
-    const token = Cookies.get("XTOKEN");
-    if (!token) throw new Error("No token found");
-    const shopId = Number(savedShop?.id);
-    if (isNaN(shopId)) throw new Error("Invalid shop ID");
-
-    const response = await axios.get(
-      `${
-        import.meta.env.VITE_BASE_URL
-      }/sales/total-sales-count?shopId=${shopId}`,
-      {
-        headers: {
-          Authorization: `${token}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    return response.data; // expected: { totalSales: number, date: string }
-  };
+  const navigate = useNavigate();
+  const shopId = savedShop?.id;
 
   const {
-    data: salesData = { totalRevenue: 0, salesGrowth: "0.0%" },
+    data: salesData = {},
     isLoading: salesDataLoading,
     isError: salesDataError,
-    error: salesDataErrorObj,
   } = useQuery({
-    queryKey: ["salesData", savedShop?.id],
-    queryFn: fetchSalesData,
-    enabled: !!savedShop?.id,
+    queryKey: ["salesData", shopId],
+    queryFn: async () => {
+      const token = Cookies.get("XTOKEN");
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/sales/total-revenue`,
+        {
+          params: { shopId: Number(shopId) },
+          headers: {
+            ...(token ? { Authorization: `${token}` } : {}),
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data ?? {};
+    },
+    enabled: !!shopId,
   });
 
   const {
-    data: totalSalesData = { totalSales: 0, date: "" },
+    data: totalSalesData = {},
     isLoading: totalSalesLoading,
     isError: totalSalesError,
-    error: totalSalesErrorObj,
   } = useQuery({
-    queryKey: ["totalSalesCount", savedShop?.id],
-    queryFn: fetchTotalSalesCount,
-    enabled: !!savedShop?.id,
+    queryKey: ["totalSalesCount", shopId],
+    queryFn: async () => {
+      const token = Cookies.get("XTOKEN");
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/sales/total-sales-count`,
+        {
+          params: { shopId: Number(shopId) },
+          headers: {
+            ...(token ? { Authorization: `${token}` } : {}),
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data ?? {};
+    },
+    enabled: !!shopId,
   });
 
-  if (salesDataError)
-    return (
-      <div className="text-red-500 text-center p-4">
-        Error loading sales data: {salesDataErrorObj?.message}
-      </div>
-    );
-
-  if (totalSalesError)
-    return (
-      <div className="text-red-500 text-center p-4">
-        Error loading total sales count: {totalSalesErrorObj?.message}
-      </div>
-    );
+  const totalRevenue = Number(salesData?.totalRevenue ?? 0);
+  const totalSales = Number(totalSalesData?.totalSales ?? 0);
+  const salesGrowth = salesData?.salesGrowth ?? "0.0%";
 
   return (
     <div className="flex-1 overflow-auto relative z-10">
-      <main className="max-w-7xl mx-auto py-6 px-4 lg:px-8">
+      <main className="max-w-7xl mx-auto py-4 px-2 sm:px-4 lg:px-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Sales
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Review transactions, growth trends, and daily revenue.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/dashboard/product-sell")}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium transition-colors"
+          >
+            <Plus size={16} />
+            New Sale (POS)
+          </button>
+        </div>
+
         {/* SALES STATS */}
         <motion.div
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8"
-          initial={{ opacity: 0, y: 20 }}
+          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8"
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
+          transition={{ duration: 0.4 }}
         >
           <StatCard
-            name="Total Profit"
+            name="Total Revenue"
             icon={FaBangladeshiTakaSign}
             value={
-              salesDataLoading ? "..." : salesData.totalRevenue.toLocaleString()
+              salesDataLoading
+                ? "..."
+                : salesDataError
+                ? "—"
+                : `৳${totalRevenue.toLocaleString()}`
             }
-            color="#EF4444"
+            color="#6366F1"
           />
           <StatCard
             name="Total Sales Count"
@@ -124,38 +117,32 @@ const SalesPage = () => {
             value={
               totalSalesLoading
                 ? "..."
-                : totalSalesData.totalSales.toLocaleString()
+                : totalSalesError
+                ? "—"
+                : totalSales.toLocaleString()
             }
-            subtext={totalSalesData.date}
+            subtext={totalSalesData?.date || undefined}
             color="#10B981"
           />
-
-          {/* Changed this card
-          <StatCard
-            name="Total Revenue"
-            icon={FaBangladeshiTakaSign}
-            value={
-              salesDataLoading ? "..." : salesData.totalRevenue.toLocaleString()
-            }
-            color="#3B82F6" // blue neon or your choice
-          /> */}
-
           <StatCard
             name="Sales Growth"
             icon={CreditCard}
-            value={salesDataLoading ? "..." : salesData.salesGrowth}
-            color=""
+            value={salesDataLoading ? "..." : salesDataError ? "—" : salesGrowth}
+            color="#F59E0B"
           />
         </motion.div>
 
         <SalesTable />
-        <SalesTrendChart />
 
-        <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* <SalesByCategoryChart /> */}
-          <CategoryDistributionChart accentColor={ACCENT_COLOR} />
-          <SalesChannelChart/>
-          <DailySalesTrend />
+        <div className="mt-8 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SalesTrendChart />
+            <DailySalesTrend />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <CategoryDistributionChart />
+            <SalesChannelChart />
+          </div>
         </div>
       </main>
     </div>

@@ -1,74 +1,94 @@
-import { Briefcase, MapPin } from "lucide-react";
+import { Briefcase, MapPin, Phone, Mail } from "lucide-react";
 import { useUser } from "../../../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const DokaanSelection = () => {
-  const { dokaan, setSavedShop, savedShop } = useUser();
+  const { dokaan, selectShop, savedShop } = useUser();
   const navigate = useNavigate();
 
-  // Convert dokaan to an array if it's a single object
-  const dokaanList = Array.isArray(dokaan) ? dokaan : dokaan ? [dokaan] : [];
+  const dokaanList = Array.isArray(dokaan)
+    ? dokaan.filter(Boolean)
+    : dokaan
+      ? [dokaan]
+      : [];
 
   const handleSelect = (shop) => {
-    setSavedShop(shop);
+    selectShop(shop);
     navigate("/dashboard");
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-black via-[#1c0c0c] to-[#2e0f0f]">
-      <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8 text-center">
-        🛍️ Select Your Shop
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
+      <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-center">
+        Select Your Shop
       </h2>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 text-center">
+        Choose the store branch you want to manage right now.
+      </p>
 
-      <div className="grid w-full max-w-3xl mx-auto grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 place-items-center">
-        {dokaanList.map((shop) => (
-          <div
-            key={shop.id}
-            onClick={() => handleSelect(shop)}
-            className={`relative cursor-pointer backdrop-blur-md rounded-xl overflow-hidden border p-3 w-64 transition-all duration-300 ${
-              savedShop?.id === shop.id
-                ? "border-red-500 bg-gradient-to-tr from-red-600/70 to-black/40 scale-105 shadow-lg"
-                : "border-white/20 bg-black/30 hover:scale-105 hover:border-red-400"
-            }`}
+      {dokaanList.length === 0 ? (
+        <div className="text-center space-y-4">
+          <p className="text-gray-500 dark:text-gray-400">
+            No shops found for your account.
+          </p>
+          <Link
+            to="/dashboard/add-shop"
+            className="inline-flex items-center px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium text-sm"
           >
-            <div className="w-full h-28 bg-black/20 rounded-lg flex items-center justify-center mb-3 overflow-hidden">
-              {shop.dokaan_imageUrl ? (
-                <img
-                  src={shop.dokaan_imageUrl}
-                  alt={shop.dokaan_name}
-                  className="object-cover w-full h-full rounded-lg"
-                />
-              ) : (
-                <Briefcase className="text-red-400 w-8 h-8" />
-              )}
-            </div>
+            + Add Your First Shop
+          </Link>
+        </div>
+      ) : (
+        <div className="grid w-full max-w-4xl mx-auto grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {dokaanList.map((shop) => {
+            const isSelected = savedShop?.id === shop.id;
+            return (
+              <button
+                type="button"
+                key={shop.id}
+                onClick={() => handleSelect(shop)}
+                className={`relative text-left rounded-2xl overflow-hidden border p-4 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 ${isSelected
+                    ? "border-indigo-500 bg-indigo-50/70 dark:bg-indigo-950/40 shadow-md"
+                    : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-indigo-400 hover:shadow-md"
+                  }`}
+              >
+                <div className="w-full h-28 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center mb-3 overflow-hidden">
+                  {shop.dokaan_imageUrl ? (
+                    <img
+                      src={shop.dokaan_imageUrl}
+                      alt={shop.dokaan_name}
+                      className="object-cover w-full h-full"
+                    />
+                  ) : (
+                    <Briefcase className="text-indigo-500 w-8 h-8" />
+                  )}
+                </div>
 
-            <h3 className="text-md font-semibold text-white mb-1 flex items-center gap-2">
-              {shop.dokaan_name}
-            </h3>
-            <p className="text-xs text-red-300 flex items-center gap-1">
-              <MapPin size={14} /> {shop.dokaan_location}
-            </p>
-            <p className="text-xs text-red-400 mt-1 truncate">
-              📞 {shop.dokaan_phone}
-            </p>
-            <p className="text-xs text-red-400 truncate">
-              📧 {shop.dokaan_email}
-            </p>
+                <h3 className="text-base font-semibold mb-1 truncate">
+                  {shop.dokaan_name}
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5 truncate">
+                  <MapPin size={13} /> {shop.dokaan_location}
+                </p>
+                {shop.dokaan_phone && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-1 truncate">
+                    <Phone size={13} /> {shop.dokaan_phone}
+                  </p>
+                )}
+                {shop.dokaan_email && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-1 truncate">
+                    <Mail size={13} /> {shop.dokaan_email}
+                  </p>
+                )}
 
-            {savedShop?.id === shop.id && (
-              <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow">
-                Selected
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {savedShop && (
-        <div className="mt-8 text-center text-green-400 text-md font-medium">
-          ✅ You selected <strong>{savedShop.dokaan_name}</strong> in{" "}
-          {savedShop.dokaan_location}
+                {isSelected && (
+                  <span className="absolute top-3 right-3 bg-emerald-500 text-white text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
+                    Selected
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

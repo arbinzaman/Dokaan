@@ -1,7 +1,9 @@
-import {  useRef, useState } from "react";
+import { useState } from "react";
 import { useUser } from "../../../contexts/AuthContext";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
+import Cookies from "js-cookie";
 import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   FiCheck,
   FiCalendar,
@@ -12,34 +14,45 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 import CategorySelector from "../../../components/dashBoard/home/expense/CategorySelector";
 
+const parseInitialDate = (raw) => {
+  if (!raw) return new Date();
+  const parsed = new Date(raw);
+  return isValid(parsed) ? parsed : new Date();
+};
+
 const AddAExpense = () => {
   const { user, savedShop } = useUser();
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const existingExpense = location.state?.expense;
 
   const [amount, setAmount] = useState(
-    existingExpense?.amount?.toString() || ""
+    existingExpense?.amount != null ? String(existingExpense.amount) : ""
   );
-  const [note, setNote] = useState(existingExpense?.note || "");
+  const [note, setNote] = useState(
+    existingExpense?.notes ?? existingExpense?.note ?? existingExpense?.title ?? ""
+  );
   const [category, setCategory] = useState(
-    existingExpense?.category || "Uncategorized"
+    existingExpense?.category || "Supplies"
   );
-  const [date, setDate] = useState(
-    existingExpense?.date
-      ? new Date(existingExpense.date)
-      : new Date()
-  );
+  const [date, setDate] = useState(() => parseInitialDate(existingExpense?.date));
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const activeTab = location.pathname.includes("income")
     ? "Income"
     : "Expense";
 
-  const timeoutRef = useRef(null);
-  const intervalRef = useRef(null);
+  const safeDate = isValid(date) ? date : new Date();
 
   const handleNumberInput = (num) => {
-    setAmount((prev) => (prev === "0" ? num : prev + num));
+    setAmount((prev) => {
+      if (num === ".") {
+        if (prev.includes(".")) return prev;
+        return prev === "" ? "0." : `${prev}.`;
+      }
+      return prev === "0" ? num : prev + num;
+    });
   };
 
   const handleDeleteLast = () => {
@@ -49,174 +62,169 @@ const AddAExpense = () => {
   const handleClear = () => {
     setAmount("");
     setNote("");
-    setCategory("Uncategorized");
+    setCategory("Supplies");
     setDate(new Date());
   };
 
   const handleSubmit = async () => {
-    if (!amount || parseFloat(amount) <= 0)
-      return toast.error("Enter a valid amount");
+    if (isSubmitting) return;
+    if (!savedShop?.id) {
+      toast.error("Please select a shop first.");
+      return;
+    }
 
+    const parsedAmount = parseFloat(amount);
+    if (!amount || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+      toast.error("Enter a valid positive amount.");
+      return;
+    }
+
+    const token = Cookies.get("XTOKEN");
     const expenseData = {
-      title: note || category || "No Title",
-      notes: note || category || "No Note",
-      amount: parseFloat(amount),
+      title: note.trim() || category || "Expense",
+      notes: note.trim() || category || "",
+      amount: parsedAmount,
       category,
-      date: format(new Date(date), "yyyy-MM-dd HH:mm:ss"),
+      date: format(safeDate, "yyyy-MM-dd HH:mm:ss"),
       user_id: user?.id,
-      shopId: savedShop?.id,
+      shopId: savedShop.id,
     };
 
-    const isEditing = !!existingExpense;
+    const isEditing = Boolean(existingExpense?.id);
     const endpoint = isEditing
       ? `${import.meta.env.VITE_BASE_URL}/expenses/${existingExpense.id}`
       : `${import.meta.env.VITE_BASE_URL}/expenses?shopId=${savedShop.id}`;
     const method = isEditing ? "PUT" : "POST";
 
-    toast.promise(
-      fetch(endpoint, {
+    setIsSubmitting(true);
+    const toastId = toast.loading(
+      isEditing ? "Updating expense..." : "Saving expense..."
+    );
+    try {
+      const res = await fetch(endpoint, {
         method,
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: token } : {}),
         },
         body: JSON.stringify(expenseData),
-      }).then(async (res) => {
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(`Server error: ${res.status} - ${errorText}`);
-        }
-        return res.json();
-      }),
-      {
-        loading: isEditing ? "Updating expense..." : "Saving expense...",
-        success: () => {
-          handleClear();
-          navigate("/dashboard/expense");
-          return isEditing ? "Expense updated!" : "Expense added!";
-        },
-        error: (err) => `Failed: ${err.message}`,
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || `Server error (${res.status})`);
       }
-    );
+
+      toast.success(isEditing ? "Expense updated!" : "Expense added!", {
+        id: toastId,
+      });
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["income-statement"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-report"] });
+      handleClear();
+      navigate("/dashboard/expense");
+    } catch (err) {
+      toast.error(`Failed: ${err.message}`, { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const keypad = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0"];
 
   return (
-    <div className="w-full bg-opacity-50 backdrop-blur-sm text-white flex items-center justify-center">
-      <div className="w-full max-w-md bg-opacity-80 rounded-xl">
-        {/* Top Bar */}
-        <div className="flex justify-between items-center mb-20">
-          <button onClick={() => navigate(-1)}>
-            <FiX className="text-2xl" />
+    <div className="w-full flex items-center justify-center py-4 px-2">
+      <div className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6 text-gray-900 dark:text-white">
+        <div className="flex justify-between items-center mb-8">
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => navigate("/dashboard/expense")}
+            className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"
+          >
+            <FiX className="text-xl" />
           </button>
-          <div className="flex gap-2 bg-zinc-800 rounded-full p-1">
+
+          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-full p-1">
             {["Expense", "Income"].map((tab) => (
               <button
+                type="button"
                 key={tab}
                 onClick={() =>
                   navigate(
                     tab === "Income"
                       ? "/dashboard/income"
-                      : "/dashboard/expense"
+                      : "/dashboard/add-expense"
                   )
                 }
-                className={`px-4 py-1 rounded-full text-sm ${
-                  activeTab === tab ? "bg-white text-black" : "text-white"
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  activeTab === tab
+                    ? "bg-indigo-600 text-white shadow-xs"
+                    : "text-gray-600 dark:text-gray-300"
                 }`}
               >
                 {tab}
               </button>
             ))}
           </div>
-          <button onClick={handleClear}>
-            <FiRotateCcw className="text-2xl" />
+
+          <button
+            type="button"
+            aria-label="Reset form"
+            onClick={handleClear}
+            className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"
+          >
+            <FiRotateCcw className="text-xl" />
           </button>
         </div>
 
-        {/* Amount Display */}
-        <div className="text-center text-5xl font-bold mb-20 break-words">
-          {amount || "0"}
-        </div>
-
-        {/* Note Section */}
-        <div className="w-full mb-4 px-2">
-          {note === "" ? (
-            <div className="flex justify-center gap-3 flex-wrap">
-              <button
-                onClick={() => {
-                  const userNote = prompt("Add a note:");
-                  if (userNote) setNote(userNote);
-                }}
-                className="flex items-center text-sm text-gray-300 gap-2 border border-gray-600 px-3 py-1 rounded"
-              >
-                <span className="text-lg">≡</span> Add Note
-              </button>
-              <button
-                onClick={handleDeleteLast}
-                className="flex items-center text-sm text-gray-300 gap-2 border border-gray-600 px-3 py-1 rounded"
-              >
-                <FiDelete /> Delete
-              </button>
-            </div>
-          ) : (
-            <>
-              <button
-                onMouseDown={() => {
-                  timeoutRef.current = setTimeout(() => {
-                    intervalRef.current = setInterval(() => {
-                      setNote((prev) => prev.slice(0, -1));
-                    }, 50);
-                  }, 300);
-                }}
-                onMouseUp={() => {
-                  clearTimeout(timeoutRef.current);
-                  clearInterval(intervalRef.current);
-                }}
-                onMouseLeave={() => {
-                  clearTimeout(timeoutRef.current);
-                  clearInterval(intervalRef.current);
-                }}
-                onClick={() => setNote((prev) => prev.slice(0, -1))}
-                className="ml-auto text-xs text-red-400 flex items-center gap-1 hover:underline"
-              >
-                <FiDelete /> Clear
-              </button>
-
-              <textarea
-                rows={1}
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Type a note..."
-                className="w-full border border-gray-600 rounded bg-zinc-800 text-white resize-none overflow-hidden focus:outline-none focus:ring-1 focus:ring-white px-3 py-2 transition-all duration-300 ease-in-out"
-                onInput={(e) => {
-                  e.target.style.height = "auto";
-                  e.target.style.height = `${e.target.scrollHeight}px`;
-                }}
-              />
-            </>
-          )}
-        </div>
-
-        {note && (
-          <div className="flex justify-center mb-4">
-            <button
-              onClick={handleDeleteLast}
-              className="flex items-center text-sm text-gray-300 gap-2 border border-gray-600 px-3 py-1 rounded"
-            >
-              <FiDelete /> Delete Amount
-            </button>
+        <div className="text-center mb-6">
+          <div className="flex items-center justify-center gap-1">
+            <span className="text-3xl font-bold text-gray-400">৳</span>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={amount}
+              onChange={(e) => {
+                const cleaned = e.target.value.replace(/[^0-9.]/g, "");
+                if ((cleaned.match(/\./g) || []).length <= 1) {
+                  setAmount(cleaned);
+                }
+              }}
+              placeholder="0"
+              className="w-48 text-center text-4xl font-bold bg-transparent text-gray-900 dark:text-white focus:outline-none"
+            />
           </div>
-        )}
+          <button
+            type="button"
+            onClick={handleDeleteLast}
+            className="mt-2 inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-rose-500"
+          >
+            <FiDelete /> Backspace
+          </button>
+        </div>
 
-        {/* Date & Category */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-sm text-gray-400 mb-4">
-          <label className="flex items-center gap-2">
-            <FiCalendar />
+        <div className="mb-4">
+          <input
+            type="text"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Add a title or note (e.g., Shop electricity bill)..."
+            className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+
+        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 text-sm mb-5">
+          <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+            <FiCalendar className="text-gray-500 flex-shrink-0" />
             <input
               type="datetime-local"
-              value={format(date, "yyyy-MM-dd'T'HH:mm")}
-              onChange={(e) => setDate(new Date(e.target.value))}
-              className="bg-transparent text-white outline-none"
+              value={format(safeDate, "yyyy-MM-dd'T'HH:mm")}
+              onChange={(e) => {
+                const parsed = new Date(e.target.value);
+                if (isValid(parsed)) setDate(parsed);
+              }}
+              className="bg-transparent text-gray-900 dark:text-white text-xs outline-none w-full"
             />
           </label>
 
@@ -229,20 +237,23 @@ const AddAExpense = () => {
           )}
         </div>
 
-        {/* Keypad */}
-        <div className="grid grid-cols-3 gap-3">
-          {keypad.map((num, index) => (
+        <div className="grid grid-cols-3 gap-2.5">
+          {keypad.map((num) => (
             <button
-              key={index}
+              type="button"
+              key={num}
               onClick={() => handleNumberInput(num)}
-              className="text-2xl bg-zinc-800 rounded py-4 hover:bg-zinc-700 transition"
+              className="text-xl font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-xl py-3.5 transition-colors"
             >
               {num}
             </button>
           ))}
           <button
+            type="button"
+            disabled={isSubmitting}
             onClick={handleSubmit}
-            className="bg-white text-black rounded py-4 flex items-center justify-center hover:bg-gray-200 transition"
+            aria-label="Save expense"
+            className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-xl py-3.5 flex items-center justify-center transition-colors"
           >
             <FiCheck className="text-2xl" />
           </button>

@@ -11,80 +11,92 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { useUser } from "../../../../contexts/AuthContext"; // adjust the path as needed
-
-const fetchDailySalesData = async (shopId) => {
-  const token = Cookies.get("XTOKEN");
-  if (!token) throw new Error("No token found");
-  if (!shopId) throw new Error("Invalid shop ID");
-
-  const response = await axios.get(
-    `${import.meta.env.VITE_BASE_URL}/sales/total-sales-count?shopId=${shopId}`,
-    {
-      headers: {
-        Authorization: token,
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  return response.data;
-};
+import { useUser } from "../../../../contexts/AuthContext";
 
 const DailySalesTrend = () => {
   const { savedShop } = useUser();
   const shopId = savedShop?.id;
 
-  const {
-    data,
-    error,
-    // isLoading
-  } = useQuery({
-    queryKey: ["dailySalesData", shopId],
-    queryFn: () => fetchDailySalesData(shopId),
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["totalSalesCount", shopId],
+    queryFn: async () => {
+      const token = Cookies.get("XTOKEN");
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/sales/total-sales-count`,
+        {
+          params: { shopId: Number(shopId) },
+          headers: {
+            ...(token ? { Authorization: token } : {}),
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data ?? {};
+    },
     enabled: !!shopId,
-    staleTime: 1000 * 60 * 5, // cache for 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
-  //   if (isLoading) {
-  //     return <div>Loading daily sales...</div>;
-  //   }
-
-  if (error) {
-    return <div>Error loading sales data: {error.message}</div>;
-  }
-
-  const dailySalesData = data?.dailySalesData || [];
+  const dailySalesData = Array.isArray(data?.dailySalesData)
+    ? data.dailySalesData
+    : [];
 
   return (
     <motion.div
-      className="bg-white dark:bg-black bg-opacity-50 backdrop-blur-md shadow-lg rounded-xl p-6"
-      initial={{ opacity: 0, y: 20 }}
+      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm rounded-2xl p-6"
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4 }}
+      transition={{ delay: 0.15 }}
     >
-      <h2 className="text-xl font-semibold text-white dark:bg-black mb-4">
-        Daily Sales Trend - {data?.date || ""}
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        Daily Sales Trend {data?.date ? `— ${data.date}` : ""}
       </h2>
 
-      <div style={{ width: "100%", height: 300 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={dailySalesData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis dataKey="name" stroke="#9CA3AF" />
-            <YAxis stroke="#9CA3AF" />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "rgba(31, 41, 55, 0.8)",
-                borderColor: "#4B5563",
-              }}
-              itemStyle={{ color: "#E5E7EB" }}
-            />
-            <Bar dataKey="sales" fill="#10B981" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      {isLoading ? (
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Loading daily sales...
+        </p>
+      ) : error ? (
+        <p className="text-sm text-red-500">
+          Failed to load daily sales data.
+        </p>
+      ) : dailySalesData.length === 0 ? (
+        <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">
+          No daily sales data available.
+        </p>
+      ) : (
+        <div className="w-full h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={dailySalesData}>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#9CA3AF"
+                strokeOpacity={0.25}
+              />
+              <XAxis
+                dataKey="name"
+                stroke="#6B7280"
+                tick={{ fill: "#6B7280", fontSize: 12 }}
+              />
+              <YAxis
+                stroke="#6B7280"
+                tick={{ fill: "#6B7280", fontSize: 12 }}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#111827",
+                  borderColor: "#374151",
+                  borderRadius: "0.75rem",
+                  color: "#F9FAFB",
+                }}
+                itemStyle={{ color: "#F9FAFB" }}
+              />
+              <Bar dataKey="sales" fill="#10B981" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </motion.div>
   );
 };

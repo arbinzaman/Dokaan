@@ -8,35 +8,37 @@ import { ThreeDots } from "react-loader-spinner";
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(""); // Error message state
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { login } = useUser();
+  const { login, selectShop } = useUser();
 
   const handleLogin = async (event) => {
     event.preventDefault();
+    if (isLoading) return;
 
     setIsLoading(true);
     setError("");
 
     const form = event.target;
-    const email = form.email.value;
+    const email = form.email.value.trim();
     const password = form.password.value;
 
     if (!email || !password) {
-      setError("Email and password are required! ❌");
+      setError("Email and password are required.");
       setIsLoading(false);
       return;
     }
 
     try {
-      // Call login and await response
       const res = await login(email, password);
+      const isOk =
+        res && (res.status === 200 || res.data?.status === 200) && res.data?.user;
 
-      if (res && res.data && res.data.status === 200) {
+      if (isOk) {
         const { data } = res;
 
         if (data.user.twoFactorEnabled) {
-          toast.loading("Sending OTP...");
+          const toastId = toast.loading("Sending OTP...");
 
           try {
             const otpRes = await fetch(
@@ -50,100 +52,111 @@ const Login = () => {
               }
             );
 
-            if (!otpRes.ok) throw new Error();
+            if (!otpRes.ok) throw new Error("Failed to send OTP.");
 
-            toast.dismiss(); // remove loading
-            toast.success("OTP sent successfully! 📩");
+            toast.dismiss(toastId);
+            toast.success("OTP sent successfully!");
             navigate("/verify-otp");
-          } catch (err) {
-            toast.dismiss();
-            setError("Failed to send OTP.");
+          } catch (otpErr) {
+            toast.dismiss(toastId);
+            setError(otpErr?.message || "Failed to send OTP.");
           }
         } else {
-          const userRole = data.user.role; // Assuming 'role' field exists
+          const userRole = data.user.role;
+          const shops = Array.isArray(data.dokaan)
+            ? data.dokaan
+            : Array.isArray(data.user.shops)
+            ? data.user.shops
+            : data.dokaan
+            ? [data.dokaan]
+            : [];
+
           if (userRole === "employee") {
+            if (shops[0]) selectShop(shops[0]);
             navigate("/dashboard");
           } else if (userRole === "shop-owner") {
-            const shops = data.user.shops || []; // Adjust according to your actual user object
-
             if (shops.length === 1) {
-              // Only one shop, go directly to dashboard
+              selectShop(shops[0]);
               navigate("/dashboard");
-            } else {
-              // Multiple shops, let user select
+            } else if (shops.length > 1) {
               navigate("/select-shop");
+            } else {
+              navigate("/dashboard");
             }
           } else {
             navigate("/dashboard");
           }
         }
       } else {
-        setError("Invalid email or password! ❌");
+        setError("Invalid email or password.");
       }
     } catch (err) {
-      setError("Something went wrong. ❌");
+      setError(err?.message || "Invalid email or password.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4">
-      <div className="w-full max-w-md p-8 space-y-3 rounded-xl shadow-md">
-        <h1 className="text-2xl font-bold text-center text-white">Login</h1>
-        <form onSubmit={handleLogin} noValidate className="space-y-6">
-          <div className="space-y-1 text-sm">
-            <label htmlFor="email" className="block text-white">
+    <div className="flex items-center justify-center min-h-screen px-4 pt-24 pb-12">
+      <div className="w-full max-w-md p-8 space-y-5 rounded-2xl bg-n-7/80 border border-n-6 shadow-xl">
+        <h1 className="text-2xl font-bold text-center text-n-1">Login</h1>
+        <form onSubmit={handleLogin} noValidate className="space-y-5">
+          <div className="space-y-1.5 text-sm">
+            <label htmlFor="email" className="block text-n-2 font-medium">
               Email
             </label>
             <input
               type="email"
               name="email"
               id="email"
-              placeholder="Email"
-              className="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none"
+              autoComplete="email"
+              placeholder="Enter your email"
+              className="w-full px-4 py-3 rounded-lg bg-n-8 text-n-1 placeholder-n-4 border border-n-6 focus:outline-none focus:border-color-1"
             />
           </div>
-          <div className="relative space-y-1 text-sm">
-            <label htmlFor="password" className="block text-white">
+          <div className="relative space-y-1.5 text-sm">
+            <label htmlFor="password" className="block text-n-2 font-medium">
               Password
             </label>
             <input
               type={showPassword ? "text" : "password"}
               name="password"
               id="password"
-              placeholder="Password"
-              className="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none"
+              autoComplete="current-password"
+              placeholder="Enter your password"
+              className="w-full px-4 py-3 pr-11 rounded-lg bg-n-8 text-n-1 placeholder-n-4 border border-n-6 focus:outline-none focus:border-color-1"
             />
-            <p
+            <button
+              type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-9 cursor-pointer"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute right-3 top-9 p-1 text-n-4 hover:text-n-1"
             >
-              {showPassword ? (
-                <FaEyeSlash className="text-gray-500" />
-              ) : (
-                <FaEye className="text-gray-500" />
-              )}
-            </p>
-            {error && <p className="text-red-500 text-xs mt-1">{error}</p>}{" "}
-            {/* Show error below password */}
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+            {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
           </div>
           {!isLoading ? (
             <button
               type="submit"
-              className="w-full p-3 text-center rounded-sm text-black bg-white hover:bg-gray-300"
+              className="w-full p-3 text-center font-semibold rounded-lg text-n-8 bg-n-1 hover:bg-n-2 transition-colors"
             >
               Sign In
             </button>
           ) : (
-            <button className="flex justify-center items-center w-full p-3 rounded-sm bg-gray-200">
-              <ThreeDots visible height="30" width="30" color="#0d72b9" />
+            <button
+              type="button"
+              disabled
+              className="flex justify-center items-center w-full p-3 rounded-lg bg-n-6 cursor-not-allowed"
+            >
+              <ThreeDots visible height="24" width="36" color="#ffffff" />
             </button>
           )}
         </form>
-        <p className="text-center text-white text-sm mt-4">
-          Don’t have an account?{" "}
-          <Link to="/signup" className="text-blue-400 ">
+        <p className="text-center text-n-3 text-sm mt-4">
+          Don&apos;t have an account?{" "}
+          <Link to="/signup" className="text-color-1 hover:underline font-medium">
             Register at Dokaan
           </Link>
         </p>

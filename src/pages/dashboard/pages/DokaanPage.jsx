@@ -6,31 +6,78 @@ import DokaanTable from "../../../components/dashBoard/home/Shop/DokaanTable";
 import { Link } from "react-router-dom";
 import DokaanUpdateModal from "../../../components/dashBoard/Profile/DokaanUpdateModal";
 import { useState } from "react";
+import axios from "axios";
+import Cookies from "js-cookie";
+import toast from "react-hot-toast";
 
 const DokaanPage = () => {
-  const { dokaan } = useUser();
-console.log(dokaan);
+  const { dokaan, setDokaan, savedShop, selectShop } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDokaan, setSelectedDokaan] = useState(null);
+
+  const shopData = Array.isArray(dokaan)
+    ? dokaan.filter(Boolean)
+    : dokaan
+    ? [dokaan]
+    : [];
 
   const handleEditClick = (shop) => {
     setSelectedDokaan(shop);
     setIsModalOpen(true);
   };
 
-  // Ensure dokaan is always an array
-  const shopData = Array.isArray(dokaan) ? dokaan : [dokaan];
-//   console.log("Shop Data:", shopData);
-// console.log(shopData);
+  const handleDeleteClick = async (shop) => {
+    if (shopData.length <= 1) {
+      toast.error("You must keep at least one active shop.");
+      return;
+    }
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${shop.dokaan_name}"?`
+    );
+    if (!confirmed) return;
+
+    try {
+      const token = Cookies.get("XTOKEN");
+      await axios.delete(`${import.meta.env.VITE_BASE_URL}/dokaan/${shop.id}`, {
+        headers: token ? { Authorization: token } : undefined,
+      });
+      const updatedList = shopData.filter((s) => s.id !== shop.id);
+      setDokaan(updatedList);
+      if (savedShop?.id === shop.id && updatedList[0]) {
+        selectShop(updatedList[0]);
+      }
+      toast.success("Shop deleted successfully.");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to delete shop.");
+    }
+  };
+
   return (
     <div className="flex-1 overflow-auto relative z-10">
-      <main className="max-w-7xl mx-auto py-6 px-4 lg:px-8">
+      <main className="max-w-7xl mx-auto py-4 px-2 sm:px-4 lg:px-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Shops
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Manage your store branches and details.
+            </p>
+          </div>
+          <Link
+            to="/dashboard/add-shop"
+            className="inline-flex items-center justify-center bg-indigo-600 text-white px-4 py-2.5 rounded-xl font-medium text-sm hover:bg-indigo-700 transition-colors"
+          >
+            + Add Dokaan
+          </Link>
+        </div>
+
         {/* Stat Card */}
         <motion.div
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8"
-          initial={{ opacity: 0, y: 20 }}
+          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8"
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
+          transition={{ duration: 0.4 }}
         >
           <StatCard
             name="Total Dokaans"
@@ -40,20 +87,11 @@ console.log(dokaan);
           />
         </motion.div>
 
-        {/* Add Dokaan Button */}
-        <div className="mb-4">
-          <Link to="/dashboard/add-shop">
-            <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-              + Add Dokaan
-            </button>
-          </Link>
-        </div>
-
         {/* Dokaan Table */}
         <DokaanTable
           shops={shopData}
-          // loading={loading}
-          onEdit={handleEditClick} // ✅ Corrected prop name
+          onEdit={handleEditClick}
+          onDelete={handleDeleteClick}
         />
         <DokaanUpdateModal
           isOpen={isModalOpen}

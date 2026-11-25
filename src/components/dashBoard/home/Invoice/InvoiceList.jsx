@@ -1,26 +1,55 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useUser } from "@/contexts/AuthContext";
-import { Search } from "lucide-react";
+import { Download, Eye, RotateCcw, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { generateInvoicePDF } from "../../../../utils/generateInvoicePDF";
+
+const MONTHS = [
+  { value: "01", label: "January" },
+  { value: "02", label: "February" },
+  { value: "03", label: "March" },
+  { value: "04", label: "April" },
+  { value: "05", label: "May" },
+  { value: "06", label: "June" },
+  { value: "07", label: "July" },
+  { value: "08", label: "August" },
+  { value: "09", label: "September" },
+  { value: "10", label: "October" },
+  { value: "11", label: "November" },
+  { value: "12", label: "December" },
+];
+
+const getYearOptions = () => {
+  const current = new Date().getFullYear();
+  const years = [];
+  for (let y = current; y >= 2023; y--) {
+    years.push(String(y));
+  }
+  return years;
+};
 
 const fetchInvoices = async ({ queryKey }) => {
   const [, shopId] = queryKey;
   if (!shopId) return [];
 
   const token = Cookies.get("XTOKEN");
-  const res = await fetch(`${import.meta.env.VITE_BASE_URL}/invoices?shopId=${shopId}`, {
-    headers: {
-      Authorization: token,
-      Accept: "application/json",
-    },
-  });
+  const res = await fetch(
+    `${import.meta.env.VITE_BASE_URL}/invoices?shopId=${shopId}`,
+    {
+      headers: {
+        ...(token ? { Authorization: token } : {}),
+        Accept: "application/json",
+      },
+    }
+  );
 
   if (!res.ok) throw new Error("Failed to fetch invoices");
   const data = await res.json();
-  return Array.isArray(data.data) ? data.data : [];
+  return Array.isArray(data?.data) ? data.data : [];
 };
 
 const InvoiceList = () => {
@@ -30,30 +59,38 @@ const InvoiceList = () => {
   const [month, setMonth] = useState("");
   const [day, setDay] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
-
+  const [returnedIds, setReturnedIds] = useState([]);
+  const itemsPerPage = 6;
+  const yearOptions = getYearOptions();
   const navigate = useNavigate();
 
-  // Fetch all invoices once for the shop
-  const { data: invoices = [], isLoading, error } = useQuery({
+  const {
+    data: invoices = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["invoices", savedShop?.id],
     queryFn: fetchInvoices,
     enabled: !!savedShop?.id,
-    staleTime: 1000 * 60 * 5, // cache 5 mins
-    cacheTime: 1000 * 60 * 10, // keep cache 10 mins
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
   });
 
-  // Client-side filtering (date + search)
   const filteredInvoices = invoices.filter((invoice) => {
-    const invoiceDate = new Date(invoice.createdAt);
-    if (year && invoiceDate.getFullYear().toString() !== year) return false;
-    if (
-      month &&
-      (invoiceDate.getMonth() + 1).toString().padStart(2, "0") !== month
-    )
-      return false;
-    if (day && invoiceDate.getDate().toString().padStart(2, "0") !== day)
-      return false;
+    if (year || month || day) {
+      const invoiceDate = invoice.createdAt ? new Date(invoice.createdAt) : null;
+      if (!invoiceDate || Number.isNaN(invoiceDate.getTime())) return false;
+      if (year && invoiceDate.getFullYear().toString() !== year) return false;
+      if (
+        month &&
+        (invoiceDate.getMonth() + 1).toString().padStart(2, "0") !== month
+      ) {
+        return false;
+      }
+      if (day && invoiceDate.getDate().toString().padStart(2, "0") !== day) {
+        return false;
+      }
+    }
 
     const term = searchTerm.toLowerCase();
     return (
@@ -67,105 +104,135 @@ const InvoiceList = () => {
     setCurrentPage(1);
   }, [searchTerm, year, month, day]);
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentInvoices = filteredInvoices.slice(
-    indexOfFirstItem,
-    indexOfLastItem
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredInvoices.length / itemsPerPage)
   );
-  const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
+  const safePage = Math.min(currentPage, totalPages);
+  const currentInvoices = filteredInvoices.slice(
+    (safePage - 1) * itemsPerPage,
+    safePage * itemsPerPage
+  );
 
-  const goToPage = (pageNum) => {
-    if (pageNum >= 1 && pageNum <= totalPages) setCurrentPage(pageNum);
-  };
+  const enrichInvoice = (inv) => ({
+    ...inv,
+    shop: inv.shop || savedShop,
+    invoiceType: inv.invoiceType || localStorage.getItem("invoiceType") || "POS",
+  });
 
   const handleView = (invoiceData) => {
-    localStorage.setItem("invoiceData", JSON.stringify(invoiceData));
-    navigate("/dashboard/preview-invoice", { state: { invoiceData } });
+    const payload = enrichInvoice(invoiceData);
+    localStorage.setItem("invoiceData", JSON.stringify(payload));
+    navigate("/dashboard/preview-invoice", { state: { invoiceData: payload } });
   };
 
-  const renderOptions = (options) =>
-    options.map((opt) => (
-      <option key={opt} value={opt}>
-        {opt}
-      </option>
-    ));
+  const handleDownloadPdf = (inv) => {
+    const payload = enrichInvoice(inv);
+    const blob = generateInvoicePDF(payload);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `invoice-${inv.invoiceNumber || inv.id}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const handleReturn = (inv) => {
+    if (returnedIds.includes(inv.id)) return;
+    const confirmed = window.confirm(
+      `Mark invoice ${inv.invoiceNumber || inv.id} as returned?`
+    );
+    if (!confirmed) return;
+    setReturnedIds((prev) => [...prev, inv.id]);
+    toast.success(`Return recorded for ${inv.invoiceNumber || inv.id}.`);
+  };
+
+  const selectClass =
+    "px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500";
 
   return (
     <motion.div
-      className="bg-white dark:bg-black p-6 rounded-xl shadow-md"
-      initial={{ opacity: 0, y: 20 }}
+      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-6 rounded-2xl shadow-sm"
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
+      transition={{ delay: 0.1 }}
     >
-      <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-        <h2 className="text-xl font-bold text-black dark:text-white">
-          Invoices
-        </h2>
-        <div className="flex gap-3 flex-wrap">
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            Invoices &amp; Receipts
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Preview, print, or export PDF copies of your receipts.
+          </p>
+        </div>
+        <div className="flex gap-2.5 flex-wrap items-center">
           <select
             value={year}
             onChange={(e) => setYear(e.target.value)}
-            className="p-2 rounded"
+            className={selectClass}
           >
             <option value="">All Years</option>
-            {renderOptions(["2023", "2024", "2025"])}
+            {yearOptions.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
           </select>
           <select
             value={month}
             onChange={(e) => setMonth(e.target.value)}
-            className="p-2 rounded"
+            className={selectClass}
           >
             <option value="">All Months</option>
-            {renderOptions([
-              "01",
-              "02",
-              "03",
-              "04",
-              "05",
-              "06",
-              "07",
-              "08",
-              "09",
-              "10",
-              "11",
-              "12",
-            ])}
+            {MONTHS.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
           </select>
           <select
             value={day}
             onChange={(e) => setDay(e.target.value)}
-            className="p-2 rounded"
+            className={selectClass}
           >
             <option value="">All Days</option>
-            {renderOptions(
-              [...Array(31).keys()].map((d) =>
-                (d + 1).toString().padStart(2, "0")
-              )
-            )}
+            {[...Array(31).keys()].map((d) => {
+              const val = String(d + 1).padStart(2, "0");
+              return (
+                <option key={val} value={val}>
+                  {val}
+                </option>
+              );
+            })}
           </select>
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <input
               type="text"
-              placeholder="Search"
-              className="bg-blue-400 text-white placeholder-white rounded-lg pl-10 pr-4 py-2"
+              placeholder="Search invoices..."
+              className="w-full sm:w-56 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 border border-gray-200 dark:border-gray-700 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               onChange={(e) => setSearchTerm(e.target.value)}
               value={searchTerm}
             />
-            <Search className="absolute left-3 top-2.5 text-white" size={18} />
+            <Search
+              className="absolute left-3 top-2.5 text-gray-400"
+              size={16}
+            />
           </div>
         </div>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-700">
-          <thead>
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+          <thead className="bg-gray-50 dark:bg-gray-800/60">
             <tr>
               {["Invoice No", "Customer", "Total", "Seller", "Date", "Actions"].map(
                 (h) => (
                   <th
                     key={h}
-                    className="px-6 py-3 text-left text-sm font-semibold text-black dark:text-white uppercase"
+                    className="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                   >
                     {h}
                   </th>
@@ -173,90 +240,112 @@ const InvoiceList = () => {
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-700">
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
             {isLoading ? (
               <tr>
-                <td colSpan={6} className="text-center py-6 text-gray-500">
-                  Loading...
+                <td
+                  colSpan={6}
+                  className="text-center py-8 text-sm text-gray-500 dark:text-gray-400"
+                >
+                  Loading invoices...
                 </td>
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={6} className="text-center py-6 text-red-500">
-                  Failed to load
+                <td colSpan={6} className="text-center py-8 text-sm text-red-500">
+                  Failed to load invoices.
                 </td>
               </tr>
             ) : currentInvoices.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-6 text-gray-400">
+                <td
+                  colSpan={6}
+                  className="text-center py-8 text-sm text-gray-500 dark:text-gray-400"
+                >
                   No invoices found.
                 </td>
               </tr>
             ) : (
-              currentInvoices.map((inv) => (
-                <tr key={inv.id}>
-                  <td className="px-6 py-4">{inv.invoiceNumber}</td>
-                  <td className="px-6 py-4">{inv.customer?.name || "-"}</td>
-                  <td className="px-6 py-4">৳ {inv.totalPrice?.toFixed(2)}</td>
-                  <td className="px-6 py-4">{inv.sellerName || "-"}</td>
-                  <td className="px-6 py-4">
-                    {inv.createdAt
-                      ? new Date(inv.createdAt).toLocaleDateString()
-                      : "-"}
-                  </td>
-                  <td className="px-6 py-4 flex gap-2">
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      whileHover={{ scale: 1.05 }}
-                      onClick={() => handleView(inv)}
-                      className="px-4 py-1 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-all duration-200 text-sm"
-                    >
-                      View
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      whileHover={{ scale: 1.05 }}
-                      className="px-4 py-1 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 transition-all duration-200 text-sm"
-                    >
-                      Return
-                    </motion.button>
-                  </td>
-                </tr>
-              ))
+              currentInvoices.map((inv) => {
+                const isReturned = returnedIds.includes(inv.id);
+                return (
+                  <tr
+                    key={inv.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors"
+                  >
+                    <td className="px-5 py-3.5 text-sm font-mono font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                      {inv.invoiceNumber || inv.invoiceId || `#${inv.id}`}
+                    </td>
+                    <td className="px-5 py-3.5 text-sm text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                      {inv.customer?.name || "Walk-in Customer"}
+                    </td>
+                    <td className="px-5 py-3.5 text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                      ৳{Number(inv.totalPrice ?? 0).toFixed(2)}
+                    </td>
+                    <td className="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                      {inv.sellerName || inv.user?.name || "-"}
+                    </td>
+                    <td className="px-5 py-3.5 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                      {inv.createdAt
+                        ? new Date(inv.createdAt).toLocaleDateString()
+                        : "-"}
+                    </td>
+                    <td className="px-5 py-3.5 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleView(inv)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition-colors"
+                        >
+                          <Eye size={14} />
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadPdf(inv)}
+                          aria-label="Download PDF"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-medium transition-colors"
+                        >
+                          <Download size={14} />
+                          PDF
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isReturned}
+                          onClick={() => handleReturn(inv)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/50 disabled:opacity-50 rounded-lg text-xs font-medium transition-colors"
+                        >
+                          <RotateCcw size={13} />
+                          {isReturned ? "Returned" : "Return"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-center mt-6 gap-2 flex-wrap">
+        <div className="flex justify-center items-center mt-6 gap-3">
           <button
-            onClick={() => goToPage(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1 bg-gray-300 dark:bg-gray-700 text-black dark:text-white rounded disabled:opacity-50"
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={safePage === 1}
+            className="px-3.5 py-1.5 text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl disabled:opacity-50"
           >
             Prev
           </button>
-          {[...Array(totalPages)].map((_, i) => {
-            const page = i + 1;
-            return (
-              <button
-                key={page}
-                onClick={() => goToPage(page)}
-                className={`px-3 py-1 rounded ${
-                  page === currentPage
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
-                }`}
-              >
-                {page}
-              </button>
-            );
-          })}
+          <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">
+            Page {safePage} of {totalPages}
+          </span>
           <button
-            onClick={() => goToPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 bg-gray-300 dark:bg-gray-700 text-black dark:text-white rounded disabled:opacity-50"
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={safePage === totalPages}
+            className="px-3.5 py-1.5 text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl disabled:opacity-50"
           >
             Next
           </button>

@@ -1,107 +1,153 @@
 import { useState, useEffect, useRef } from "react";
 import { FiGrid } from "react-icons/fi";
+import Cookies from "js-cookie";
 import toast from "react-hot-toast";
 
+const DEFAULT_CATEGORIES = [
+  "Supplies",
+  "Transport",
+  "Utilities",
+  "Packaging",
+  "Maintenance",
+  "Food & Refreshments",
+];
+
 const CategorySelector = ({ shopId, selectedCategory, onSelectCategory }) => {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState(() =>
+    DEFAULT_CATEGORIES.map((name, idx) => ({ id: `def-${idx}`, name }))
+  );
   const [expanded, setExpanded] = useState(false);
-  const dropdownRef = useRef();
+  const [addingNew, setAddingNew] = useState(false);
+  const [newCategoryInput, setNewCategoryInput] = useState("");
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     if (!shopId) return;
+    const token = Cookies.get("XTOKEN");
 
-    fetch(`${import.meta.env.VITE_BASE_URL}/expenses?shopId=${shopId}`)
+    fetch(`${import.meta.env.VITE_BASE_URL}/expenses?shopId=${shopId}`, {
+      headers: token ? { Authorization: token } : undefined,
+    })
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch expenses");
+        if (!res.ok) throw new Error("Failed to fetch categories");
         return res.json();
       })
       .then((data) => {
-        const allExpenses = data.data || [];
-
-        // Extract unique category names
-        const uniqueCategories = Array.from(
-          new Set(allExpenses.map((item) => item.category).filter(Boolean))
+        const allExpenses = Array.isArray(data?.data) ? data.data : [];
+        const merged = Array.from(
+          new Set([
+            ...DEFAULT_CATEGORIES,
+            ...allExpenses.map((item) => item?.category).filter(Boolean),
+          ])
         ).map((name, index) => ({ id: index, name }));
-
-        setCategories(uniqueCategories);
+        setCategories(merged);
       })
-      .catch(() => toast.error("Failed to load categories"));
+      .catch(() => {
+        // Keep defaults on error
+      });
   }, [shopId]);
 
   useEffect(() => {
-    function handleClickOutside(event) {
+    const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setExpanded(false);
+        setAddingNew(false);
       }
-    }
+    };
     if (expanded) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [expanded]);
 
-  const addNewCategory = async () => {
-    const newCat = prompt("Enter new category:");
-    if (!newCat || newCat.trim() === "") return;
-
-    // Add locally only (since you're pulling categories from expenses)
-    const newCategory = newCat.trim();
-
-    // Check if category already exists
-    const exists = categories.some((c) => c.name === newCategory);
+  const handleAddCategory = () => {
+    const trimmed = newCategoryInput.trim();
+    if (!trimmed) return;
+    const exists = categories.some(
+      (c) => c.name.toLowerCase() === trimmed.toLowerCase()
+    );
     if (exists) {
       toast.error("Category already exists");
       return;
     }
-
-    // Add to local list
-    setCategories((prev) => [...prev, { id: Date.now(), name: newCategory }]);
-    onSelectCategory(newCategory);
+    setCategories((prev) => [...prev, { id: Date.now(), name: trimmed }]);
+    onSelectCategory(trimmed);
+    setNewCategoryInput("");
+    setAddingNew(false);
     setExpanded(false);
-    toast.success("Category added (locally)");
+    toast.success("Category added");
   };
 
   return (
     <div className="relative inline-block" ref={dropdownRef}>
       <button
+        type="button"
         onClick={() => setExpanded((prev) => !prev)}
-        className="flex items-center gap-2 bg-zinc-800 dark:bg-zinc-800 px-4 py-2 rounded text-black dark:text-white focus:outline-none"
+        className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-3.5 py-2 rounded-xl text-sm text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
         aria-expanded={expanded}
       >
         <FiGrid />
-        {selectedCategory || "Select Category"}
-        <span className="ml-2 rounded-xl">{expanded ? "▲" : "▼"}</span>
+        <span>{selectedCategory || "Select Category"}</span>
+        <span className="text-xs opacity-70">{expanded ? "▲" : "▼"}</span>
       </button>
 
       {expanded && (
-        <ul
-          className="absolute bottom-full mb-1 w-48 max-h-48 overflow-auto rounded bg-white dark:bg-zinc-800 border border-gray-300 dark:border-gray-700 text-black dark:text-white z-50"
-          style={{ boxShadow: "0 4px 6px rgba(0,0,0,0.3)" }}
-        >
-          {categories.map((cat) => (
-            <li
-              key={cat.id}
-              onClick={() => {
-                onSelectCategory(cat.name);
-                setExpanded(false);
-              }}
-              className={`cursor-pointer px-4 py-2 hover:bg-blue-100 dark:hover:bg-blue-600 ${
-                cat.name === selectedCategory ? "bg-blue-200 dark:bg-blue-700" : ""
-              }`}
-            >
-              {cat.name}
-            </li>
-          ))}
+        <div className="absolute right-0 bottom-full mb-2 w-56 max-h-60 overflow-auto rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white shadow-xl z-50">
+          <ul>
+            {categories.map((cat) => (
+              <li
+                key={cat.id}
+                onClick={() => {
+                  onSelectCategory(cat.name);
+                  setExpanded(false);
+                }}
+                className={`cursor-pointer px-4 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-950/60 ${
+                  cat.name === selectedCategory
+                    ? "bg-indigo-100 dark:bg-indigo-950 font-medium text-indigo-700 dark:text-indigo-300"
+                    : ""
+                }`}
+              >
+                {cat.name}
+              </li>
+            ))}
+          </ul>
 
-          <li
-            onClick={addNewCategory}
-            className="cursor-pointer px-4 py-2 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-700 border-t border-gray-300 dark:border-gray-700"
-          >
-            + Add New Category
-          </li>
-        </ul>
+          <div className="border-t border-gray-200 dark:border-gray-700 p-2">
+            {addingNew ? (
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  value={newCategoryInput}
+                  onChange={(e) => setNewCategoryInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddCategory();
+                    }
+                  }}
+                  placeholder="New category..."
+                  className="flex-1 min-w-0 px-2 py-1 text-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={handleAddCategory}
+                  className="px-2.5 py-1 text-xs rounded-lg bg-indigo-600 text-white font-medium"
+                >
+                  Add
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAddingNew(true)}
+                className="w-full text-left px-2 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
+                + Add New Category
+              </button>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

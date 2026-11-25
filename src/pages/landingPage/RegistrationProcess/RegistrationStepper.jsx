@@ -13,39 +13,41 @@ import toast from "react-hot-toast";
 import ShopInfoForm from "./ShopInfoForm";
 import UserRegistrationForm from "./UserRegistrationForm";
 import { useUser } from "../../../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 
 const steps = ["User Info", "Shop Info"];
 
-const icons = {
-  1: <FaUser size={20} />,
-  2: <FaStore size={20} />,
+const stepIcons = {
+  1: <FaUser size={18} />,
+  2: <FaStore size={18} />,
 };
 
-const StepIcon = ({ icon, active, completed }) => (
+const CustomStepIcon = ({ active, completed, icon }) => (
   <Box
     sx={{
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
-      width: 40,
-      height: 40,
+      width: 38,
+      height: 38,
       borderRadius: "50%",
-      backgroundColor: completed ? "green" : active ? "blue" : "gray",
+      backgroundColor: completed ? "#10b981" : active ? "#6366f1" : "#3f3f46",
       color: "white",
     }}
   >
-    {icon}
+    {stepIcons[String(icon)]}
   </Box>
 );
 
 const RegistrationStepper = () => {
   const [activeStep, setActiveStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [userData, setUserData] = useState({
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
   const [shopData, setShopData] = useState({
     dokaan_name: "",
@@ -55,24 +57,44 @@ const RegistrationStepper = () => {
     dokaan_type: "",
   });
   const [errors, setErrors] = useState({});
-  const { setUser, setDokaan } = useUser();
+  const { setUser, setDokaan, selectShop } = useUser();
   const navigate = useNavigate();
 
-  const validateData = () => {
+  const validateStep = (step) => {
     const validationErrors =
-      activeStep === 0
+      step === 0
         ? {
-            name: userData.name ? "" : "Name is required",
-            email: userData.email ? "" : "Email is required",
-            password: userData.password ? "" : "Password is required",
+            name: userData.name.trim() ? "" : "Name is required",
+            email: !userData.email.trim()
+              ? "Email is required"
+              : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email.trim())
+              ? "Enter a valid email address"
+              : "",
+            password:
+              userData.password.length >= 6
+                ? ""
+                : "Password must be at least 6 characters",
+            confirmPassword: !userData.confirmPassword
+              ? "Please confirm your password"
+              : userData.password !== userData.confirmPassword
+              ? "Passwords do not match"
+              : "",
           }
         : {
-            dokaan_name: shopData.dokaan_name ? "" : "Shop Name is required",
-            dokaan_location: shopData.dokaan_location
+            dokaan_name: shopData.dokaan_name.trim()
+              ? ""
+              : "Shop Name is required",
+            dokaan_location: shopData.dokaan_location.trim()
               ? ""
               : "Shop Location is required",
-            dokaan_email: shopData.dokaan_email ? "" : "Shop Email is required",
-            dokaan_phone: shopData.dokaan_phone ? "" : "Shop Phone is required",
+            dokaan_email: !shopData.dokaan_email.trim()
+              ? "Shop Email is required"
+              : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(shopData.dokaan_email.trim())
+              ? "Enter a valid shop email"
+              : "",
+            dokaan_phone: shopData.dokaan_phone.trim()
+              ? ""
+              : "Shop Phone is required",
           };
 
     setErrors(validationErrors);
@@ -80,30 +102,60 @@ const RegistrationStepper = () => {
   };
 
   const handleNext = () => {
-    if (validateData()) setActiveStep((prev) => prev + 1);
+    if (validateStep(0)) {
+      setErrors({});
+      setActiveStep(1);
+    }
   };
 
   const handleSubmit = async () => {
-    const registrationData = { ...userData, ...shopData };
+    if (isSubmitting) return;
+    if (!validateStep(1)) return;
 
-    toast.promise(
-      axios
-        .post(`${import.meta.env.VITE_BASE_URL}/dokaan`, registrationData)
-        .then(({ data }) => {
-          Cookies.set("XTOKEN", data.access_token, { expires: 1, path: "/" });
+    const registrationData = {
+      name: userData.name.trim(),
+      email: userData.email.trim(),
+      password: userData.password,
+      ...shopData,
+    };
 
-          setUser(data.data.owner); // Save logged-in user
-          setDokaan(data.data.dokaan); // Save shop info
+    setIsSubmitting(true);
+    const toastId = toast.loading("Creating your account...");
+    try {
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/dokaan`,
+        registrationData
+      );
 
-          navigate("/select-shop"); // Navigate to Select Shop page
-          return data;
-        }),
-      {
-        loading: "Saving...",
-        success: "Registration successful!",
-        error: "Registration failed!",
+      if (data?.access_token) {
+        Cookies.set("XTOKEN", data.access_token, { expires: 1, path: "/" });
       }
-    );
+
+      const owner = data?.data?.owner || data?.user;
+      const createdDokaan = data?.data?.dokaan || data?.dokaan;
+      const dokaanList = Array.isArray(createdDokaan)
+        ? createdDokaan
+        : createdDokaan
+        ? [createdDokaan]
+        : [];
+
+      if (owner) setUser(owner);
+      if (dokaanList.length > 0) {
+        setDokaan(dokaanList);
+        if (dokaanList.length === 1) {
+          selectShop(dokaanList[0]);
+        }
+      }
+
+      toast.success("Registration successful!", { id: toastId });
+      navigate(dokaanList.length > 1 ? "/select-shop" : "/dashboard");
+    } catch (err) {
+      const message =
+        err?.response?.data?.message || "Registration failed. Please try again.";
+      toast.error(message, { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -114,32 +166,35 @@ const RegistrationStepper = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        p: 3,
+        px: 2,
+        pt: 12,
+        pb: 6,
       }}
     >
       <Box
         sx={{
-          width: { xs: "100%", sm: "75%", md: "50%" },
-          backgroundColor: "gray.700",
-          borderRadius: 2,
-          boxShadow: 3,
-          p: 3,
+          width: { xs: "100%", sm: "85%", md: "520px" },
+          backgroundColor: "#15131D",
+          border: "1px solid #252134",
+          borderRadius: 3,
+          boxShadow: 6,
+          p: { xs: 3, sm: 4 },
+          color: "#ffffff",
         }}
       >
-        <Typography variant="h4" align="center" gutterBottom>
-          Registration
+        <Typography variant="h5" align="center" fontWeight="bold" gutterBottom>
+          Create Your Dokaan Account
         </Typography>
-        <Stepper activeStep={activeStep} alternativeLabel>
-          {steps.map((label, index) => (
-            <Step key={index}>
+        <Stepper activeStep={activeStep} alternativeLabel sx={{ my: 2 }}>
+          {steps.map((label) => (
+            <Step key={label}>
               <StepLabel
-                StepIconComponent={() => (
-                  <StepIcon
-                    icon={icons[index + 1]}
-                    active={activeStep === index}
-                    completed={activeStep > index}
-                  />
-                )}
+                StepIconComponent={CustomStepIcon}
+                sx={{
+                  "& .MuiStepLabel-label": { color: "#ADA8C3" },
+                  "& .MuiStepLabel-label.Mui-active": { color: "#ffffff" },
+                  "& .MuiStepLabel-label.Mui-completed": { color: "#10b981" },
+                }}
               >
                 {label}
               </StepLabel>
@@ -160,16 +215,21 @@ const RegistrationStepper = () => {
               errors={errors}
             />
           )}
-          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
             <Button
-              disabled={activeStep === 0}
+              disabled={activeStep === 0 || isSubmitting}
               onClick={() => setActiveStep((prev) => prev - 1)}
+              sx={{ color: "#CAC6DD" }}
             >
               Back
             </Button>
             {activeStep === steps.length - 1 ? (
-              <Button variant="contained" onClick={handleSubmit}>
-                Submit
+              <Button
+                variant="contained"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Submit"}
               </Button>
             ) : (
               <Button variant="contained" onClick={handleNext}>
@@ -177,6 +237,12 @@ const RegistrationStepper = () => {
               </Button>
             )}
           </Box>
+          <p className="text-center text-n-3 text-sm mt-5">
+            Already have an account?{" "}
+            <Link to="/login" className="text-color-1 hover:underline font-medium">
+              Sign in
+            </Link>
+          </p>
         </Box>
       </Box>
     </Box>

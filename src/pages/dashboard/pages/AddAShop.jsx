@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useUser } from "../../../contexts/AuthContext";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import {
   Briefcase,
@@ -14,11 +14,24 @@ import {
   Tag,
 } from "lucide-react";
 import CreatableSelect from "react-select/creatable";
+import { useThemeMode } from "../../../contexts/ThemeContext";
+
+const categoryOptions = [
+  { value: "Groceries", label: "Groceries" },
+  { value: "Electronics", label: "Electronics" },
+  { value: "Mobile Shop", label: "Mobile Shop" },
+  { value: "Stationery", label: "Stationery" },
+  { value: "Clothing", label: "Clothing" },
+  { value: "Cosmetics", label: "Cosmetics" },
+  { value: "Pharmacy", label: "Pharmacy" },
+  { value: "Bakery", label: "Bakery" },
+];
 
 const AddAShop = () => {
   const [imageError, setImageError] = useState("");
-
-  const { user ,logout } = useUser();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user, addShop } = useUser();
+  const { mode } = useThemeMode();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -33,33 +46,24 @@ const AddAShop = () => {
 
   const [previewImage, setPreviewImage] = useState(null);
 
-  const categoryOptions = [
-    { value: "Groceries", label: "Groceries" },
-    { value: "Electronics", label: "Electronics" },
-    { value: "Mobile Shop", label: "Mobile Shop" },
-    { value: "Stationery", label: "Stationery" },
-    { value: "Clothing", label: "Clothing" },
-    { value: "Cosmetics", label: "Cosmetics" },
-    { value: "Pharmacy", label: "Pharmacy" },
-    { value: "Bakery", label: "Bakery" },
-  ];
+  useEffect(() => {
+    return () => {
+      if (previewImage) URL.revokeObjectURL(previewImage);
+    };
+  }, [previewImage]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: name === "dokaan_Tin_Certificate" ? Number(value) : value,
-    }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (file) {
-      setForm((prev) => ({
-        ...prev,
-        dokaan_imageUrl: file,
-      }));
+      if (previewImage) URL.revokeObjectURL(previewImage);
+      setForm((prev) => ({ ...prev, dokaan_imageUrl: file }));
       setPreviewImage(URL.createObjectURL(file));
+      setImageError("");
     }
   };
 
@@ -70,72 +74,79 @@ const AddAShop = () => {
     }));
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setImageError(""); // Clear previous errors
-  const token = Cookies.get("XTOKEN");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    setImageError("");
+    setIsSubmitting(true);
 
-  try {
-    const formData = new FormData();
-    formData.append("dokaan_name", form.dokaan_name);
-    formData.append("dokaan_location", form.dokaan_location);
-    formData.append("dokaan_Tin_Certificate", form.dokaan_Tin_Certificate);
-    formData.append("dokaan_email", form.dokaan_email);
-    formData.append("dokaan_phone", form.dokaan_phone);
-    formData.append("dokaan_type", form.dokaan_type);
-    formData.append("ownerId", user?.id);
-    formData.append("email", user?.email); // ✅ use email from context
+    const token = Cookies.get("XTOKEN");
 
-
-    if (form.dokaan_imageUrl) {
-      formData.append("dokaan_imageUrl", form.dokaan_imageUrl);
-    }
-
-    const res = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/dokaan`,
-      formData,
-      {
-        headers: {
-          Authorization: token,
-          "Content-Type": "multipart/form-data",
-        },
+    try {
+      const formData = new FormData();
+      formData.append("dokaan_name", form.dokaan_name.trim());
+      formData.append("dokaan_location", form.dokaan_location.trim());
+      if (form.dokaan_Tin_Certificate.trim()) {
+        formData.append(
+          "dokaan_Tin_Certificate",
+          form.dokaan_Tin_Certificate.trim()
+        );
       }
-    );
+      formData.append("dokaan_email", form.dokaan_email.trim());
+      formData.append("dokaan_phone", form.dokaan_phone.trim());
+      formData.append("dokaan_type", form.dokaan_type);
+      formData.append("ownerId", user?.id);
+      formData.append("email", user?.email);
 
-    if (res.status === 200 || res.status === 201) {
-      toast.success("Shop added successfully!");
+      if (form.dokaan_imageUrl) {
+        formData.append("dokaan_imageUrl", form.dokaan_imageUrl);
+      }
 
-      // ❗ Log out the user here
-      setTimeout(() => {
-        logout(); // from AuthContext
-        navigate("/login");
-      }, 1000);
+      const res = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/dokaan`,
+        formData,
+        {
+          headers: {
+            Authorization: token,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (res.status === 200 || res.status === 201) {
+        const createdShop =
+          res.data?.data?.dokaan || res.data?.data || res.data?.dokaan;
+        if (createdShop && createdShop.id) {
+          addShop(createdShop);
+        }
+        toast.success("Shop added successfully!");
+        navigate("/dashboard/shop");
+      }
+    } catch (error) {
+      console.error(error);
+      const msg = error.response?.data?.message || "Failed to add shop.";
+      if (msg.toLowerCase().includes("image")) {
+        setImageError(msg);
+      }
+      toast.error(msg);
+    } finally {
+      setIsSubmitting(false);
     }
-  } catch (error) {
-    console.error(error);
+  };
 
-    if (error.response?.data?.message?.toLowerCase().includes("image")) {
-      setImageError(error.response.data.message);
-    }
-
-    toast.error("Failed to add shop.");
-  }
-};
-
+  const isDark = mode === "dark";
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-10">
-      <Toaster />
-      <div className="backdrop-blur-md bg-white/10 dark:bg-gray-800/30 border border-white/20 rounded-2xl shadow-lg p-8">
-        <h2 className="text-3xl font-bold text-white text-center mb-6">
-          🏪 Add New Shop
+    <div className="max-w-xl mx-auto px-2 sm:px-4 py-6">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6 sm:p-8">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-6">
+          Add New Shop
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Shop Name */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block">
-            <span className="flex items-center gap-2 mb-1 text-sm text-white font-medium">
-              <Briefcase className="text-pink-400 animate-pulse" size={20} />
+            <span className="flex items-center gap-2 mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-200">
+              <Briefcase className="text-indigo-500" size={16} />
               Shop Name
             </span>
             <input
@@ -145,14 +156,13 @@ const handleSubmit = async (e) => {
               onChange={handleChange}
               placeholder="e.g., Rahim Battery Center"
               required
-              className="w-full p-2 rounded-lg border border-white/30 bg-white/10 text-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </label>
 
-          {/* Shop Location */}
           <label className="block">
-            <span className="flex items-center gap-2 mb-1 text-sm text-white font-medium">
-              <MapPin className="text-yellow-400 animate-pulse" size={20} />
+            <span className="flex items-center gap-2 mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-200">
+              <MapPin className="text-amber-500" size={16} />
               Location
             </span>
             <input
@@ -162,19 +172,22 @@ const handleSubmit = async (e) => {
               onChange={handleChange}
               placeholder="e.g., Dhanmondi, Dhaka"
               required
-              className="w-full p-2 rounded-lg border border-white/30 bg-white/10 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </label>
 
-          {/* Image Upload */}
           <div className="block">
-            <span className="flex items-center gap-2 mb-1 text-sm text-white font-medium">
-              <ImagePlus className="text-green-400 animate-pulse" size={20} />
-              Shop Image
+            <span className="flex items-center gap-2 mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-200">
+              <ImagePlus className="text-emerald-500" size={16} />
+              Shop Image (Optional)
             </span>
             <div className="flex items-center gap-3">
-              <label htmlFor="dokaan_image" className="cursor-pointer">
-                <ImagePlus className="text-red-500 hover:scale-110 transition-transform w-6 h-6" />
+              <label
+                htmlFor="dokaan_image"
+                className="cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <ImagePlus size={16} />
+                Upload Image
               </label>
               <input
                 id="dokaan_image"
@@ -184,41 +197,37 @@ const handleSubmit = async (e) => {
                 className="hidden"
               />
               {previewImage && (
-                <div>
-                  <img
-                    src={previewImage}
-                    alt="Preview"
-                    className="w-10 h-10 rounded-full object-cover border border-red-400"
-                  />
-                  {imageError && (
-                    <p className="text-sm text-red-400 mt-1">{imageError}</p>
-                  )}
-                </div>
+                <img
+                  src={previewImage}
+                  alt="Shop preview"
+                  className="w-10 h-10 rounded-full object-cover border border-gray-300 dark:border-gray-600"
+                />
               )}
             </div>
+            {imageError && (
+              <p className="text-xs text-red-500 mt-1.5">{imageError}</p>
+            )}
           </div>
 
-          {/* TIN Certificate */}
           <label className="block">
-            <span className="flex items-center gap-2 mb-1 text-sm text-white font-medium">
-              <FileText className="text-indigo-400 animate-pulse" size={20} />
+            <span className="flex items-center gap-2 mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-200">
+              <FileText className="text-indigo-500" size={16} />
               TIN Certificate (Optional)
             </span>
             <input
-              type="number"
+              type="text"
               name="dokaan_Tin_Certificate"
               value={form.dokaan_Tin_Certificate}
               onChange={handleChange}
-              placeholder="e.g., 12345678"
-              className="w-full p-2 rounded-lg border border-white/30 bg-white/10 text-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              placeholder="e.g., 123456789012"
+              className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </label>
 
-          {/* Email & Phone */}
           <div className="flex flex-col sm:flex-row gap-4">
             <label className="w-full sm:w-1/2 block">
-              <span className="flex items-center gap-2 mb-1 text-sm text-white font-medium">
-                <Mail className="text-blue-400 animate-pulse" size={20} />
+              <span className="flex items-center gap-2 mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-200">
+                <Mail className="text-sky-500" size={16} />
                 Email
               </span>
               <input
@@ -228,30 +237,29 @@ const handleSubmit = async (e) => {
                 onChange={handleChange}
                 placeholder="shop@example.com"
                 required
-                className="w-full p-2 rounded-lg border border-white/30 bg-white/10 text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </label>
 
             <label className="w-full sm:w-1/2 block">
-              <span className="flex items-center gap-2 mb-1 text-sm text-white font-medium">
-                <Phone className="text-yellow-400 animate-pulse" size={20} />
+              <span className="flex items-center gap-2 mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-200">
+                <Phone className="text-emerald-500" size={16} />
                 Phone
               </span>
               <input
-                type="text"
+                type="tel"
                 name="dokaan_phone"
                 value={form.dokaan_phone}
                 onChange={handleChange}
                 placeholder="01XXXXXXXXX"
-                className="w-full p-2 rounded-lg border border-white/30 bg-white/10 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </label>
           </div>
 
-          {/* Type/Category */}
           <div>
-            <label className="block text-sm font-medium text-white mb-1 flex items-center gap-2">
-              <Tag className="text-pink-400 animate-pulse" size={20} />
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
+              <Tag className="text-purple-500" size={16} />
               Category
             </label>
             <CreatableSelect
@@ -267,27 +275,43 @@ const handleSubmit = async (e) => {
               styles={{
                 control: (base) => ({
                   ...base,
-                  backgroundColor: "#1f2937",
-                  borderColor: "#4b5563",
-                  color: "#fff",
+                  backgroundColor: isDark ? "#1f2937" : "#ffffff",
+                  borderColor: isDark ? "#374151" : "#d1d5db",
+                  borderRadius: "0.75rem",
+                  minHeight: "42px",
                 }),
-                singleValue: (base) => ({ ...base, color: "#fff" }),
-                input: (base) => ({ ...base, color: "#fff" }),
+                singleValue: (base) => ({
+                  ...base,
+                  color: isDark ? "#f9fafb" : "#111827",
+                }),
+                input: (base) => ({
+                  ...base,
+                  color: isDark ? "#f9fafb" : "#111827",
+                }),
                 menu: (base) => ({
                   ...base,
-                  backgroundColor: "#1f2937",
-                  color: "#fff",
+                  backgroundColor: isDark ? "#1f2937" : "#ffffff",
+                  color: isDark ? "#f9fafb" : "#111827",
+                }),
+                option: (base, state) => ({
+                  ...base,
+                  backgroundColor: state.isFocused
+                    ? isDark
+                      ? "#374151"
+                      : "#eef2ff"
+                    : "transparent",
+                  color: isDark ? "#f9fafb" : "#111827",
                 }),
               }}
             />
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
-            className="w-full mt-4 bg-gradient-to-r from-green-400 via-blue-500 to-purple-500 hover:from-purple-500 hover:to-green-400 text-white font-semibold py-2 rounded-xl transition-all shadow-lg hover:scale-105"
+            disabled={isSubmitting}
+            className="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-semibold py-2.5 rounded-xl transition-colors"
           >
-            🏪 Add Shop
+            {isSubmitting ? "Adding Shop..." : "Add Shop"}
           </button>
         </form>
       </div>

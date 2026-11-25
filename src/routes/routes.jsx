@@ -2,7 +2,6 @@ import { createBrowserRouter } from "react-router-dom";
 import Home from "../pages/landingPage/home/Homee";
 import Main from "../layouts/Main";
 import Login from "../pages/landingPage/home/Login";
-// import SignUp from "../pages/landingPage/home/SignUp";
 import DashboardLayout from "../layouts/DashboardLayout";
 import OverviewPage from "../pages/dashboard/pages/OverviewPage";
 import ProductsPage from "../pages/dashboard/pages/ProductsPage";
@@ -14,8 +13,6 @@ import SettingsPage from "../pages/dashboard/pages/SettingsPage";
 import OtpVerification from "../components/landingPage/login/OtpVerification";
 import RegistrationStepper from "../pages/landingPage/RegistrationProcess/RegistrationStepper";
 import DokaanProfile from "../components/dashBoard/Profile/DokaanProfile";
-import TestComponent from "../components/shared/Theme/TestComponent";
-// import AddProducts from "../pages/dashboard/pages/AddProducts";
 import AddProducts from "../components/dashBoard/home/products/AddProducts";
 import Scanner from "../components/dashBoard/home/products/Scanner/Scanner";
 import AddSaleProduct from "../pages/dashboard/pages/AddSaleProduct";
@@ -37,11 +34,10 @@ import DokaanPage from "../pages/dashboard/pages/DokaanPage";
 import AddAExpense from "../pages/dashboard/pages/AddAExpense";
 import AddAIncome from "../pages/dashboard/pages/AddAIncome";
 import ExpensePage from "../pages/dashboard/pages/ExpensePage";
-// import InvoicePreview from "../components/dashBoard/home/Invoice/InvoicePreview";
 import InvoicePreviewPage from "../pages/dashboard/pages/InvoicePreviewPage";
 import InvoicePage from "../pages/dashboard/pages/InvoicePage";
 import AddFixedCost from "../components/dashBoard/home/expense/AddFixedCost";
-// import MobileSidebar from "../components/dashBoard/home/common/MobileSidebar";
+
 const router = createBrowserRouter(
   [
     {
@@ -68,10 +64,6 @@ const router = createBrowserRouter(
           path: "/*",
           element: <NotFound />,
         },
-        // {
-        //   path: "/select-shop",
-        //   element: <DokaanSelection />,
-        // },
       ],
     },
     {
@@ -86,10 +78,6 @@ const router = createBrowserRouter(
           path: "/dashboard",
           element: <OverviewPage />,
         },
-        // {
-        //   path: "/dashboard/select-shop",
-        //   element: <DokaanSelection />,
-        // },
         {
           path: "/dashboard/products",
           element: <ProductsPage />,
@@ -125,10 +113,6 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/product-sell",
           element: <AddSaleProduct />,
-        },
-        {
-          path: "/dashboard/test",
-          element: <TestComponent />,
         },
         {
           path: "/dashboard/barcode",
@@ -167,10 +151,6 @@ const router = createBrowserRouter(
           element: <CustomersListPage />,
         },
         {
-          path: "/dashboard/sales-table",
-          element: <SalesTable />,
-        },
-        {
           path: "/dashboard/employee",
           element: <EmployeePage />,
         },
@@ -185,10 +165,6 @@ const router = createBrowserRouter(
         {
           path: "/dashboard/shop",
           element: <DokaanPage />,
-        },
-        {
-          path: "/dashboard/*",
-          element: <NotFound />,
         },
         {
           path: "/dashboard/add-expense",
@@ -214,16 +190,20 @@ const router = createBrowserRouter(
           path: "/dashboard/save-fixed-cost",
           element: <AddFixedCost />,
         },
-        // {
-        //   path: "/dashboard/mobile-nav",
-        //   element: <MobileSidebar />,
-        // }
+        {
+          path: "/dashboard/*",
+          element: <NotFound />,
+        },
       ],
     },
     {
       path: "/select-shop",
-      element: <DokaanSelection />,
-    }
+      element: (
+        <PrivateRoute>
+          <DokaanSelection />
+        </PrivateRoute>
+      ),
+    },
   ],
   {
     future: {

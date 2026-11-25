@@ -1,33 +1,30 @@
 import { motion } from "framer-motion";
-import { LogOut } from "lucide-react"; // Icon for logout, change if desired
+import { LogOut } from "lucide-react";
 import { useUser } from "../../../../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 const LogoutZone = () => {
   const { logout } = useUser();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-
-  };
 
   return (
     <motion.div
-      className="bg-blue-900 bg-opacity-50 backdrop-filter backdrop-blur-lg shadow-lg rounded-xl p-6 border border-blue-700 mb-8"
-      initial={{ opacity: 0, y: 20 }}
+      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm rounded-2xl p-6 mb-6"
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
+      transition={{ duration: 0.35 }}
     >
-      <div className="flex items-center mb-4">
-        <LogOut className="text-blue-400 mr-3" size={24} />
-        <h2 className="text-xl font-semibold text-gray-100">Logout</h2>
+      <div className="flex items-center mb-3">
+        <LogOut className="text-indigo-500 mr-3" size={22} />
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Sign Out
+        </h2>
       </div>
-      <p className="text-white mb-4">Sign out from your account securely.</p>
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        Sign out from your account securely on this device.
+      </p>
       <button
-        onClick={handleLogout}
-        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200"
+        type="button"
+        onClick={logout}
+        className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-4 rounded-xl transition-colors"
       >
         Logout
       </button>

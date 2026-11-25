@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
 const ChangePasswordModal = ({ isOpen, onClose, onSubmit }) => {
@@ -7,6 +7,15 @@ const ChangePasswordModal = ({ isOpen, onClose, onSubmit }) => {
     newPassword: "",
     confirmPassword: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") onClose?.();
+    };
+    if (isOpen) window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -15,86 +24,112 @@ const ChangePasswordModal = ({ isOpen, onClose, onSubmit }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    if (!formData.oldPassword || !formData.newPassword || !formData.confirmPassword) {
+    if (isSubmitting) return;
+
+    if (
+      !formData.oldPassword ||
+      !formData.newPassword ||
+      !formData.confirmPassword
+    ) {
       toast.error("All fields are required!");
       return;
     }
-  
+
+    if (formData.newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters.");
+      return;
+    }
+
     if (formData.newPassword !== formData.confirmPassword) {
       toast.error("Passwords do not match!");
       return;
     }
-  
-    onSubmit({
-      oldPassword: formData.oldPassword,
-      newPassword: formData.newPassword,
-    });
+
+    if (typeof onSubmit === "function") {
+      setIsSubmitting(true);
+      try {
+        await onSubmit({
+          oldPassword: formData.oldPassword,
+          newPassword: formData.newPassword,
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
   };
-  
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs px-4"
       role="dialog"
       aria-modal="true"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose?.();
+      }}
     >
-      <div className="bg-gray-800 p-6 rounded-lg max-w-md mx-auto shadow-lg w-full">
-        <h2 className="text-lg font-semibold text-gray-100 mb-4">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-6 rounded-2xl max-w-md mx-auto shadow-xl w-full">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Change Password
         </h2>
         <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
           <div>
-            <label className="block text-gray-400 mb-1">Old Password</label>
+            <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
+              Old Password
+            </label>
             <input
               type="password"
               name="oldPassword"
               value={formData.oldPassword}
               onChange={handleChange}
-              className="w-full p-2 rounded bg-gray-700 text-white focus:ring-2 focus:ring-indigo-600 outline-none"
+              className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
               placeholder="Enter your old password"
               required
             />
           </div>
           <div>
-            <label className="block text-gray-400 mb-1">New Password</label>
+            <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
+              New Password
+            </label>
             <input
               type="password"
               name="newPassword"
               value={formData.newPassword}
               onChange={handleChange}
-              className="w-full p-2 rounded bg-gray-700 text-white focus:ring-2 focus:ring-indigo-600 outline-none"
+              className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
               placeholder="Enter your new password"
               required
             />
           </div>
           <div>
-            <label className="block text-gray-400 mb-1">Confirm Password</label>
+            <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
+              Confirm Password
+            </label>
             <input
               type="password"
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="w-full p-2 rounded bg-gray-700 text-white focus:ring-2 focus:ring-indigo-600 outline-none"
+              className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
               placeholder="Confirm your new password"
               required
             />
           </div>
-          <div className="flex justify-end space-x-4">
+          <div className="flex justify-end space-x-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-600"
+              className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 py-2 px-4 rounded-xl text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded"
+              disabled={isSubmitting}
+              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white py-2 px-4 rounded-xl text-sm font-medium"
             >
-              Update
+              {isSubmitting ? "Updating..." : "Update"}
             </button>
           </div>
         </form>

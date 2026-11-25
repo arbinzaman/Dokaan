@@ -1,21 +1,23 @@
 import { motion } from "framer-motion";
 import StatCard from "../../../components/dashBoard/home/common/StatCard";
-import { AlertTriangle, Package, TrendingUp } from "lucide-react";
+import { AlertTriangle, Package, Plus, TrendingUp } from "lucide-react";
 import { FaBangladeshiTakaSign } from "react-icons/fa6";
 import CategoryDistributionChart from "../../../components/dashBoard/home/overview/CategoryDistributionChart";
 import SalesTrendChart from "../../../components/dashBoard/home/products/SalesTrendChart";
 import ProductsTable from "../../../components/dashBoard/home/products/ProductsTable";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "../../../contexts/AuthContext";
 import ProductPerformance from "../../../components/dashBoard/home/analytics/ProductPerformance";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const ProductsPage = () => {
-  const { user, savedShop } = useUser(); // Get user details from context
-  // const token = Cookies.get("XTOKEN");
-  // console.log(token);
-  // console.log(typeof(savedShop.id));
+  const { savedShop } = useUser();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const shopId = savedShop?.id;
 
   // Fetch all products
   const {
@@ -24,150 +26,154 @@ const ProductsPage = () => {
     isError: productsError,
     error: productsErrorMsg,
   } = useQuery({
-    queryKey: ["products", user?.email],
+    queryKey: ["products", shopId],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
-
-      if (!token) {
-        throw new Error("No token found in cookies");
-      }
-
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/products?shopId=${savedShop?.id}`,
+        `${import.meta.env.VITE_BASE_URL}/products`,
         {
+          params: { shopId },
           headers: {
-            Authorization: `${token}`,
-            Accept: "application/json", // <--- ADD this
-            "Content-Type": "application/json", // <--- ADD this
+            ...(token ? { Authorization: `${token}` } : {}),
+            Accept: "application/json",
+            "Content-Type": "application/json",
           },
         }
       );
-
-      return response.data.data;
+      return Array.isArray(response.data?.data) ? response.data.data : [];
     },
-    enabled: !!user?.email, // only run if user email exists
+    enabled: !!shopId,
   });
 
-  const productCount = products.length;
-
-  // Fetch top selling products
+  // Fetch top selling products count
   const { data: topSellingData = {}, isLoading: topSellingLoading } = useQuery({
-    queryKey: ["topSellingProducts", savedShop?.id], // Ensure savedShop has shopId
+    queryKey: ["topSellingProducts", shopId],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
-
-      if (!token) {
-        throw new Error("No token found in cookies");
-      }
-
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/sales/top-selling?shopId=${savedShop.id}`, // Use savedShop?.id
+        `${import.meta.env.VITE_BASE_URL}/sales/top-selling`,
         {
+          params: { shopId },
           headers: {
-            Authorization: `${token}`,
-            Accept: "application/json", // <--- ADD this
-            "Content-Type": "application/json", // <--- ADD this
+            ...(token ? { Authorization: `${token}` } : {}),
+            Accept: "application/json",
+            "Content-Type": "application/json",
           },
         }
       );
-
-      return response.data;
+      return response.data ?? {};
     },
-    enabled: !!savedShop?.id, // Ensure savedShop has id before making the request
+    enabled: !!shopId,
   });
 
-  // Fetch low stock products
+  // Fetch low stock products count
   const { data: lowStockData = {}, isLoading: lowStockLoading } = useQuery({
-    queryKey: ["lowStockProducts", savedShop?.id],
+    queryKey: ["lowStockProducts", shopId],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
-
-      if (!token) {
-        throw new Error("No token found in cookies");
-      }
-
-      const shopId = Number(savedShop?.id);
-
-      if (isNaN(shopId)) {
-        throw new Error("Invalid shop ID");
-      }
-
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/sales/products/low-stock`,
         {
           headers: {
-            Authorization: `${token}`,
+            ...(token ? { Authorization: `${token}` } : {}),
             Accept: "application/json",
             "Content-Type": "application/json",
           },
-          params: {
-            shopId,
-          },
+          params: { shopId: Number(shopId) },
         }
       );
-
-      return response.data;
+      return response.data ?? {};
     },
-    enabled: !!savedShop?.id,
+    enabled: !!shopId,
   });
 
   // Fetch total revenue
   const { data: revenueData = {}, isLoading: revenueLoading } = useQuery({
-    queryKey: ["totalRevenue", savedShop?.id],
+    queryKey: ["totalRevenue", shopId],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
-
-      if (!token) {
-        throw new Error("No token found in cookies");
-      }
-
-      const shopId = Number(savedShop?.id);
-      if (isNaN(shopId)) {
-        throw new Error("Invalid shop ID");
-      }
-
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/sales/total-revenue`,
         {
           headers: {
-            Authorization: `${token}`,
+            ...(token ? { Authorization: `${token}` } : {}),
             Accept: "application/json",
             "Content-Type": "application/json",
           },
-          params: { shopId },
+          params: { shopId: Number(shopId) },
         }
       );
-
-      return response.data;
+      return response.data ?? {};
     },
-    enabled: !!savedShop?.id,
+    enabled: !!shopId,
   });
 
-  const totalRevenue = revenueData?.totalRevenue || 0;
+  const handleEditProduct = (product) => {
+    navigate("/dashboard/product-add", { state: { product } });
+  };
 
-  // const shopId = Number(savedShop?.id);
-  // console.log("Token:", token);
-  // console.log("savedShop ID:", savedShop?.id);
-  // console.log("Shop ID (converted):", shopId);
+  const handleDeleteProduct = async (product) => {
+    const confirmed = window.confirm(
+      `Delete "${product.name}"? This cannot be undone.`
+    );
+    if (!confirmed) return;
 
-  const topSellingCount = topSellingData?.totalTopSellingProducts || 0;
-  const lowStockCount = lowStockData?.totalLowStockProducts || 0;
-  console.log(lowStockData);
+    try {
+      const token = Cookies.get("XTOKEN");
+      await axios.delete(
+        `${import.meta.env.VITE_BASE_URL}/products/${product.id}`,
+        {
+          headers: token ? { Authorization: token } : undefined,
+        }
+      );
+      toast.success("Product deleted.");
+      queryClient.invalidateQueries({ queryKey: ["products", shopId] });
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["totalProducts", shopId] });
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to delete product.");
+    }
+  };
+
+  const safeProducts = Array.isArray(products) ? products : [];
+  const productCount = safeProducts.length;
+  const totalRevenue = Number(revenueData?.totalRevenue ?? 0);
+  const topSellingCount = Number(topSellingData?.totalTopSellingProducts ?? 0);
+  const lowStockCount = Number(lowStockData?.totalLowStockProducts ?? 0);
 
   return (
     <div className="flex-1 overflow-auto relative z-10">
-      <main className="max-w-7xl mx-auto py-6 px-4 lg:px-8">
+      <main className="max-w-7xl mx-auto py-4 px-2 sm:px-4 lg:px-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Products
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Monitor catalog pricing, stock levels, and top performers.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/dashboard/product-add")}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition-colors"
+          >
+            <Plus size={16} />
+            Add Product
+          </button>
+        </div>
+
         {/* STATS */}
         <motion.div
           className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
+          transition={{ duration: 0.4 }}
         >
           <StatCard
             name="Total Products"
             icon={Package}
-            value={productCount}
+            value={productsLoading ? "..." : productCount}
             color="#6366F1"
           />
           <StatCard
@@ -184,24 +190,29 @@ const ProductsPage = () => {
           />
           <StatCard
             name="Total Revenue"
-            icon={FaBangladeshiTakaSign} // Swap to Rupee or Taka-looking icon
+            icon={FaBangladeshiTakaSign}
             value={revenueLoading ? "..." : `৳${totalRevenue.toLocaleString()}`}
             color="#EF4444"
           />
         </motion.div>
+
         <ProductPerformance />
-        {/* Products Table */}
+
+        {productsError && (
+          <div className="mt-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-sm text-red-600 dark:text-red-400">
+            Error loading products: {productsErrorMsg?.message || "Unknown error"}
+          </div>
+        )}
+
         <ProductsTable
-          products={products} // Pass the products as a prop here
-          loading={productsLoading} // Optionally pass loading state to ProductsTable
+          products={safeProducts}
+          loading={productsLoading}
+          onEdit={handleEditProduct}
+          onDelete={handleDeleteProduct}
         />
 
-        {/* Error States */}
-        {productsLoading && <div>Loading Products...</div>}
-        {productsError && <div>Error: {productsErrorMsg.message}</div>}
-
         {/* CHARTS */}
-        <div className="grid grid-col-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <SalesTrendChart />
           <CategoryDistributionChart />
         </div>

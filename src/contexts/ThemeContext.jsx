@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, useMemo, useContext, useEffect } from "react";
 import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
 
@@ -14,6 +15,7 @@ export const ThemeModeProvider = ({ children }) => {
     const html = document.documentElement;
     html.classList.remove("dark", "light");
     html.classList.add(mode);
+    html.style.colorScheme = mode;
 
     const body = document.body;
     body.classList.remove("dashboard-light", "dashboard-dark");

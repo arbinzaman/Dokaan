@@ -5,110 +5,141 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useQuery } from "@tanstack/react-query";
 import { useUser } from "../../../contexts/AuthContext";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import InventoryTable from "../../../components/dashBoard/home/products/inventory/InventoryTable";
 
 const ITEMS_PER_PAGE = 10;
 
+const getStock = (item) => Number(item?.stock ?? item?.initialStock ?? 0);
+
 const Inventory = () => {
-  const { user, savedShop } = useUser();
+  const { savedShop } = useUser();
   const navigate = useNavigate();
+  const shopId = savedShop?.id;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [page, setPage] = useState(1);
 
-  const { data: inventory = [], isLoading } = useQuery({
-    queryKey: ["inventory", user?.id, selectedCategory],
+  const {
+    data: allInventory = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["inventory", shopId],
     queryFn: async () => {
       const token = Cookies.get("XTOKEN");
-      if (!token) throw new Error("No token found in cookies");
-
       const baseUrl = import.meta.env.VITE_BASE_URL;
-      const endpoint = selectedCategory
-        ? `${baseUrl}/products/category?shopId=${savedShop.id}&categories=${selectedCategory}`
-        : `${baseUrl}/products?shopId=${savedShop.id}`;
-
-      const response = await axios.get(endpoint, {
+      const response = await axios.get(`${baseUrl}/products`, {
+        params: { shopId },
         headers: {
-          Authorization: `${token}`,
+          ...(token ? { Authorization: `${token}` } : {}),
           Accept: "application/json",
           "Content-Type": "application/json",
         },
       });
-
-      return response.data.data;
+      return Array.isArray(response.data?.data) ? response.data.data : [];
     },
-    enabled: !!user?.id,
+    enabled: !!shopId,
   });
-  // console.log(inventory);
-  const totalItems = inventory.length;
-  const inStockCount = inventory.filter((item) => item.initialStock > 0).length;
-  const outOfStockCount = inventory.filter(
-    (item) => item.initialStock <= 0
+
+  const safeInventory = useMemo(
+    () => (Array.isArray(allInventory) ? allInventory : []),
+    [allInventory]
+  );
+
+  const totalItems = safeInventory.length;
+  const inStockCount = safeInventory.filter((item) => getStock(item) > 0).length;
+  const outOfStockCount = safeInventory.filter(
+    (item) => getStock(item) <= 0
   ).length;
 
-  // Filter and paginate
-  const filteredInventory = inventory.filter((item) =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const uniqueCategories = useMemo(
+    () => [
+      ...new Set(
+        safeInventory
+          .map((item) => item?.itemCategory)
+          .filter((category) => category && category.trim() !== "")
+      ),
+    ],
+    [safeInventory]
   );
 
+  const filteredInventory = safeInventory.filter((item) => {
+    const q = searchTerm.toLowerCase();
+    const matchesSearch =
+      !q ||
+      item?.name?.toLowerCase().includes(q) ||
+      item?.code?.toLowerCase().includes(q);
+    const matchesCategory =
+      !selectedCategory || item?.itemCategory === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredInventory.length / ITEMS_PER_PAGE)
+  );
+  const safePage = Math.min(page, totalPages);
   const paginatedItems = filteredInventory.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
+    (safePage - 1) * ITEMS_PER_PAGE,
+    safePage * ITEMS_PER_PAGE
   );
-
-  const uniqueCategories = [
-    ...new Set(
-      inventory
-        .map((item) => item.itemCategory)
-        .filter((category) => category && category.trim() !== "")
-    ),
-  ];
-
-  const totalPages = Math.ceil(filteredInventory.length / ITEMS_PER_PAGE);
 
   return (
     <div className="flex-1 overflow-auto relative z-10 mb-10">
-      <main className="max-w-7xl mx-auto py-6 px-4 lg:px-8">
+      <main className="max-w-7xl mx-auto py-4 px-2 sm:px-4 lg:px-6">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Inventory
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Track live stock levels, restock products, or launch POS checkout.
+          </p>
+        </div>
+
         {/* STATS */}
         <motion.div
           className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
+          transition={{ duration: 0.4 }}
         >
           <StatCard
             name="Total Items"
             icon={Boxes}
-            value={totalItems}
+            value={isLoading ? "..." : totalItems}
+            subtext="View all items"
             color="#6366F1"
             onClick={() =>
               navigate("/dashboard/total-products", {
-                state: { items: inventory },
+                state: { items: safeInventory },
               })
             }
           />
           <StatCard
             name="In Stock"
             icon={PackageCheck}
-            value={inStockCount}
+            value={isLoading ? "..." : inStockCount}
+            subtext="View available items"
             color="#10B981"
             onClick={() =>
               navigate("/dashboard/products/in-stock", {
-                state: { items: inventory },
+                state: { items: safeInventory },
               })
             }
           />
           <StatCard
             name="Out of Stock"
             icon={PackageX}
-            value={outOfStockCount}
+            value={isLoading ? "..." : outOfStockCount}
+            subtext="Needs restocking"
             color="#EF4444"
             onClick={() =>
               navigate("/dashboard/products/out-of-stock", {
-                state: { items: inventory },
+                state: { items: safeInventory },
               })
             }
           />
@@ -116,16 +147,16 @@ const Inventory = () => {
 
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder="Search name or barcode..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setPage(1);
               }}
-              className="border rounded-md px-3 py-2 w-full sm:w-64 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+              className="border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2 text-sm w-full sm:w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <select
               value={selectedCategory}
@@ -133,59 +164,69 @@ const Inventory = () => {
                 setSelectedCategory(e.target.value);
                 setPage(1);
               }}
-              className="border rounded-md px-3 py-2 w-full sm:w-48 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+              className="border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2 text-sm w-full sm:w-48 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="">All Categories</option>
-              {uniqueCategories.map((category, idx) => (
-                <option key={idx} value={category}>
+              {uniqueCategories.map((category) => (
+                <option key={category} value={category}>
                   {category}
                 </option>
               ))}
             </select>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+          <div className="flex flex-wrap gap-2.5">
+            <button
+              type="button"
               onClick={() => navigate("/dashboard/product-add")}
-              className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md hover:shadow-lg transition duration-300"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium shadow-sm transition-colors"
             >
-              <Plus size={18} />
-              <span className="font-medium">Add Product</span>
-            </motion.button>
+              <Plus size={16} />
+              Add Product
+            </button>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <button
+              type="button"
               onClick={() => navigate("/dashboard/product-sell")}
-              className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md hover:shadow-lg transition duration-300"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium shadow-sm transition-colors"
             >
-              <PackageCheck size={18} />
-              <span className="font-medium">Sell Product</span>
-            </motion.button>
+              <PackageCheck size={16} />
+              Sell Product
+            </button>
           </div>
         </div>
+
+        {isError && (
+          <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-sm text-red-600 dark:text-red-400">
+            Failed to load inventory: {error?.message || "Please try again."}
+          </div>
+        )}
 
         {/* Inventory Table */}
         <InventoryTable items={paginatedItems} loading={isLoading} />
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center mt-6 space-x-2">
-            {Array.from({ length: totalPages }, (_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setPage(idx + 1)}
-                className={`px-3 py-1 rounded-md ${
-                  page === idx + 1
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-200 dark:bg-gray-700 dark:text-white"
-                }`}
-              >
-                {idx + 1}
-              </button>
-            ))}
+          <div className="flex justify-center items-center mt-6 gap-3">
+            <button
+              type="button"
+              disabled={safePage === 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="px-3.5 py-1.5 text-sm font-medium rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">
+              Page {safePage} of {totalPages}
+            </span>
+            <button
+              type="button"
+              disabled={safePage === totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              className="px-3.5 py-1.5 text-sm font-medium rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50"
+            >
+              Next
+            </button>
           </div>
         )}
       </main>

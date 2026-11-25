@@ -19,7 +19,14 @@
   --font-sora: "Sora", sans-serif;
   --font-code: "Source Code Pro", monospace;
   --font-grotesk: "Space Grotesk", sans-serif;
+}
+
+html.dark {
   color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
 }
 
 * {
@@ -99,36 +106,28 @@
 @media print {
   body {
     -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
-  button {
+  button,
+  .no-print {
     display: none !important;
   }
-}
 
-@media print {
   body * {
     visibility: hidden;
   }
+
   #print-section,
   #print-section * {
     visibility: visible;
   }
+
   #print-section {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
-  }
-}
-
-@media print {
-   @page {
-    size: 92mm auto; /* width fixed to 92mm, height auto */
-    margin: 0;
-  }
-  .no-print {
-    display: none !important;
   }
 }
 

@@ -1,15 +1,11 @@
-// InvoiceTypeSelector.jsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import {  ReceiptLong } from "@mui/icons-material";
+import { ReceiptLong } from "@mui/icons-material";
 
 const InvoiceTypeSelector = () => {
-  const [selectedType, setSelectedType] = useState("POS");
-
-  useEffect(() => {
-    const saved = localStorage.getItem("invoiceType");
-    if (saved) setSelectedType(saved);
-  }, []);
+  const [selectedType, setSelectedType] = useState(
+    () => localStorage.getItem("invoiceType") || "POS"
+  );
 
   const handleChange = (type) => {
     setSelectedType(type);
@@ -18,35 +14,41 @@ const InvoiceTypeSelector = () => {
 
   return (
     <motion.div
-      className="bg-purple-900 bg-opacity-50 backdrop-blur-lg shadow-lg rounded-xl p-6 border border-purple-700 mb-8"
-      initial={{ opacity: 0, y: 20 }}
+      className="bg-white dark:bg-gray-900 shadow-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-800 mb-6"
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
+      transition={{ duration: 0.35 }}
     >
-      <div className="flex items-center mb-4">
-        <ReceiptLong className="text-yellow-300 mr-3" />
-        <h2 className="text-xl font-semibold text-gray-100">Invoice Type</h2>
+      <div className="flex items-center mb-3">
+        <ReceiptLong className="text-indigo-500 mr-3" />
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Invoice Layout
+        </h2>
       </div>
-      <p className="text-white mb-4">Select your preferred invoice layout:</p>
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        Choose your default invoice format for printing receipts:
+      </p>
 
-      <div className="flex gap-4">
+      <div className="flex flex-wrap gap-3">
         <button
+          type="button"
           onClick={() => handleChange("POS")}
-          className={`${
+          className={`text-sm font-semibold px-4 py-2 rounded-xl border transition-colors ${
             selectedType === "POS"
-              ? "bg-yellow-500 text-black"
-              : "bg-transparent border border-yellow-400 text-yellow-300"
-          } font-semibold px-4 py-2 rounded transition`}
+              ? "bg-indigo-600 border-indigo-600 text-white"
+              : "bg-transparent border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          }`}
         >
-          POS (Receipt)
+          POS (Thermal Receipt)
         </button>
         <button
+          type="button"
           onClick={() => handleChange("A4")}
-          className={`${
+          className={`text-sm font-semibold px-4 py-2 rounded-xl border transition-colors ${
             selectedType === "A4"
-              ? "bg-yellow-500 text-black"
-              : "bg-transparent border border-yellow-400 text-yellow-300"
-          } font-semibold px-4 py-2 rounded transition`}
+              ? "bg-indigo-600 border-indigo-600 text-white"
+              : "bg-transparent border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          }`}
         >
           A4 (Full Page)
         </button>

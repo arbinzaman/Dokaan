@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import Section from "./Section";
 import smallSphere from "../../../assets/Home/4-small.png";
 import stars from "../../../assets/Home/pricing/stars.svg";
@@ -29,8 +30,8 @@ const Pricing = () => {
         </div>
 
         <Heading
-          tag="দোকানে যোগ দিন, মাসে একবার পেমেন্ট করুন, সব সময় ব্যবহার করুন"
-          title="পেমেন্ট একবার , নিশ্চিন্ত সারা মাস"
+          tag="দোকানে যোগ দিন, সহজ প্ল্যানে সব সুবিধা ব্যবহার করুন"
+          title="পেমেন্ট একবার, নিশ্চিন্ত সারা মাস"
         />
 
         <div className="relative">
@@ -40,12 +41,12 @@ const Pricing = () => {
         </div>
 
         <div className="flex justify-center mt-10">
-          <a
-            className="text-xs font-code font-bold tracking-wider uppercase border-b"
-            href="/pricing"
+          <Link
+            className="text-xs font-code font-bold tracking-wider uppercase border-b border-n-1/50 hover:text-color-1 hover:border-color-1 transition-colors"
+            to="/signup"
           >
-            See the full details
-          </a>
+            Start your free trial
+          </Link>
         </div>
       </div>
     </Section>

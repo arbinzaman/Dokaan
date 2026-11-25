@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useContext, useEffect, useCallback } from "react";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
 import axios from "axios";
@@ -8,48 +8,112 @@ export const AuthContext = createContext();
 
 export const useUser = () => useContext(AuthContext);
 
+const safeParseStorage = (key) => {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw || raw === "undefined" || raw === "null") return null;
+    return JSON.parse(raw);
+  } catch {
+    localStorage.removeItem(key);
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
-
-  const [dokaan, setDokaan] = useState(() => {
-    const storedDokaan = localStorage.getItem("dokaan");
-    return storedDokaan ? JSON.parse(storedDokaan) : null;
-  });
-
-  const [savedShop, setSavedShop] = useState(() => {
-    const storedShop = localStorage.getItem("savedShop");
-    return storedShop ? JSON.parse(storedShop) : null;
-  });
+  const [user, setUser] = useState(() => safeParseStorage("user"));
+  const [dokaan, setDokaan] = useState(() => safeParseStorage("dokaan"));
+  const [savedShop, setSavedShop] = useState(() => safeParseStorage("savedShop"));
+  const [loading] = useState(false);
 
   // Sync user and dokaan states with localStorage
   useEffect(() => {
-    user
-      ? localStorage.setItem("user", JSON.stringify(user))
-      : localStorage.removeItem("user");
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("user");
+    }
   }, [user]);
 
   useEffect(() => {
-    dokaan
-      ? localStorage.setItem("dokaan", JSON.stringify(dokaan))
-      : localStorage.removeItem("dokaan");
+    if (dokaan) {
+      localStorage.setItem("dokaan", JSON.stringify(dokaan));
+    } else {
+      localStorage.removeItem("dokaan");
+    }
   }, [dokaan]);
 
   useEffect(() => {
-    savedShop
-      ? localStorage.setItem("savedShop", JSON.stringify(savedShop))
-      : localStorage.removeItem("savedShop");
+    if (savedShop) {
+      localStorage.setItem("savedShop", JSON.stringify(savedShop));
+    } else {
+      localStorage.removeItem("savedShop");
+    }
   }, [savedShop]);
 
-  // Logout if token is missing
+  // Clear stale session silently if cookie expired without hijacking public routes
   useEffect(() => {
     const token = Cookies.get("XTOKEN");
     if (!token && user) {
-      logout();
+      setUser(null);
+      setDokaan(null);
+      setSavedShop(null);
+      localStorage.removeItem("user");
+      localStorage.removeItem("dokaan");
+      localStorage.removeItem("savedShop");
     }
   }, [user]);
+
+  // Synchronously persist selected shop to avoid race conditions before navigation/reload
+  const selectShop = useCallback((shop) => {
+    setSavedShop(shop);
+    if (shop) {
+      localStorage.setItem("savedShop", JSON.stringify(shop));
+    } else {
+      localStorage.removeItem("savedShop");
+    }
+  }, []);
+
+  // Keep user.twoFactorEnabled in sync after toggling 2FA
+  const updateTwoFactor = useCallback((enabled) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, twoFactorEnabled: Boolean(enabled) };
+      localStorage.setItem("user", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  // Keep dokaan list and savedShop in sync after editing a shop
+  const updateShop = useCallback((updatedShop) => {
+    if (!updatedShop) return;
+    setDokaan((prev) => {
+      const list = Array.isArray(prev) ? prev : prev ? [prev] : [];
+      const next = list.map((shop) =>
+        shop?.id === updatedShop.id ? { ...shop, ...updatedShop } : shop
+      );
+      localStorage.setItem("dokaan", JSON.stringify(next));
+      return next;
+    });
+    setSavedShop((prev) => {
+      if (prev?.id === updatedShop.id) {
+        const next = { ...prev, ...updatedShop };
+        localStorage.setItem("savedShop", JSON.stringify(next));
+        return next;
+      }
+      return prev;
+    });
+  }, []);
+
+  // Keep dokaan list in sync after adding a shop
+  const addShop = useCallback((newShop) => {
+    if (!newShop) return;
+    setDokaan((prev) => {
+      const list = Array.isArray(prev) ? prev : prev ? [prev] : [];
+      const next = [...list, newShop];
+      localStorage.setItem("dokaan", JSON.stringify(next));
+      return next;
+    });
+  }, []);
 
   // Login function
   const login = async (email, password) => {
@@ -61,29 +125,39 @@ export const AuthProvider = ({ children }) => {
 
       if (res.status === 200 && res.data?.access_token) {
         const { user: userData, dokaan: dokaanData, access_token } = res.data;
+        const normalizedDokaans = Array.isArray(dokaanData)
+          ? dokaanData
+          : dokaanData
+          ? [dokaanData]
+          : [];
 
         setUser(userData);
-        setDokaan(dokaanData); // dokaanData is now an array
+        setDokaan(normalizedDokaans);
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("dokaan", JSON.stringify(normalizedDokaans));
         Cookies.set("XTOKEN", access_token, { expires: 1, path: "/" });
 
-        // ✅ Save the first dokaan as savedShop if user is employee
-        if (userData?.role === "employee" && Array.isArray(dokaanData)) {
-          setSavedShop(dokaanData[0]);
+        // Automatically select the shop for employees or single-shop owners
+        if (
+          (userData?.role === "employee" || normalizedDokaans.length === 1) &&
+          normalizedDokaans[0]
+        ) {
+          selectShop(normalizedDokaans[0]);
         }
 
-        // console.log(res, dokaanData, access_token);
         return res;
       } else {
         throw new Error("Invalid response from server.");
       }
     } catch (error) {
-      const message = error?.response?.data?.message || "Login failed!";
+      const message =
+        error?.response?.data?.message || error?.message || "Login failed!";
       throw new Error(message);
     }
   };
 
   // Logout function
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     setDokaan(null);
     setSavedShop(null);
@@ -91,36 +165,33 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("user");
     localStorage.removeItem("dokaan");
     localStorage.removeItem("savedShop");
-    Cookies.remove("XTOKEN");
+    Cookies.remove("XTOKEN", { path: "/" });
 
-    toast.success("Logged out!", {
-      style: {
-        border: "1px solid #713200",
-        padding: "16px",
-        color: "#713200",
-      },
-      iconTheme: {
-        primary: "#713200",
-        secondary: "#FFFAEE",
-      },
-    });
+    toast.success("Logged out!");
 
     setTimeout(() => {
-      window.location.href = "/login";
-    }, 500);
-  };
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    }, 300);
+  }, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
         dokaan,
+        loading,
         login,
         logout,
         setUser,
         setDokaan,
         savedShop,
-        setSavedShop,
+        setSavedShop: selectShop,
+        selectShop,
+        updateTwoFactor,
+        updateShop,
+        addShop,
       }}
     >
       {children}

@@ -1,24 +1,26 @@
 import { Link } from "react-router-dom";
 import { HamburgerMenu } from "../../../landingPage/home/design/Header";
-import { useUser } from "../../../../contexts/AuthContext"; // Adjust the import path
+import { useUser } from "../../../../contexts/AuthContext";
 
 const NavList = ({ handleSectionNavigation, handleClick, openNavigation }) => {
   const { user, logout } = useUser();
 
   return (
-    <div
+    <nav
       className={`${
         openNavigation ? "flex" : "hidden"
-      } fixed top-[5rem] left-0 right-0 bottom-0 bg-n-8 lg:static lg:flex lg:mx-auto lg:bg-transparent`}
+      } fixed top-[4.5rem] left-0 right-0 bottom-0 bg-n-8 overflow-y-auto lg:overflow-visible lg:static lg:flex lg:mx-auto lg:bg-transparent`}
     >
       <div className="relative z-2 flex flex-col items-center justify-center m-auto lg:flex-row">
         <button
+          type="button"
           onClick={() => handleSectionNavigation("features")}
           className="block font-code text-2xl uppercase text-n-1 transition-colors hover:text-color-1 px-6 py-6 md:py-8 lg:text-xs lg:font-semibold"
         >
           Features
         </button>
         <button
+          type="button"
           onClick={() => handleSectionNavigation("pricing")}
           className="block font-code text-2xl uppercase text-n-1 transition-colors hover:text-color-1 px-6 py-6 md:py-8 lg:text-xs lg:font-semibold"
         >
@@ -28,7 +30,8 @@ const NavList = ({ handleSectionNavigation, handleClick, openNavigation }) => {
           href="https://drive.google.com/file/d/1UwUeq3zu8N2VvGk59ReNgPiowpCvMKS9/view?usp=sharing"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[#39ff14] drop-shadow-[0_0_5px_#39ff14] font-code text-2xl uppercase px-6 py-6 md:py-8 lg:text-xs lg:font-semibold"
+          onClick={handleClick}
+          className="text-emerald-400 hover:text-emerald-300 transition-colors font-code text-2xl uppercase px-6 py-6 md:py-8 lg:text-xs lg:font-semibold"
         >
           Download Mobile App
         </a>
@@ -37,16 +40,18 @@ const NavList = ({ handleSectionNavigation, handleClick, openNavigation }) => {
           <>
             <Link
               to="/dashboard"
+              onClick={handleClick}
               className="block font-code text-2xl uppercase text-n-1 transition-colors hover:text-color-1 px-6 py-6 md:py-8 lg:text-xs lg:font-semibold"
             >
               Dashboard
             </Link>
             <button
+              type="button"
               onClick={() => {
-                logout();
                 handleClick();
+                logout();
               }}
-              className="block font-code text-2xl uppercase text-n-1 transition-colors hover:text-color-1 px-6 py-6 md:py-8 lg:text-xs lg:font-semibold"
+              className="block font-code text-2xl uppercase text-n-1 transition-colors hover:text-color-1 lg:hidden px-6 py-6 md:py-8 lg:text-xs lg:font-semibold"
             >
               Logout
             </button>
@@ -71,7 +76,7 @@ const NavList = ({ handleSectionNavigation, handleClick, openNavigation }) => {
         )}
       </div>
       <HamburgerMenu />
-    </div>
+    </nav>
   );
 };
 

@@ -11,6 +11,7 @@ import {
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import Cookies from "js-cookie";
 import { useUser } from "../../../../contexts/AuthContext";
 
 const CustomerGrowth = () => {
@@ -20,74 +21,92 @@ const CustomerGrowth = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ["customerGrowth", shopId],
     queryFn: async () => {
+      const token = Cookies.get("XTOKEN");
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/customers/growth?shopId=${shopId}`
+        `${import.meta.env.VITE_BASE_URL}/customers/growth`,
+        {
+          params: { shopId },
+          headers: token ? { Authorization: token } : undefined,
+        }
       );
-      return response.data;
+      return response.data ?? {};
     },
     enabled: !!shopId,
   });
 
-  if (isLoading) {
-    return (
-      <div className="p-6 bg-white dark:bg-black bg-opacity-50 backdrop-filter backdrop-blur-lg shadow-lg rounded-xl">
-        <p className="text-gray-500">Loading customer growth data...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 bg-white dark:bg-black bg-opacity-50 backdrop-filter backdrop-blur-lg shadow-lg rounded-xl">
-        <p className="text-red-500">Failed to load growth data</p>
-      </div>
-    );
-  }
-
-  const growthData = data?.data || [];
+  const growthData = Array.isArray(data?.data) ? data.data : [];
   const lastUpdated = data?.lastUpdatedMonth || "N/A";
 
   return (
     <motion.div
-      className="bg-white dark:bg-black bg-opacity-50 backdrop-filter backdrop-blur-lg shadow-lg rounded-xl p-6"
-      initial={{ opacity: 0, y: 20 }}
+      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm rounded-2xl p-6"
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
+      transition={{ delay: 0.15 }}
     >
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-[#10B981] drop-shadow-[0_0_6px_#10B981]">
+      <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
           Customer Growth
         </h2>
-        <span className="text-sm text-gray-500">
+        <span className="text-xs text-gray-500 dark:text-gray-400">
           Last Updated: {lastUpdated}
         </span>
       </div>
-      <div style={{ width: "100%", height: 300 }}>
-        <ResponsiveContainer>
-          <LineChart data={growthData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis dataKey="month" stroke="#9CA3AF" />
-            <YAxis stroke="#9CA3AF" allowDecimals={false} />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "rgba(31, 41, 55, 0.8)",
-                borderColor: "#4B5563",
-              }}
-              itemStyle={{ color: "#E5E7EB" }}
-            />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="users"
-              stroke="#10B981"
-              strokeWidth={2}
-              name="New Customers"
-              dot={{ r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+
+      {isLoading ? (
+        <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">
+          Loading customer growth data...
+        </p>
+      ) : error ? (
+        <p className="text-sm text-red-500 py-4">
+          Failed to load growth data.
+        </p>
+      ) : growthData.length === 0 ? (
+        <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">
+          No customer growth data yet.
+        </p>
+      ) : (
+        <div className="w-full h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={growthData}>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#9CA3AF"
+                strokeOpacity={0.25}
+              />
+              <XAxis
+                dataKey="month"
+                stroke="#6B7280"
+                tick={{ fill: "#6B7280", fontSize: 12 }}
+              />
+              <YAxis
+                stroke="#6B7280"
+                tick={{ fill: "#6B7280", fontSize: 12 }}
+                allowDecimals={false}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#111827",
+                  borderColor: "#374151",
+                  borderRadius: "0.75rem",
+                  color: "#F9FAFB",
+                }}
+                itemStyle={{ color: "#F9FAFB" }}
+              />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="users"
+                stroke="#10B981"
+                strokeWidth={2.5}
+                name="New Customers"
+                dot={{ r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </motion.div>
   );
 };
