@@ -230,11 +230,10 @@ const Benefits = () => {
                 key={tab.id}
                 type="button"
                 onClick={() => setSelectedCategory(tab.id)}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-colors ${
-                  active
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-colors ${active
                     ? "bg-red-600 text-white border-red-600 shadow-md shadow-red-950/40"
                     : "bg-zinc-950/70 text-zinc-300 border-red-950/70 hover:border-red-700 hover:text-white"
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
