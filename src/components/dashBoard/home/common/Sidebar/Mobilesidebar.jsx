@@ -16,8 +16,6 @@ import { Link, useLocation } from "react-router-dom";
 import { useUser } from "../../../../../contexts/AuthContext";
 import { useLanguage } from "../../../../../contexts/LanguageContext";
 import { useQueryClient } from "@tanstack/react-query";
-import LanguageToggle from "../../../../shared/LanguageToggle";
-import ThemeToggleButton from "../../../../shared/Theme/ThemeToggleButton";
 import fullLogo from "../../../../../assets/Home/logos/DOKAAN_FINAL.png";
 
 const MobileSidebar = ({
@@ -279,19 +277,6 @@ const MobileSidebar = ({
                   );
                 })}
               </nav>
-
-              {/* Quick Language + Theme Controls inside Mobile Menu */}
-              <div className="mt-5 pt-4 border-t border-slate-200 dark:border-zinc-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-600 dark:text-zinc-400">
-                    {t("common.language")}
-                  </span>
-                  <LanguageToggle variant="dashboard" />
-                </div>
-                <div className="flex justify-center">
-                  <ThemeToggleButton />
-                </div>
-              </div>
             </motion.div>
           </>
         )}
