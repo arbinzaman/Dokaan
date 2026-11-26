@@ -7,7 +7,7 @@ import UserRegistrationForm from "./UserRegistrationForm";
 import { useUser } from "../../../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import dokaanIcon from "../../../assets/Home/logos/DOKAAN Only D.png";
+import dokaanLogo from "../../../assets/Home/logos/DOKAAN_FINAL.png";
 
 const STEPS = [
   { id: 0, label: "Account Details", icon: User },
@@ -139,12 +139,12 @@ const RegistrationStepper = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 pt-24 pb-16">
-      <div className="w-full max-w-lg rounded-3xl bg-zinc-900/80 border border-zinc-800 p-7 sm:p-9 shadow-2xl">
+      <div className="w-full max-w-lg rounded-3xl bg-zinc-950/85 border border-red-950/80 p-7 sm:p-9 shadow-2xl shadow-red-950/30">
         <div className="text-center mb-6">
           <img
-            src={dokaanIcon}
-            alt="Dokaan"
-            className="w-10 h-10 mx-auto mb-3 object-contain"
+            src={dokaanLogo}
+            alt="Dokaan — এখন ডিজিটাল"
+            className="h-14 w-auto mx-auto mb-4 object-contain drop-shadow-[0_4px_16px_rgba(225,29,72,0.3)]"
           />
           <h1 className="text-2xl font-bold tracking-tight text-white">
             Create your Dokaan account
@@ -216,7 +216,7 @@ const RegistrationStepper = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-2.5 rounded-xl bg-white text-zinc-950 hover:bg-zinc-200 disabled:opacity-60 font-semibold text-sm transition-colors inline-flex items-center gap-2"
+              className="px-6 py-2.5 rounded-xl bg-red-600 text-white hover:bg-red-500 disabled:opacity-60 font-semibold text-sm transition-colors inline-flex items-center gap-2 shadow-lg shadow-red-950/40"
             >
               {isSubmitting && <Loader2 size={15} className="animate-spin" />}
               {activeStep === 0

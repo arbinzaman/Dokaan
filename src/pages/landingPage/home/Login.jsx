@@ -13,7 +13,7 @@ import {
   Store,
   UserCheck,
 } from "lucide-react";
-import dokaanIcon from "../../../assets/Home/logos/DOKAAN Only D.png";
+import dokaanLogo from "../../../assets/Home/logos/DOKAAN_FINAL.png";
 import { DEMO_ACCOUNTS } from "../../../demo/demoData";
 import { activateDemoSession } from "../../../demo/mockServer";
 
@@ -185,12 +185,12 @@ const Login = () => {
         </div>
 
         {/* Right: Standard Credentials Sign In */}
-        <div className="lg:col-span-6 rounded-3xl bg-zinc-900/80 border border-zinc-800 p-7 sm:p-8 shadow-2xl flex flex-col justify-center">
+        <div className="lg:col-span-6 rounded-3xl bg-zinc-950/85 border border-red-950/80 p-7 sm:p-8 shadow-2xl shadow-red-950/30 flex flex-col justify-center">
           <div className="text-center mb-7">
             <img
-              src={dokaanIcon}
-              alt="Dokaan"
-              className="w-11 h-11 mx-auto mb-3 object-contain"
+              src={dokaanLogo}
+              alt="Dokaan — এখন ডিজিটাল"
+              className="h-16 w-auto mx-auto mb-4 object-contain drop-shadow-[0_4px_16px_rgba(225,29,72,0.3)]"
             />
             <h1 className="text-2xl font-bold tracking-tight text-white">
               Welcome back
@@ -258,7 +258,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2.5 px-4 rounded-xl bg-white text-zinc-950 hover:bg-zinc-200 disabled:opacity-60 font-semibold text-sm transition-colors inline-flex items-center justify-center gap-2 mt-2"
+              className="w-full py-2.5 px-4 rounded-xl bg-red-600 text-white hover:bg-red-500 disabled:opacity-60 font-semibold text-sm transition-colors inline-flex items-center justify-center gap-2 mt-2 shadow-lg shadow-red-950/40"
             >
               {isLoading && <Loader2 size={16} className="animate-spin" />}
               {isLoading ? "Signing in..." : "Sign In"}
