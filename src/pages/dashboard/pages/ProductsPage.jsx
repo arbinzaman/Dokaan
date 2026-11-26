@@ -9,12 +9,14 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "../../../contexts/AuthContext";
+import { useLanguage } from "../../../contexts/LanguageContext";
 import ProductPerformance from "../../../components/dashBoard/home/analytics/ProductPerformance";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const ProductsPage = () => {
   const { savedShop } = useUser();
+  const { pick } = useLanguage();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const shopId = savedShop?.id;
@@ -146,50 +148,53 @@ const ProductsPage = () => {
       <main className="max-w-7xl mx-auto py-4 px-2 sm:px-4 lg:px-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Products
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+              {pick("Products", "পণ্য তালিকা")}
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Monitor catalog pricing, stock levels, and top performers.
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+              {pick(
+                "View all items, edit prices or stock, and see top sellers.",
+                "সব পণ্যের দাম ও স্টক দেখুন, সহজে পরিবর্তন করুন।"
+              )}
             </p>
           </div>
           <button
             type="button"
             onClick={() => navigate("/dashboard/product-add")}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition-colors"
           >
             <Plus size={16} />
-            Add Product
+            {pick("Add Product", "নতুন পণ্য যোগ করুন")}
           </button>
         </div>
 
         {/* STATS */}
         <motion.div
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8"
+          className="grid grid-cols-2 gap-3.5 sm:gap-5 lg:grid-cols-4 mb-6"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
           <StatCard
-            name="Total Products"
+            name={pick("Total Products", "মোট পণ্য")}
             icon={Package}
             value={productsLoading ? "..." : productCount}
-            color="#6366F1"
+            color="#DC2626"
           />
           <StatCard
-            name="Top Selling"
+            name={pick("Top Selling", "বেশি বিক্রি")}
             icon={TrendingUp}
             value={topSellingLoading ? "..." : topSellingCount}
             color="#10B981"
           />
           <StatCard
-            name="Low Stock"
+            name={pick("Low Stock", "স্টক কম")}
             icon={AlertTriangle}
             value={lowStockLoading ? "..." : lowStockCount}
             color="#F59E0B"
           />
           <StatCard
-            name="Total Revenue"
+            name={pick("Total Revenue", "মোট আয়")}
             icon={FaBangladeshiTakaSign}
             value={revenueLoading ? "..." : `৳${totalRevenue.toLocaleString()}`}
             color="#EF4444"

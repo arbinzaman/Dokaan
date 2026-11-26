@@ -3,6 +3,29 @@ import Cookies from "js-cookie";
 import { createInitialDemoDb } from "./demoData.js";
 
 const STORAGE_KEY = "dokaan_demo_db_v1";
+const DEMO_MODE_KEY = "dokaan_demo_mode";
+
+export const isDemoModeActive = () => {
+  try {
+    if (localStorage.getItem(DEMO_MODE_KEY) === "true") return true;
+  } catch {
+    // ignore storage errors
+  }
+  const token = Cookies.get("XTOKEN") || "";
+  return String(token).startsWith("demo-token-");
+};
+
+export const setDemoModeActive = (enabled) => {
+  try {
+    if (enabled) {
+      localStorage.setItem(DEMO_MODE_KEY, "true");
+    } else {
+      localStorage.removeItem(DEMO_MODE_KEY);
+    }
+  } catch {
+    // ignore storage errors
+  }
+};
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const MONTH_ALIASES = {
   jan: 0, january: 0, "01": 0, "1": 0,
@@ -91,6 +114,7 @@ export const buildDemoSessionPayload = (roleOrEmail = "owner@dokaan.demo") => {
 };
 
 export const activateDemoSession = (roleOrEmail = "owner@dokaan.demo") => {
+  setDemoModeActive(true);
   const session = buildDemoSessionPayload(roleOrEmail);
   localStorage.setItem("user", JSON.stringify(session.user));
   localStorage.setItem("dokaan", JSON.stringify(session.dokaan));
@@ -1288,14 +1312,45 @@ export const installDemoServer = () => {
   // Ensure initial demo database is seeded in localStorage
   getDemoDb();
 
-  // 1. Intercept all axios API calls
+  // Only intercept when Demo Mode is explicitly active OR logging into a @dokaan.demo account.
+  // Real user logins, signups, and sessions pass directly through to the live backend!
+  const shouldInterceptRequest = (fullUrl, method, rawBody, headers) => {
+    if (!isApiRequest(fullUrl)) return false;
+
+    const m = String(method || "GET").toUpperCase();
+    const { path } = extractEndpointAndQuery(fullUrl, null);
+
+    // Explicit login check: @dokaan.demo uses offline demo; all other emails go to the real backend
+    if (m === "POST" && path === "/auth/login") {
+      try {
+        const parsed =
+          typeof rawBody === "string" ? JSON.parse(rawBody) : rawBody || {};
+        const email = String(parsed.email || "").toLowerCase().trim();
+        if (email.endsWith("@dokaan.demo")) {
+          setDemoModeActive(true);
+          return true;
+        }
+        setDemoModeActive(false);
+        return false;
+      } catch {
+        return false;
+      }
+    }
+
+    // Check active demo mode or demo token header
+    const authHeader = headers?.Authorization || headers?.authorization || "";
+    if (String(authHeader).startsWith("demo-token-")) return true;
+    return isDemoModeActive();
+  };
+
+  // 1. Intercept axios API calls ONLY in Demo Mode
   const defaultAxiosAdapter = axios.defaults.adapter;
   axios.defaults.adapter = async (config) => {
     const fullUrl = config.baseURL
       ? `${config.baseURL.replace(/\/+$/, "")}/${String(config.url || "").replace(/^\/+/, "")}`
       : String(config.url || "");
 
-    if (!isApiRequest(fullUrl)) {
+    if (!shouldInterceptRequest(fullUrl, config.method, config.data, config.headers)) {
       if (typeof defaultAxiosAdapter === "function") {
         return defaultAxiosAdapter(config);
       }
@@ -1330,14 +1385,10 @@ export const installDemoServer = () => {
     return responseObj;
   };
 
-  // 2. Intercept all window.fetch API calls
+  // 2. Intercept window.fetch API calls ONLY in Demo Mode
   const originalFetch = window.fetch.bind(window);
   window.fetch = async (input, init = {}) => {
     const url = typeof input === "string" ? input : input?.url || "";
-    if (!isApiRequest(url)) {
-      return originalFetch(input, init);
-    }
-
     const method = init.method || (typeof input !== "string" && input?.method) || "GET";
     const headersObj = {};
     if (init.headers) {
@@ -1348,6 +1399,10 @@ export const installDemoServer = () => {
       } else {
         Object.assign(headersObj, init.headers);
       }
+    }
+
+    if (!shouldInterceptRequest(url, method, init.body, headersObj)) {
+      return originalFetch(input, init);
     }
 
     const result = await handleDemoApiRequest({

@@ -10,8 +10,10 @@ import UsersTable from "../../../components/dashBoard/home/users/UsersTable";
 import UserGrowthChart from "../../../components/dashBoard/home/users/UserGrowthChart";
 import UserActivityHeatmap from "../../../components/dashBoard/home/users/UserActivityHeatmap";
 import UserDemographicsChart from "../../../components/dashBoard/home/users/UserDemographicsChart";
+import { useLanguage } from "../../../contexts/LanguageContext";
 
 const UsersPage = () => {
+  const { pick } = useLanguage();
   const [userData, setUserData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -68,41 +70,44 @@ const UsersPage = () => {
     <div className="flex-1 overflow-auto relative z-10">
       <main className="max-w-7xl mx-auto py-4 px-2 sm:px-4 lg:px-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Platform Users
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            {pick("Platform Users", "প্ল্যাটফর্ম ব্যবহারকারী")}
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Manage registered shop owners, employees, and subscriptions.
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+            {pick(
+              "Manage registered shop owners, employees, and active subscriptions.",
+              "সব নিবন্ধিত দোকান মালিক, কর্মচারী ও সাবস্ক্রিপশন দেখুন।"
+            )}
           </p>
         </div>
 
         {/* STATS */}
         <motion.div
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8"
+          className="grid grid-cols-2 gap-3.5 sm:gap-5 lg:grid-cols-4 mb-8"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
           <StatCard
-            name="Total Users"
+            name={pick("Total Users", "মোট ব্যবহারকারী")}
             icon={UsersIcon}
             value={loading ? "..." : totalUsers.toLocaleString()}
-            color="#6366F1"
+            color="#DC2626"
           />
           <StatCard
-            name="New Users Today"
+            name={pick("New Today", "আজকের নতুন")}
             icon={UserPlus}
             value={loading ? "..." : newUsersToday}
             color="#10B981"
           />
           <StatCard
-            name="Subscribed Users"
+            name={pick("Subscribed", "সক্রিয় সদস্য")}
             icon={UserCheck}
             value={loading ? "..." : activeUsers.toLocaleString()}
             color="#F59E0B"
           />
           <StatCard
-            name="Inactive Rate"
+            name={pick("Inactive Rate", "নিষ্ক্রিয় হার")}
             icon={UserX}
             value={loading ? "..." : churnRate}
             color="#EF4444"

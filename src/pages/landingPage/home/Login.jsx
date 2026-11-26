@@ -196,11 +196,11 @@ const Login = () => {
               Welcome back
             </h1>
             <p className="text-sm text-zinc-400 mt-1">
-              Sign in with demo credentials or your new registration
+              Sign in to your real Dokaan account
             </p>
             <p className="mt-3 text-xs text-red-200/90 bg-red-950/40 border border-red-900/60 rounded-xl px-3 py-2">
-              Demo mode: any email + password (4+ characters) signs you in as a
-              shop owner with sample shops.
+              Real accounts sign in directly to your live shop. Want to test
+              without an account? Click any 1-click Demo card on the left.
             </p>
           </div>
 
@@ -216,9 +216,8 @@ const Login = () => {
                 type="email"
                 name="email"
                 id="email"
-                defaultValue="owner@dokaan.demo"
                 autoComplete="email"
-                placeholder="owner@dokaan.demo"
+                placeholder="you@example.com"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 text-white placeholder-zinc-500 border border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
               />
             </div>
@@ -234,7 +233,6 @@ const Login = () => {
                 type={showPassword ? "text" : "password"}
                 name="password"
                 id="password"
-                defaultValue="demo123"
                 autoComplete="current-password"
                 placeholder="••••••••"
                 className="w-full px-3.5 py-2.5 pr-11 rounded-xl bg-zinc-950 text-white placeholder-zinc-500 border border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"

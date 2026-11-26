@@ -101,6 +101,13 @@ const RegistrationStepper = () => {
     setIsSubmitting(true);
     const toastId = toast.loading("Creating your account...");
     try {
+      // Always register real accounts against the live backend
+      localStorage.removeItem("dokaan_demo_mode");
+      const existingToken = Cookies.get("XTOKEN") || "";
+      if (existingToken.startsWith("demo-token-")) {
+        Cookies.remove("XTOKEN", { path: "/" });
+      }
+
       const { data } = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/dokaan`,
         registrationData

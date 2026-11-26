@@ -5,6 +5,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useQuery } from "@tanstack/react-query";
 import { useUser } from "../../../contexts/AuthContext";
+import { useLanguage } from "../../../contexts/LanguageContext";
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import InventoryTable from "../../../components/dashBoard/home/products/inventory/InventoryTable";
@@ -15,6 +16,7 @@ const getStock = (item) => Number(item?.stock ?? item?.initialStock ?? 0);
 
 const Inventory = () => {
   const { savedShop } = useUser();
+  const { pick } = useLanguage();
   const navigate = useNavigate();
   const shopId = savedShop?.id;
 
@@ -91,28 +93,31 @@ const Inventory = () => {
   return (
     <div className="flex-1 overflow-auto relative z-10 mb-10">
       <main className="max-w-7xl mx-auto py-4 px-2 sm:px-4 lg:px-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Inventory
+        <div className="mb-5">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            {pick("Inventory & Stock", "স্টক ও ইনভেন্টরি")}
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Track live stock levels, restock products, or launch POS checkout.
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+            {pick(
+              "Tap any card below to filter items, restock products, or start selling.",
+              "নিচের কার্ডে ট্যাপ করে স্টক দেখুন, পণ্য যোগ করুন অথবা বিক্রি শুরু করুন।"
+            )}
           </p>
         </div>
 
         {/* STATS */}
         <motion.div
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8"
+          className="grid grid-cols-1 gap-3.5 sm:gap-5 sm:grid-cols-3 mb-6"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
           <StatCard
-            name="Total Items"
+            name={pick("Total Items", "মোট পণ্য")}
             icon={Boxes}
             value={isLoading ? "..." : totalItems}
-            subtext="View all items"
-            color="#6366F1"
+            subtext={pick("Tap to view all", "সব পণ্য দেখুন")}
+            color="#DC2626"
             onClick={() =>
               navigate("/dashboard/total-products", {
                 state: { items: safeInventory },
@@ -120,10 +125,10 @@ const Inventory = () => {
             }
           />
           <StatCard
-            name="In Stock"
+            name={pick("In Stock", "স্টকে আছে")}
             icon={PackageCheck}
             value={isLoading ? "..." : inStockCount}
-            subtext="View available items"
+            subtext={pick("Ready to sell", "বিক্রির জন্য প্রস্তুত")}
             color="#10B981"
             onClick={() =>
               navigate("/dashboard/products/in-stock", {
@@ -132,10 +137,10 @@ const Inventory = () => {
             }
           />
           <StatCard
-            name="Out of Stock"
+            name={pick("Out of Stock", "স্টক শেষ")}
             icon={PackageX}
             value={isLoading ? "..." : outOfStockCount}
-            subtext="Needs restocking"
+            subtext={pick("Needs restocking", "পুনরায় স্টক করুন")}
             color="#EF4444"
             onClick={() =>
               navigate("/dashboard/products/out-of-stock", {
@@ -146,17 +151,17 @@ const Inventory = () => {
         </motion.div>
 
         {/* Header Actions */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5 mb-6">
           <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
             <input
               type="text"
-              placeholder="Search name or barcode..."
+              placeholder={pick("Search name or barcode...", "পণ্যের নাম বা বারকোড খুঁজুন...")}
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setPage(1);
               }}
-              className="border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2 text-sm w-full sm:w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-sm w-full sm:w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
             />
             <select
               value={selectedCategory}
@@ -164,9 +169,9 @@ const Inventory = () => {
                 setSelectedCategory(e.target.value);
                 setPage(1);
               }}
-              className="border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2 text-sm w-full sm:w-48 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-sm w-full sm:w-48 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
             >
-              <option value="">All Categories</option>
+              <option value="">{pick("All Categories", "সব ক্যাটাগরি")}</option>
               {uniqueCategories.map((category) => (
                 <option key={category} value={category}>
                   {category}
@@ -175,23 +180,23 @@ const Inventory = () => {
             </select>
           </div>
 
-          <div className="flex flex-wrap gap-2.5">
+          <div className="grid grid-cols-2 sm:flex gap-2.5">
             <button
               type="button"
               onClick={() => navigate("/dashboard/product-add")}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium shadow-sm transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm transition-colors"
             >
               <Plus size={16} />
-              Add Product
+              {pick("Add Product", "পণ্য যোগ")}
             </button>
 
             <button
               type="button"
               onClick={() => navigate("/dashboard/product-sell")}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium shadow-sm transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-sm transition-colors"
             >
               <PackageCheck size={16} />
-              Sell Product
+              {pick("Sell Product", "পণ্য বিক্রি")}
             </button>
           </div>
         </div>

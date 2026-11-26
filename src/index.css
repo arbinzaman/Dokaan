@@ -4,19 +4,80 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --font-sans: "Inter", "Hind Siliguri", system-ui, -apple-system, sans-serif;
+  --font-sora: "Sora", "Hind Siliguri", sans-serif;
+  --font-code: "Source Code Pro", monospace;
+  --font-grotesk: "Inter", sans-serif;
+  --dk-bg: #09090b;
+  --dk-surface: #141417;
+  --dk-elevated: #1e1e23;
+  --dk-border: #27272a;
+  --dk-accent: #dc2626;
+  --dk-accent-hover: #b91c1c;
+  --dk-accent-soft: rgba(220, 38, 38, 0.14);
+}
+
 .dashboard-dark {
-  @apply bg-zinc-950 text-zinc-100;
+  background-color: var(--dk-bg);
+  color: #f4f4f5;
 }
 
 .dashboard-light {
   @apply bg-slate-50 text-slate-900;
 }
 
-:root {
-  --font-sans: "Inter", "Hind Siliguri", system-ui, -apple-system, sans-serif;
-  --font-sora: "Sora", "Hind Siliguri", sans-serif;
-  --font-code: "Source Code Pro", monospace;
-  --font-grotesk: "Inter", sans-serif;
+/* Live Black Mode Colour Control across every dashboard card, table, modal & sidebar */
+html.dark .dashboard-shell {
+  background-color: var(--dk-bg) !important;
+}
+
+html.dark .dashboard-shell .dark\:bg-zinc-950,
+html.dark .dashboard-shell .dark\:bg-gray-950 {
+  background-color: var(--dk-bg) !important;
+}
+
+html.dark .dashboard-shell .dark\:bg-zinc-950\/85 {
+  background-color: color-mix(in srgb, var(--dk-bg) 88%, transparent) !important;
+}
+
+html.dark .dashboard-shell .dark\:bg-gray-900,
+html.dark .dashboard-shell .dark\:bg-zinc-900 {
+  background-color: var(--dk-surface) !important;
+}
+
+html.dark .dashboard-shell .dark\:bg-gray-800,
+html.dark .dashboard-shell .dark\:bg-zinc-800 {
+  background-color: var(--dk-elevated) !important;
+}
+
+html.dark .dashboard-shell .dark\:border-gray-800,
+html.dark .dashboard-shell .dark\:border-zinc-800,
+html.dark .dashboard-shell .dark\:border-zinc-800\/80 {
+  border-color: var(--dk-border) !important;
+}
+
+/* Dynamic Dashboard Accent Control (syncs primary buttons across all dashboard pages) */
+.dashboard-shell .bg-indigo-600 {
+  background-color: var(--dk-accent) !important;
+}
+
+.dashboard-shell .hover\:bg-indigo-700:hover {
+  background-color: var(--dk-accent-hover) !important;
+}
+
+.dk-btn-accent {
+  background-color: var(--dk-accent);
+  color: #ffffff;
+}
+
+.dk-btn-accent:hover {
+  background-color: var(--dk-accent-hover);
+}
+
+.dk-accent-soft {
+  background-color: var(--dk-accent-soft);
+  color: var(--dk-accent);
 }
 
 html.dark {
@@ -29,6 +90,7 @@ html.light {
 
 * {
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
 }
 
 @layer base {
@@ -42,6 +104,11 @@ html.light {
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+/* Safe area padding for iOS/Android mobile bottom navigation */
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }
 
 /* Subtle minimalist scrollbars */

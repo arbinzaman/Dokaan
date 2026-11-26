@@ -6,11 +6,13 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import CustomersTable from "../../../components/dashBoard/home/customers/CustomersTable";
 import { useUser } from "../../../contexts/AuthContext";
+import { useLanguage } from "../../../contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import CustomerGrowth from "../../../components/dashBoard/home/customers/CustomerGrowth";
 
 const CustomersPage = () => {
   const { savedShop } = useUser();
+  const { pick } = useLanguage();
   const navigate = useNavigate();
 
   const { data = {}, isLoading, isError } = useQuery({
@@ -44,39 +46,42 @@ const CustomersPage = () => {
     <div className="flex-1 overflow-auto relative z-10">
       <main className="max-w-7xl mx-auto py-4 px-2 sm:px-4 lg:px-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Customers
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            {pick("Customers", "কাস্টমার তালিকা")}
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Track repeat buyers, favorites, and customer acquisition trends.
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+            {pick(
+              "See repeat buyers, VIP favorites, and customer growth at a glance.",
+              "নিয়মিত ক্রেতা, প্রিয় কাস্টমার এবং মোট কেনাকাটার হিসাব দেখুন।"
+            )}
           </p>
         </div>
 
         {/* STATS */}
         <motion.div
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-8"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
           <StatCard
-            name="Total Customers"
+            name={pick("Total Customers", "মোট কাস্টমার")}
             icon={Users}
             value={isLoading ? "..." : totalCustomers}
-            subtext="View all customers"
-            color="#6366F1"
+            subtext={pick("Tap to view all", "সব কাস্টমার দেখুন")}
+            color="#DC2626"
             onClick={() => navigate("/dashboard/customers-list")}
           />
           <StatCard
-            name="Favorite Customers"
+            name={pick("Favorite Buyers", "প্রিয় কাস্টমার")}
             icon={Star}
             value={isLoading ? "..." : favoriteCustomers}
-            subtext="View VIP buyers"
+            subtext={pick("View VIP list", "ভিআইপি তালিকা")}
             color="#F59E0B"
             onClick={() => navigate("/dashboard/customers-list?favorite=true")}
           />
           <StatCard
-            name="Total Purchases"
+            name={pick("Total Purchases", "মোট কেনাকাটা")}
             icon={ShoppingBag}
             value={isLoading ? "..." : totalPurchases}
             color="#10B981"

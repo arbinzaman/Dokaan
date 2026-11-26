@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { ArrowRight, ChevronDown, Play, Smartphone } from "lucide-react";
 import fullLogo from "../../../assets/Home/logos/DOKAAN_FINAL.png";
 import { useUser } from "../../../contexts/AuthContext";
+import { useLanguage } from "../../../contexts/LanguageContext";
 import { activateDemoSession } from "../../../demo/mockServer";
 
 const FAQS = [
@@ -38,7 +39,8 @@ const FaqAndCta = () => {
   const [openIndex, setOpenIndex] = useState(0);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { setUser, setDokaan, selectShop } = useUser();
+  const { user, setUser, setDokaan, selectShop } = useUser();
+  const { pick } = useLanguage();
 
   const handleLaunchDemo = () => {
     const session = activateDemoSession("owner@dokaan.demo");
@@ -57,14 +59,16 @@ const FaqAndCta = () => {
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <p className="text-xs font-semibold uppercase tracking-widest text-red-400 mb-3">
-              Frequently Asked Questions
+              {pick("Frequently Asked Questions", "সাধারণ প্রশ্ন ও উত্তর")}
             </p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
-              সব সাধারণ প্রশ্নের সহজ উত্তর
+              {pick("Simple answers to common questions", "সব সাধারণ প্রশ্নের সহজ উত্তর")}
             </h2>
             <p className="mt-3 text-sm sm:text-base text-zinc-400">
-              Everything you need to know about setting up and running your
-              business with Dokaan.
+              {pick(
+                "Everything you need to know about setting up and running your business with Dokaan.",
+                "দোকান অ্যাপ ব্যবহার শুরু করা ও চালানোর সব প্রয়োজনীয় তথ্য এখানে জানুন।"
+              )}
             </p>
           </div>
 
@@ -132,21 +136,33 @@ const FaqAndCta = () => {
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
-              <button
-                type="button"
-                onClick={handleLaunchDemo}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold text-sm transition-colors shadow-xl shadow-red-950/50"
-              >
-                <Play size={15} className="fill-white" />
-                Launch Interactive Demo
-                <ArrowRight size={16} />
-              </button>
-              <Link
-                to="/signup"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white text-zinc-950 hover:bg-zinc-200 font-semibold text-sm transition-colors"
-              >
-                Create Free Account
-              </Link>
+              {user ? (
+                <Link
+                  to="/dashboard"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold text-sm transition-colors shadow-xl shadow-red-950/50"
+                >
+                  {pick("Open My Dashboard", "আমার ড্যাশবোর্ডে যান")}
+                  <ArrowRight size={16} />
+                </Link>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleLaunchDemo}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold text-sm transition-colors shadow-xl shadow-red-950/50"
+                  >
+                    <Play size={15} className="fill-white" />
+                    {pick("Launch Interactive Demo", "লাইভ ডেমো চালু করুন")}
+                    <ArrowRight size={16} />
+                  </button>
+                  <Link
+                    to="/signup"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white text-zinc-950 hover:bg-zinc-200 font-semibold text-sm transition-colors"
+                  >
+                    {pick("Create Free Account", "ফ্রি অ্যাকাউন্ট খুলুন")}
+                  </Link>
+                </>
+              )}
               <a
                 href="https://drive.google.com/file/d/1UwUeq3zu8N2VvGk59ReNgPiowpCvMKS9/view?usp=sharing"
                 target="_blank"
@@ -154,7 +170,7 @@ const FaqAndCta = () => {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border border-red-800/80 bg-red-950/40 text-red-100 hover:bg-red-950/70 font-medium text-sm transition-colors"
               >
                 <Smartphone size={16} className="text-red-400" />
-                Android APK
+                {pick("Android APK", "অ্যান্ড্রয়েড অ্যাপ")}
               </a>
             </div>
           </div>

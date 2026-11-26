@@ -19,6 +19,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { useUser } from "../../../contexts/AuthContext";
+import { useLanguage } from "../../../contexts/LanguageContext";
 import { activateDemoSession } from "../../../demo/mockServer";
 
 const INDUSTRIES = [
@@ -136,6 +137,7 @@ const ShopTypesAndDetails = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { setUser, setDokaan, selectShop } = useUser();
+  const { pick } = useLanguage();
 
   const handlePreviewRole = (item) => {
     const session = activateDemoSession(item.email);
@@ -157,15 +159,19 @@ const ShopTypesAndDetails = () => {
         <div>
           <div className="max-w-2xl mx-auto text-center mb-14">
             <p className="text-xs font-semibold uppercase tracking-widest text-red-400 mb-3">
-              Built For Every Shop
+              {pick("Built For Every Shop", "যেকোনো দোকানের জন্য")}
             </p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
-              যেকোনো ধরনের খুচরা ও পাইকারি ব্যবসার জন্য উপযুক্ত
+              {pick(
+                "Made for every retail & wholesale store",
+                "যেকোনো ধরনের খুচরা ও পাইকারি ব্যবসার জন্য উপযুক্ত"
+              )}
             </h2>
             <p className="mt-4 text-sm sm:text-base text-zinc-400">
-              Whether you run a neighborhood grocery store or a multi-branch
-              electronics showroom, Dokaan adapts cleanly to your catalog and
-              counter workflow.
+              {pick(
+                "Whether you run a neighborhood grocery store or a multi-branch electronics showroom, Dokaan adapts cleanly to your catalog and counter workflow.",
+                "পাড়ার মুদি দোকান হোক বা একাধিক শাখার ইলেকট্রনিক্স শোরুম — সব ব্যবসার জন্য দোকান সমানভাবে কাজ করে।"
+              )}
             </p>
           </div>
 

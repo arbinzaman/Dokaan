@@ -9,11 +9,13 @@ import FinancialStats from "../../../components/dashBoard/home/analytics/Financi
 import RevenueExpenseChart from "../../../components/dashBoard/home/analytics/RevenueExpenseChart";
 import FinancialBreakdownTable from "../../../components/dashBoard/home/analytics/FinancialBreakdownTable";
 import { useUser } from "../../../contexts/AuthContext";
+import { useLanguage } from "../../../contexts/LanguageContext";
 
 const AnalyticsPage = () => {
   const [type, setType] = useState("month");
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const { savedShop } = useUser();
+  const { pick } = useLanguage();
   const shopId = savedShop?.id;
   const token = Cookies.get("XTOKEN");
 
@@ -82,10 +84,18 @@ const AnalyticsPage = () => {
   const grouped = financialReport || {};
 
   return (
-    <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 text-gray-900 dark:text-white">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 tracking-tight">
-        Financial Analytics
-      </h2>
+    <div className="max-w-7xl mx-auto px-1 sm:px-4 py-2 sm:py-4 text-gray-900 dark:text-white">
+      <div className="mb-5">
+        <h2 className="text-xl sm:text-3xl font-bold tracking-tight">
+          {pick("Financial Analytics", "আয়-ব্যয় ও লাভ-ক্ষতি রিপোর্ট")}
+        </h2>
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+          {pick(
+            "Check your real-time revenue, expenses, and net profit by day, week, month, or year.",
+            "দিন, সপ্তাহ, মাস বা বছর অনুযায়ী মোট আয়, খরচ ও নিট লাভ দেখুন।"
+          )}
+        </p>
+      </div>
 
       <TimeFilterControls
         type={type}

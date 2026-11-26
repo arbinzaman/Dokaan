@@ -18,13 +18,8 @@ import {
 } from "lucide-react";
 import fullLogo from "../../../assets/Home/logos/DOKAAN_FINAL.png";
 import { useUser } from "../../../contexts/AuthContext";
+import { useLanguage } from "../../../contexts/LanguageContext";
 import { activateDemoSession } from "../../../demo/mockServer";
-
-const PREVIEW_TABS = [
-  { id: "overview", label: "Overview", icon: BarChart3 },
-  { id: "pos", label: "POS & Billing", icon: ScanLine },
-  { id: "inventory", label: "Inventory", icon: Boxes },
-];
 
 const MONTHLY_BARS = [
   { m: "Jun", h: 48 },
@@ -35,18 +30,37 @@ const MONTHLY_BARS = [
   { m: "Nov", h: 94 },
 ];
 
-const PLATFORM_METRICS = [
-  { value: "2 Min", label: "Shop Onboarding", bn: "দ্রুত সেটআপ" },
-  { value: "92mm + A4", label: "Receipt & Invoice Print", bn: "পস ও এ৪ প্রিন্ট" },
-  { value: "3 Roles", label: "Owner, Cashier & Admin", bn: "রোল ভিত্তিক অ্যাক্সেস" },
-  { value: "Web + APK", label: "Desktop & Android Sync", bn: "ফোন ও পিসি সিঙ্ক" },
-];
-
 const Hero = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { setUser, setDokaan, selectShop } = useUser();
+  const { user, setUser, setDokaan, selectShop } = useUser();
+  const { pick } = useLanguage();
+
+  const PREVIEW_TABS = [
+    { id: "overview", label: pick("Overview", "ওভারভিউ"), icon: BarChart3 },
+    { id: "pos", label: pick("POS & Billing", "বিক্রি ও বিল"), icon: ScanLine },
+    { id: "inventory", label: pick("Inventory", "স্টক"), icon: Boxes },
+  ];
+
+  const PLATFORM_METRICS = [
+    {
+      value: pick("14+ Modules", "১৪+ মডিউল"),
+      label: pick("Complete Retail ERP", "সম্পূর্ণ দোকান ম্যানেজমেন্ট"),
+    },
+    {
+      value: "92mm + A4",
+      label: pick("POS & PDF Invoice Print", "পস রসিদ ও এ৪ প্রিন্ট"),
+    },
+    {
+      value: pick("EN + বাংলা", "EN + বাংলা"),
+      label: pick("Whole-App Language Switch", "পুরো অ্যাপ বাংলা ও ইংরেজি"),
+    },
+    {
+      value: pick("Mobile First", "মোবাইল বান্ধব"),
+      label: pick("Phone App + Web + APK", "ফোন, পিসি ও অ্যান্ড্রয়েড"),
+    },
+  ];
 
   const handleLaunchDemo = () => {
     const session = activateDemoSession("owner@dokaan.demo");
@@ -54,7 +68,12 @@ const Hero = () => {
     setDokaan(session.dokaan);
     selectShop(session.savedShop);
     queryClient.clear();
-    toast.success("Entered Interactive Demo as Shop Owner!");
+    toast.success(
+      pick(
+        "Entered Interactive Demo as Shop Owner!",
+        "দোকান মালিক হিসেবে ডেমো চালু হয়েছে!"
+      )
+    );
     navigate("/dashboard");
   };
 
@@ -100,63 +119,82 @@ const Hero = () => {
 
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-red-500/30 bg-red-950/40 text-xs font-medium text-red-200 mb-5">
             <Sparkles size={14} className="text-red-400" />
-            <span>Smart Retail POS &amp; Shop ERP • Built for Bangladesh</span>
+            <span>
+              {pick(
+                "Smart Retail POS & Shop ERP • Built for Mobile & Desktop",
+                "স্মার্ট রিটেইল POS ও দোকান ERP • মোবাইল ও কম্পিউটারের জন্য তৈরি"
+              )}
+            </span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.12]">
-            Run your entire shop from{" "}
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.15]">
+            {pick("Run your entire shop from ", "আপনার পুরো দোকান পরিচালনা করুন ")}
             <span className="bg-gradient-to-r from-red-400 via-rose-300 to-red-500 bg-clip-text text-transparent">
-              one simple dashboard
+              {pick("one simple dashboard", "একটি সহজ ড্যাশবোর্ড থেকে")}
             </span>
           </h1>
 
-          <p className="mt-5 text-lg sm:text-xl text-red-100/90 font-medium">
-            ব্যবসার হিসাব, ইনভেন্টরি, বারকোড POS ও কাস্টমার — সব একসাথে, হাতের
-            নাগালে।
+          <p className="mt-5 text-base sm:text-xl text-red-100/90 font-medium">
+            {pick(
+              "ব্যবসার হিসাব, ইনভেন্টরি, বারকোড POS ও কাস্টমার — সব একসাথে, হাতের নাগালে।",
+              "বিক্রি, স্টক, বারকোড স্ক্যানিং, খরচ, রসিদ প্রিন্ট ও লাভ-ক্ষতি — সবকিছু একদম সহজ ভাষায়, মোবাইল থেকেই!"
+            )}
           </p>
           <p className="mt-3 text-sm sm:text-base text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-            Replace messy paper ledgers with an all-in-one digital retail
-            platform. Track live stock, scan barcodes from your phone camera,
-            print 92mm thermal POS or A4 receipts, manage branches and staff,
-            and monitor net profit in real time.
+            {pick(
+              "Replace messy paper ledgers with an all-in-one digital retail platform. Track live stock, scan barcodes from your phone camera, print 92mm POS or A4 PDF receipts, manage branches and staff, and monitor profit in real time.",
+              "কাগজের খাতার ঝামেলা ছেড়ে ডিজিটাল হন। ফোনের ক্যামেরা দিয়ে বারকোড স্ক্যান করুন, ৯২ মিমি POS বা A4 রসিদ প্রিন্ট করুন, একাধিক শাখা ও কর্মচারী পরিচালনা করুন এবং প্রতিদিনের লাভ-ক্ষতি জানুন।"
+            )}
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
-            <button
-              type="button"
-              onClick={handleLaunchDemo}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-500 transition-colors shadow-xl shadow-red-950/50"
-            >
-              <Play size={15} className="fill-white" />
-              Try Interactive Demo
-              <ArrowRight size={16} />
-            </button>
-            <Link
-              to="/login"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-red-900/70 bg-red-950/25 text-zinc-100 font-medium text-sm hover:bg-red-950/50 hover:border-red-700 transition-colors"
-            >
-              Sign In / Choose Role
-            </Link>
-            <Link
-              to="/signup"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-zinc-800 bg-zinc-900/60 text-zinc-300 font-medium text-sm hover:text-white hover:border-zinc-700 transition-colors"
-            >
-              Start 1-Year Free Trial
-            </Link>
+            {user ? (
+              <Link
+                to="/dashboard"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-500 transition-colors shadow-xl shadow-red-950/50"
+              >
+                {pick("Open My Dashboard", "আমার ড্যাশবোর্ডে যান")}
+                <ArrowRight size={16} />
+              </Link>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleLaunchDemo}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-500 transition-colors shadow-xl shadow-red-950/50"
+                >
+                  <Play size={15} className="fill-white" />
+                  {pick("Try Interactive Demo", "লাইভ ডেমো দেখুন")}
+                  <ArrowRight size={16} />
+                </button>
+                <Link
+                  to="/login"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-red-900/70 bg-red-950/25 text-zinc-100 font-medium text-sm hover:bg-red-950/50 hover:border-red-700 transition-colors"
+                >
+                  {pick("Sign In to Account", "অ্যাকাউন্টে লগইন")}
+                </Link>
+                <Link
+                  to="/signup"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-zinc-800 bg-zinc-900/60 text-zinc-300 font-medium text-sm hover:text-white hover:border-zinc-700 transition-colors"
+                >
+                  {pick("Start 1-Year Free Trial", "১ বছর ফ্রি শুরু করুন")}
+                </Link>
+              </>
+            )}
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-zinc-400">
             <span className="inline-flex items-center gap-1.5">
               <CheckCircle2 size={14} className="text-red-400" />
-              No expensive POS hardware required
+              {pick("No expensive POS hardware needed", "আলাদা POS মেশিনের প্রয়োজন নেই")}
             </span>
             <span className="inline-flex items-center gap-1.5">
               <Printer size={14} className="text-rose-400" />
-              Thermal 92mm &amp; A4 PDF Invoices
+              {pick("Thermal 92mm & A4 PDF Invoices", "৯২ মিমি POS ও A4 পিডিএফ রসিদ")}
             </span>
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck size={14} className="text-red-400" />
-              Role-Based Access &amp; Email 2FA
+              {pick("Role-Based Access & Email 2FA", "রোল নিরাপত্তা ও ইমেইল 2FA")}
             </span>
           </div>
         </motion.div>
@@ -170,16 +208,15 @@ const Hero = () => {
         >
           {PLATFORM_METRICS.map((stat) => (
             <div
-              key={stat.label}
-              className="rounded-2xl border border-red-950/70 bg-zinc-950/75 px-5 py-4 text-center hover:border-red-800/70 transition-colors"
+              key={stat.value}
+              className="rounded-2xl border border-red-950/70 bg-zinc-950/75 px-4 py-4 text-center hover:border-red-800/70 transition-colors"
             >
-              <p className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+              <p className="text-lg sm:text-2xl font-bold text-white tracking-tight">
                 {stat.value}
               </p>
               <p className="text-xs font-medium text-zinc-300 mt-1">
                 {stat.label}
               </p>
-              <p className="text-[11px] text-red-400/90 mt-0.5">{stat.bn}</p>
             </div>
           ))}
         </motion.div>
@@ -200,7 +237,7 @@ const Hero = () => {
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
                 <span className="ml-2 inline-flex items-center gap-1.5 text-xs text-zinc-300">
                   <Store size={13} className="text-red-400" />
-                  Dokaan Mart — Dhanmondi Branch
+                  {pick("Dokaan Mart — Dhanmondi Branch", "দোকান মার্ট — ধানমন্ডি শাখা")}
                 </span>
               </div>
 
@@ -228,13 +265,13 @@ const Hero = () => {
             </div>
 
             {/* Interactive Tab Panels */}
-            <div className="p-5 sm:p-7">
+            <div className="p-4 sm:p-7">
               {activeTab === "overview" && (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="rounded-xl border border-red-950/60 bg-zinc-950/70 p-4">
                       <p className="text-xs text-zinc-400 uppercase tracking-wider">
-                        Monthly Revenue
+                        {pick("Monthly Revenue", "মাসিক আয়")}
                       </p>
                       <div className="mt-2 flex items-baseline justify-between">
                         <span className="text-2xl font-bold text-white tabular-nums">
@@ -247,25 +284,27 @@ const Hero = () => {
                     </div>
                     <div className="rounded-xl border border-red-950/60 bg-zinc-950/70 p-4">
                       <p className="text-xs text-zinc-400 uppercase tracking-wider">
-                        Orders Completed
+                        {pick("Orders Completed", "সম্পন্ন অর্ডার")}
                       </p>
                       <div className="mt-2 flex items-baseline justify-between">
                         <span className="text-2xl font-bold text-white tabular-nums">
                           348
                         </span>
-                        <span className="text-xs text-zinc-400">This month</span>
+                        <span className="text-xs text-zinc-400">
+                          {pick("This month", "এই মাসে")}
+                        </span>
                       </div>
                     </div>
                     <div className="rounded-xl border border-red-950/60 bg-zinc-950/70 p-4">
                       <p className="text-xs text-zinc-400 uppercase tracking-wider">
-                        Active Stock SKUs
+                        {pick("Active Stock SKUs", "মোট স্টক পণ্য")}
                       </p>
                       <div className="mt-2 flex items-baseline justify-between">
                         <span className="text-2xl font-bold text-white tabular-nums">
                           1,240
                         </span>
                         <span className="text-xs text-amber-400">
-                          3 low stock
+                          {pick("3 low stock", "৩টি কম স্টক")}
                         </span>
                       </div>
                     </div>
@@ -275,7 +314,7 @@ const Hero = () => {
                   <div className="rounded-xl border border-red-950/60 bg-zinc-950/70 p-5">
                     <div className="flex items-center justify-between mb-4">
                       <p className="text-sm font-semibold text-white">
-                        6-Month Revenue Trajectory
+                        {pick("6-Month Revenue Trajectory", "৬ মাসের বিক্রয় প্রবণতা")}
                       </p>
                       <span className="text-xs text-red-300/80">BDT (৳)</span>
                     </div>
@@ -304,10 +343,10 @@ const Hero = () => {
                   <div className="md:col-span-3 rounded-xl border border-red-950/60 bg-zinc-950/70 p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-semibold text-white">
-                        Live Barcode Cart
+                        {pick("Live Barcode Cart", "লাইভ বারকোড কার্ট")}
                       </span>
                       <span className="px-2.5 py-0.5 rounded-full text-[11px] bg-red-500/15 text-red-300 border border-red-500/25 font-medium">
-                        Scanner Active
+                        {pick("Scanner Active", "স্ক্যানার চালু")}
                       </span>
                     </div>
                     {[
@@ -335,23 +374,23 @@ const Hero = () => {
                   <div className="md:col-span-2 rounded-xl border border-red-950/60 bg-zinc-950/70 p-4 flex flex-col justify-between">
                     <div>
                       <p className="text-xs uppercase tracking-wider text-red-300/80">
-                        Receipt Summary
+                        {pick("Receipt Summary", "রসিদ সারসংক্ষেপ")}
                       </p>
                       <p className="text-sm font-medium text-white mt-2">
-                        Customer: Arif Hasan
+                        {pick("Customer: Arif Hasan", "কাস্টমার: আরিফ হাসান")}
                       </p>
                       <p className="text-xs text-zinc-400">01711-234567</p>
                       <div className="mt-4 pt-3 border-t border-red-950/60 space-y-1.5 text-sm">
                         <div className="flex justify-between text-zinc-400">
-                          <span>Subtotal</span>
+                          <span>{pick("Subtotal", "মোট")}</span>
                           <span className="tabular-nums">৳2,375.00</span>
                         </div>
                         <div className="flex justify-between text-emerald-400">
-                          <span>Discount</span>
+                          <span>{pick("Discount", "ছাড়")}</span>
                           <span className="tabular-nums">-৳75.00</span>
                         </div>
                         <div className="flex justify-between text-base font-bold text-white pt-2 border-t border-red-950/60">
-                          <span>Grand Total</span>
+                          <span>{pick("Grand Total", "সর্বমোট")}</span>
                           <span className="tabular-nums">৳2,300.00</span>
                         </div>
                       </div>
@@ -359,10 +398,14 @@ const Hero = () => {
                     <div className="mt-5 flex gap-2">
                       <button
                         type="button"
-                        onClick={handleLaunchDemo}
+                        onClick={
+                          user
+                            ? () => navigate("/dashboard/product-sell")
+                            : handleLaunchDemo
+                        }
                         className="flex-1 text-center py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-semibold transition-colors"
                       >
-                        Open Live POS
+                        {pick("Open Live POS", "POS চালু করুন")}
                       </button>
                       <span className="px-3 py-2 rounded-lg border border-red-900/70 text-zinc-300 text-xs font-medium">
                         PDF
@@ -375,10 +418,10 @@ const Hero = () => {
               {activeTab === "inventory" && (
                 <div className="rounded-xl border border-red-950/60 bg-zinc-950/70 overflow-hidden">
                   <div className="grid grid-cols-4 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 border-b border-red-950/60">
-                    <span>Product</span>
-                    <span>Category</span>
-                    <span>Price</span>
-                    <span className="text-right">Status</span>
+                    <span>{pick("Product", "পণ্য")}</span>
+                    <span>{pick("Category", "ক্যাটাগরি")}</span>
+                    <span>{pick("Price", "দাম")}</span>
+                    <span className="text-right">{pick("Status", "অবস্থা")}</span>
                   </div>
                   {[
                     { name: "Miniket Rice 5kg", cat: "Groceries", price: "৳380", stock: "64 in stock", tone: "emerald" },

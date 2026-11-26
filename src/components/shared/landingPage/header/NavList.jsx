@@ -1,111 +1,56 @@
-import { Link } from "react-router-dom";
-import { Download, Play } from "lucide-react";
-import { useUser } from "../../../../contexts/AuthContext";
+import { Download } from "lucide-react";
+import { useLanguage } from "../../../../contexts/LanguageContext";
 
-const NavList = ({
-  handleSectionNavigation,
-  handleClick,
-  openNavigation,
-  onLaunchDemo,
-}) => {
-  const { user, logout } = useUser();
+const NavList = ({ handleSectionNavigation, handleClick }) => {
+  const { pick } = useLanguage();
 
   return (
-    <nav
-      className={`${
-        openNavigation ? "flex" : "hidden"
-      } fixed top-20 left-0 right-0 bottom-0 bg-[#0a0607]/98 backdrop-blur-xl overflow-y-auto lg:overflow-visible lg:static lg:flex lg:bg-transparent flex-col lg:flex-row items-center justify-center gap-2 lg:gap-6 p-6 lg:p-0`}
-    >
+    <nav className="hidden lg:flex items-center gap-6">
       <button
         type="button"
         onClick={() => handleSectionNavigation("features")}
-        className="text-lg lg:text-sm font-medium text-zinc-300 hover:text-red-400 transition-colors py-3 lg:py-1"
+        className="text-sm font-medium text-zinc-300 hover:text-red-400 transition-colors py-1"
       >
-        Features
+        {pick("All Features", "সব ফিচার")}
       </button>
       <button
         type="button"
         onClick={() => handleSectionNavigation("industries")}
-        className="text-lg lg:text-sm font-medium text-zinc-300 hover:text-red-400 transition-colors py-3 lg:py-1"
+        className="text-sm font-medium text-zinc-300 hover:text-red-400 transition-colors py-1"
       >
-        Industries
+        {pick("Industries", "ব্যবসার ধরন")}
       </button>
       <button
         type="button"
         onClick={() => handleSectionNavigation("workflow")}
-        className="text-lg lg:text-sm font-medium text-zinc-300 hover:text-red-400 transition-colors py-3 lg:py-1"
+        className="text-sm font-medium text-zinc-300 hover:text-red-400 transition-colors py-1"
       >
-        How It Works
+        {pick("How It Works", "কাজের ধাপ")}
       </button>
       <button
         type="button"
         onClick={() => handleSectionNavigation("pricing")}
-        className="text-lg lg:text-sm font-medium text-zinc-300 hover:text-red-400 transition-colors py-3 lg:py-1"
+        className="text-sm font-medium text-zinc-300 hover:text-red-400 transition-colors py-1"
       >
-        Pricing
+        {pick("Pricing", "মূল্য তালিকা")}
       </button>
       <button
         type="button"
         onClick={() => handleSectionNavigation("faq")}
-        className="text-lg lg:text-sm font-medium text-zinc-300 hover:text-red-400 transition-colors py-3 lg:py-1"
+        className="text-sm font-medium text-zinc-300 hover:text-red-400 transition-colors py-1"
       >
-        FAQ
+        {pick("FAQ", "প্রশ্নোত্তর")}
       </button>
       <a
         href="https://drive.google.com/file/d/1UwUeq3zu8N2VvGk59ReNgPiowpCvMKS9/view?usp=sharing"
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleClick}
-        className="inline-flex items-center gap-1.5 text-lg lg:text-sm font-medium text-red-400 hover:text-red-300 transition-colors py-3 lg:py-1"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-red-400 hover:text-red-300 transition-colors py-1"
       >
         <Download size={15} />
-        Android App
+        {pick("Android App", "অ্যান্ড্রয়েড অ্যাপ")}
       </a>
-
-      {/* Mobile-only Auth Links */}
-      <div className="flex flex-col items-center gap-3 mt-6 pt-6 border-t border-red-950/70 w-full max-w-xs lg:hidden">
-        {user ? (
-          <>
-            <Link
-              to="/dashboard"
-              onClick={handleClick}
-              className="w-full text-center py-2.5 rounded-xl bg-red-600 text-white font-semibold text-sm"
-            >
-              Open Dashboard
-            </Link>
-            <button
-              type="button"
-              onClick={() => {
-                handleClick();
-                logout();
-              }}
-              className="w-full text-center py-2.5 rounded-xl border border-red-950 text-zinc-200 font-medium text-sm"
-            >
-              Logout
-            </button>
-          </>
-        ) : (
-          <>
-            {onLaunchDemo && (
-              <button
-                type="button"
-                onClick={onLaunchDemo}
-                className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-600 text-white font-semibold text-sm"
-              >
-                <Play size={14} className="fill-white" />
-                Try Interactive Demo
-              </button>
-            )}
-            <Link
-              to="/login"
-              onClick={handleClick}
-              className="w-full text-center py-2.5 rounded-xl border border-red-950 text-zinc-200 font-medium text-sm"
-            >
-              Sign In
-            </Link>
-          </>
-        )}
-      </div>
     </nav>
   );
 };

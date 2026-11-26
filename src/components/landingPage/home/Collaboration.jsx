@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useLanguage } from "../../../contexts/LanguageContext";
 import {
   ArrowRight,
   Check,
@@ -62,6 +63,8 @@ const COMPARISON = [
 ];
 
 const Collaboration = () => {
+  const { pick } = useLanguage();
+
   return (
     <section
       id="workflow"
@@ -72,14 +75,19 @@ const Collaboration = () => {
           {/* Left Column: Workflow Steps */}
           <div className="lg:col-span-6">
             <p className="text-xs font-semibold uppercase tracking-widest text-red-400 mb-3">
-              Simple 3-Step Workflow
+              {pick("Simple 3-Step Workflow", "সহজ ৩ ধাপে শুরু করুন")}
             </p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
-              ফোনে ও কম্পিউটারে সহজ দোকান ব্যবস্থাপনা
+              {pick(
+                "Easy shop management on phone & computer",
+                "ফোনে ও কম্পিউটারে সহজ দোকান ব্যবস্থাপনা"
+              )}
             </h2>
             <p className="mt-4 text-sm sm:text-base text-zinc-400 leading-relaxed">
-              No complicated accounting jargon. Every screen in Dokaan is built
-              so any shop owner or cashier can master it in minutes.
+              {pick(
+                "No complicated accounting jargon. Every screen in Dokaan is built so any shop owner or cashier can master it in minutes.",
+                "কোনো জটিল অ্যাকাউন্টিং নয়। যেকোনো দোকানদার বা ক্যাশিয়ার কয়েক মিনিটেই সব কাজ শিখে নিতে পারবেন।"
+              )}
             </p>
 
             <div className="mt-8 space-y-4">

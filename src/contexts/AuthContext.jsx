@@ -118,6 +118,15 @@ export const AuthProvider = ({ children }) => {
   // Login function
   const login = async (email, password) => {
     try {
+      const cleanEmail = String(email || "").trim().toLowerCase();
+      if (!cleanEmail.endsWith("@dokaan.demo")) {
+        localStorage.removeItem("dokaan_demo_mode");
+        const existingToken = Cookies.get("XTOKEN") || "";
+        if (existingToken.startsWith("demo-token-")) {
+          Cookies.remove("XTOKEN", { path: "/" });
+        }
+      }
+
       const res = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/auth/login`,
         { email, password }
@@ -165,6 +174,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("user");
     localStorage.removeItem("dokaan");
     localStorage.removeItem("savedShop");
+    localStorage.removeItem("dokaan_demo_mode");
     Cookies.remove("XTOKEN", { path: "/" });
 
     toast.success("Logged out!");

@@ -2,12 +2,13 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
 import DokaanProfile from "../../../../dashBoard/Profile/DokaanProfile";
-import dokaanLogoDark from "../../../../../assets/Home/logos/DOKAAN.png";
-import dokaanLogoLight from "../../../../../assets/Home/logos/Dokaan_White.png";
+import fullLogo from "../../../../../assets/Home/logos/DOKAAN_FINAL.png";
 import { useUser } from "../../../../../contexts/AuthContext";
+import { useLanguage } from "../../../../../contexts/LanguageContext";
 
 const DesktopSidebar = ({ sidebarItems, isSidebarOpen, setIsSidebarOpen }) => {
   const { user } = useUser();
+  const { pick } = useLanguage();
   const location = useLocation();
   const normalizedPath = location.pathname.replace(/\/+$/, "");
 
@@ -28,14 +29,9 @@ const DesktopSidebar = ({ sidebarItems, isSidebarOpen, setIsSidebarOpen }) => {
         {isSidebarOpen && (
           <Link to="/dashboard" className="flex items-center">
             <img
-              src={dokaanLogoDark}
-              alt="Dokaan"
-              className="h-7 object-contain dark:hidden"
-            />
-            <img
-              src={dokaanLogoLight}
-              alt="Dokaan"
-              className="h-7 object-contain hidden dark:block"
+              src={fullLogo}
+              alt="Dokaan — এখন ডিজিটাল"
+              className="h-9 w-auto object-contain"
             />
           </Link>
         )}
@@ -69,7 +65,7 @@ const DesktopSidebar = ({ sidebarItems, isSidebarOpen, setIsSidebarOpen }) => {
                 isSidebarOpen ? "justify-start" : "justify-center"
               } ${
                 isActive
-                  ? "bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs"
+                  ? "dk-btn-accent shadow-xs"
                   : "text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-900 hover:text-slate-900 dark:hover:text-zinc-100"
               }`}
             >
@@ -86,7 +82,7 @@ const DesktopSidebar = ({ sidebarItems, isSidebarOpen, setIsSidebarOpen }) => {
       {isSidebarOpen && (
         <div className="mt-4 pt-3 border-t border-slate-200/70 dark:border-zinc-800/70 px-2">
           <p className="text-[11px] text-slate-400 dark:text-zinc-500">
-            Dokaan Retail ERP
+            {pick("Dokaan Smart Retail ERP", "দোকান স্মার্ট রিটেইল ইআরপি")}
           </p>
         </div>
       )}

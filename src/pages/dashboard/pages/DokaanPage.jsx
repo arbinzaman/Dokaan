@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Package } from "lucide-react";
 import { useUser } from "../../../contexts/AuthContext";
+import { useLanguage } from "../../../contexts/LanguageContext";
 import StatCard from "../../../components/dashBoard/home/common/StatCard";
 import DokaanTable from "../../../components/dashBoard/home/Shop/DokaanTable";
 import { Link } from "react-router-dom";
@@ -12,6 +13,7 @@ import toast from "react-hot-toast";
 
 const DokaanPage = () => {
   const { dokaan, setDokaan, savedShop, selectShop } = useUser();
+  const { pick } = useLanguage();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDokaan, setSelectedDokaan] = useState(null);
 
@@ -57,18 +59,21 @@ const DokaanPage = () => {
       <main className="max-w-7xl mx-auto py-4 px-2 sm:px-4 lg:px-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Shops
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+              {pick("My Shops", "আমার দোকানসমূহ")}
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Manage your store branches and details.
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+              {pick(
+                "Manage all your shop branches, addresses, and contact info.",
+                "আপনার সব দোকান ও শাখার তথ্য এখানে পরিচালনা করুন।"
+              )}
             </p>
           </div>
           <Link
             to="/dashboard/add-shop"
-            className="inline-flex items-center justify-center bg-indigo-600 text-white px-4 py-2.5 rounded-xl font-medium text-sm hover:bg-indigo-700 transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center bg-indigo-600 text-white px-4 py-3 sm:py-2.5 rounded-xl font-semibold text-sm hover:bg-indigo-700 transition-colors"
           >
-            + Add Dokaan
+            + {pick("Add New Shop", "নতুন দোকান যোগ")}
           </Link>
         </div>
 
@@ -80,10 +85,10 @@ const DokaanPage = () => {
           transition={{ duration: 0.4 }}
         >
           <StatCard
-            name="Total Dokaans"
+            name={pick("Total Shops", "মোট দোকান")}
             icon={Package}
             value={shopData.length}
-            color="#6366F1"
+            color="#DC2626"
           />
         </motion.div>
 

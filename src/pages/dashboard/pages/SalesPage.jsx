@@ -7,6 +7,7 @@ import StatCard from "../../../components/dashBoard/home/common/StatCard";
 import { CreditCard, Plus, ShoppingCart } from "lucide-react";
 import DailySalesTrend from "../../../components/dashBoard/home/sales/DailySalesTrend";
 import { useUser } from "../../../contexts/AuthContext";
+import { useLanguage } from "../../../contexts/LanguageContext";
 import SalesTrendChart from "../../../components/dashBoard/home/products/SalesTrendChart";
 import CategoryDistributionChart from "../../../components/dashBoard/home/overview/CategoryDistributionChart";
 import SalesTable from "../../../components/dashBoard/home/sales/SalesTable";
@@ -15,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 
 const SalesPage = () => {
   const { savedShop } = useUser();
+  const { pick } = useLanguage();
   const navigate = useNavigate();
   const shopId = savedShop?.id;
 
@@ -75,32 +77,35 @@ const SalesPage = () => {
       <main className="max-w-7xl mx-auto py-4 px-2 sm:px-4 lg:px-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Sales
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+              {pick("Sales", "বিক্রয় হিসাব")}
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Review transactions, growth trends, and daily revenue.
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+              {pick(
+                "Review daily sales, growth trends, and start new bills fast.",
+                "প্রতিদিনের বিক্রি ও আয়ের হিসাব দেখুন, নতুন বিল তৈরি করুন।"
+              )}
             </p>
           </div>
           <button
             type="button"
             onClick={() => navigate("/dashboard/product-sell")}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold transition-colors"
           >
             <Plus size={16} />
-            New Sale (POS)
+            {pick("New Sale (POS)", "নতুন বিক্রি (POS)")}
           </button>
         </div>
 
         {/* SALES STATS */}
         <motion.div
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
           <StatCard
-            name="Total Revenue"
+            name={pick("Total Revenue", "মোট আয়")}
             icon={FaBangladeshiTakaSign}
             value={
               salesDataLoading
@@ -109,10 +114,10 @@ const SalesPage = () => {
                 ? "—"
                 : `৳${totalRevenue.toLocaleString()}`
             }
-            color="#6366F1"
+            color="#DC2626"
           />
           <StatCard
-            name="Total Sales Count"
+            name={pick("Total Sales Count", "মোট বিক্রয় সংখ্যা")}
             icon={ShoppingCart}
             value={
               totalSalesLoading
@@ -125,7 +130,7 @@ const SalesPage = () => {
             color="#10B981"
           />
           <StatCard
-            name="Sales Growth"
+            name={pick("Sales Growth", "বিক্রয় প্রবৃদ্ধি")}
             icon={CreditCard}
             value={salesDataLoading ? "..." : salesDataError ? "—" : salesGrowth}
             color="#F59E0B"

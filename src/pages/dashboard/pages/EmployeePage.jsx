@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useUser } from "../../../contexts/AuthContext";
+import { useLanguage } from "../../../contexts/LanguageContext";
 import EmployeeTable from "../../../components/dashBoard/home/Employee/EmployeeTable";
 import { motion } from "framer-motion";
 import { Users } from "lucide-react";
@@ -10,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 
 const EmployeePage = () => {
   const { savedShop } = useUser();
+  const { pick } = useLanguage();
   const navigate = useNavigate();
 
   const { data: employees = [], isLoading } = useQuery({
@@ -41,43 +43,46 @@ const EmployeePage = () => {
       <main className="max-w-7xl mx-auto py-4 px-2 sm:px-4 lg:px-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Employees
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+              {pick("Employees", "কর্মচারী ব্যবস্থাপনা")}
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Manage staff schedules, roles, and payroll.
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+              {pick(
+                "Manage staff shifts, cashier accounts, and monthly salaries.",
+                "কর্মচারীদের শিফট, বেতন ও ক্যাশিয়ার অ্যাকাউন্ট পরিচালনা করুন।"
+              )}
             </p>
           </div>
           <button
             type="button"
-            className="inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium shadow-sm hover:bg-indigo-700 transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 sm:py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold shadow-sm hover:bg-indigo-700 transition-colors"
             onClick={() => navigate("/dashboard/add-a-employee")}
           >
-            + Add Employee
+            + {pick("Add Employee", "নতুন কর্মচারী যোগ")}
           </button>
         </div>
 
         {/* Stats Section */}
         <motion.div
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-8"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
           <StatCard
-            name="Total Employees"
+            name={pick("Total Employees", "মোট কর্মচারী")}
             icon={Users}
             value={isLoading ? "..." : safeEmployees.length}
-            color="#6366F1"
+            color="#DC2626"
           />
           <StatCard
-            name="Active"
+            name={pick("Active Staff", "সক্রিয়")}
             icon={Users}
             value={isLoading ? "..." : activeEmployees.length}
             color="#10B981"
           />
           <StatCard
-            name="Inactive"
+            name={pick("Inactive", "নিষ্ক্রিয়")}
             icon={Users}
             value={isLoading ? "..." : inactiveEmployees.length}
             color="#EF4444"
